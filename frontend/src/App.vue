@@ -1,7 +1,19 @@
 <script setup>
-
+import Navbar from "./components/Navigation-com/Navbar.vue";
 </script>
 
 <template>
-  <HelloWorld />
+  <div>
+    <Navbar />
+
+    <main class="Page-content">
+      <router-view />
+    </main>
+  </div>
 </template>
+
+<style>
+.Page-content {
+  padding-top: 90px;
+}
+</style>

@@ -6,10 +6,11 @@
 
   /* Supporting Colors */
   --secondary-color: #222222;
-  --background-color: #F5F7F6;
+  --background-color: #f5f7f6;
   --white: #FFFFFF;
   --text-color: #333333;
   --muted-text: #777777;
+  
 
   /* Status Colors */
   --available: #04995B;
@@ -18,5 +19,13 @@
 
   /* UI */
   --border-radius: 12px;
-  --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --card-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+*{
+  padding: 0;
+  margin: 0;
+  font-family: 'Montserrat', sans-serif;
+}
+body {
+  background: var(--background-color);
 }
