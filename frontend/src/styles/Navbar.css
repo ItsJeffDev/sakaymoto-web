@@ -1,0 +1,131 @@
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700&display=swap");
+
+.Navbar {
+  width: 100%;
+  height: 90px;
+  background: var(--primary-light);
+  font-family: "Montserrat", sans-serif;
+}
+
+.Navbar-in {
+  height: 100%;
+  max-width: 1200px;
+  padding: 0 3%;
+  margin: auto;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Logo */
+.Logo img {
+  width: 130px;
+  height: auto;
+  display: block;
+}
+
+
+/* Navigation */
+.Nav-links ul {
+  display: flex;
+  align-items: center;
+  gap: 35px;
+
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.Nav-links ul li a {
+  position: relative;
+
+  color: #000;
+  text-decoration: none;
+
+  font-size: 16px;
+  font-weight: 600;
+
+  padding-bottom: 8px;
+
+  transition: color 0.3s ease;
+}
+
+
+/* Underline animation */
+.Nav-links ul li a::after {
+  content: "";
+
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+
+  width: 0;
+  height: 3px;
+
+  background: var(--primary-color);
+  border-radius: 10px;
+
+  transform: translateX(-50%);
+  transition: width 0.3s ease;
+}
+
+
+/* Hover */
+.Nav-links ul li a:hover {
+  color: var(--primary-color);
+}
+
+.Nav-links ul li a:hover::after {
+  width: 100%;
+}
+
+
+/* Selected / Active link */
+.Nav-links ul li a.active {
+  color: white;
+}
+
+.Nav-links ul li a.active::after {
+  width: 100%;
+}
+
+
+/* Rent Button */
+.Nav-btn a {
+  padding: 12px 25px;
+
+  background: var(--primary-color);
+  color: white;
+
+  border-radius: 30px;
+
+  text-decoration: none;
+  font-size: 15px;
+  font-weight: 700;
+
+  transition: all 0.3s ease;
+}
+
+.Nav-btn a:hover {
+  opacity: 0.85;
+  transform: translateY(-2px);
+}
+
+
+/* Mobile */
+@media (max-width: 768px) {
+
+  .Navbar-in {
+    padding: 0 20px;
+  }
+
+  .Nav-links {
+    display: none;
+  }
+
+  .Logo img {
+    width: 110px;
+  }
+
+}
