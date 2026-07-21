@@ -1,0 +1,22 @@
+:root {
+  /* SakayMoto Brand Colors */
+  --primary-color: #04995B;
+  --primary-dark: #037044;
+  --primary-light: #33B97F;
+
+  /* Supporting Colors */
+  --secondary-color: #222222;
+  --background-color: #F5F7F6;
+  --white: #FFFFFF;
+  --text-color: #333333;
+  --muted-text: #777777;
+
+  /* Status Colors */
+  --available: #04995B;
+  --rented: #E74C3C;
+  --maintenance: #F39C12;
+
+  /* UI */
+  --border-radius: 12px;
+  --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
