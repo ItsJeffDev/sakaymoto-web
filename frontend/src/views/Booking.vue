@@ -7,6 +7,44 @@
 <template>
   <div class="Booking">
     <h1>Bokking</h1>
+    <h1>Bokking</h1>
+
+    <h1>Bokking</h1>
+    <h1>Bokking</h1>
+    <h1>Bokking</h1>
+
+    <h1>Bokking</h1>
+    <h1>Bokking</h1>
+
+    <h1>Bokking</h1>
+
+    <h1>Bokking</h1>
+    <h1>Bokking</h1>
+    <h1>Bokking</h1>
+    <h1>Bokking</h1>
+
+    <h1>Bokking</h1>
+    <h1>Bokking</h1>
+    <h1>Bokking</h1>
+    <h1>Bokking</h1>
+    <h1>Bokking</h1>
+    <h1>Bokking</h1>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h1>Bokking</h1><h1>Bokking</h1>
   </div>
 </template>
 

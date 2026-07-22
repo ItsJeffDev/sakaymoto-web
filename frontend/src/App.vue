@@ -13,7 +13,5 @@ import Navbar from "./components/Navigation-com/Navbar.vue";
 </template>
 
 <style>
-.Page-content {
-  padding-top: 90px;
-}
+
 </style>

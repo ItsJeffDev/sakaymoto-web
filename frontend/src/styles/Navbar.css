@@ -1,18 +1,24 @@
 @import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700&display=swap");
 
 .Navbar {
-  width: 100%;
+  width: 90%;
+  max-width: 1200px;
   height: 90px;
-  background: var(--primary-light);
+  position: fixed;
+  top: 2%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: transparent;
   font-family: "Montserrat", sans-serif;
+  z-index: 1000;
 }
-
 .Navbar-in {
   height: 100%;
-  max-width: 1200px;
+  max-width: 1000px;
+  border-radius: 80px;
   padding: 0 3%;
   margin: auto;
-
+  background: var(--primary-light);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -20,8 +26,8 @@
 
 /* Logo */
 .Logo img {
-  width: 130px;
-  height: auto;
+  width: 120px;
+  height: 100px;
   display: block;
 }
 
