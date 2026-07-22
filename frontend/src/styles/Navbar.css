@@ -22,6 +22,16 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  position: relative;
+}
+
+
+
+.Navbar-in::before {
+  content: "";
+  position: absolute;
+
+  background: rgba(255, 255, 255, 0.12);
 }
 
 /* Logo */
@@ -95,7 +105,10 @@
   display: flex;
   align-items: center;
   gap: 12px;
+  position: relative;
+  z-index: 1100;
 }
+
 /* Rent Button */
 .Nav-btn a {
   padding: clamp(10px, 2vw, 12px) clamp(18px, 3vw, 25px);
@@ -210,10 +223,6 @@
 
     transform: translateY(-20px);
 
-    transition:
-      opacity 0.35s ease,
-      transform 0.35s ease,
-      visibility 0.35s;
   }
 
   .Nav-links.active {
