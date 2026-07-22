@@ -1,5 +1,12 @@
 <script setup>
+import { ref } from "vue";
 import "../../styles/Navbar.css";
+
+const menuOpen = ref(false);
+
+const toggleMenu = () => {
+  menuOpen.value = !menuOpen.value;
+};
 </script>
 
 <template>
@@ -11,10 +18,10 @@ import "../../styles/Navbar.css";
         </router-link>
       </div>
 
-      <div class="Nav-links">
+      <div class="Nav-links" :class="{ active: menuOpen }">
         <ul>
           <li>
-            <router-link to="/" active-class="active">Home</router-link>
+            <router-link to="/" active-class="active" @click="menuOpen = false">Home</router-link>
           </li>
           <li>
             <router-link to="/motorcycles" active-class="active">Motorcycles</router-link>
@@ -34,8 +41,16 @@ import "../../styles/Navbar.css";
         </ul>
       </div>
 
-      <div class="Nav-btn">
-        <router-link to="/rent">Rent Now</router-link>
+      <div class="Nav-actions">
+        <div class="Nav-btn">
+          <router-link to="/rent">Rent Now</router-link>
+        </div>
+
+        <div class="Hamburger" :class="{ active: menuOpen }" @click="toggleMenu">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
       </div>
     </div>
   </nav>
