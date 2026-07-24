@@ -16,7 +16,6 @@
             Explore our collection of premium motorcycles and enjoy a smooth ride
             wherever you go.
           </p>
-
           <button>Explore Motorcycles</button>
         </div>
 
@@ -29,6 +28,7 @@
 .Home {
   width: 100%;
   max-width: 1200px;
+  padding-top: 50px ;
   margin: auto;
 }
 
