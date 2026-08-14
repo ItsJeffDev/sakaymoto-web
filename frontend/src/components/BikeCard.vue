@@ -29,7 +29,7 @@ defineProps({
       </div>
       <div class="bike-footer">
         <div class="bike-rating"><StarIcon /> {{ bike.rating.toFixed(1) }}</div>
-        <a href="#" class="btn btn-primary btn-sm">Book now</a>
+        <button class="btn btn-primary btn-sm">Book now</button>
       </div>
     </div>
   </article>

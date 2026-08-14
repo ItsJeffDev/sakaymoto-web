@@ -10,26 +10,34 @@ function toggleMenu() {
 function closeMenu() {
   isMobileOpen.value = false
 }
+
+function scrollToSection(sectionId) {
+  const element = document.querySelector(sectionId)
+  if (element) {
+    element.scrollIntoView({ behavior: 'smooth' })
+  }
+  closeMenu()
+}
 </script>
 
 <template>
   <header class="navbar" :class="{ 'mobile-open': isMobileOpen }">
     <div class="container">
-      <a href="#" class="brand" @click="closeMenu">
+      <button class="brand" @click="closeMenu">
         <img src="" alt="">
         SakayMoto
-      </a>
+      </button>
 
       <nav class="nav-links">
-        <a href="#browse" @click="closeMenu">Browse</a>
-        <a href="#how-it-works" @click="closeMenu">How it works</a>
-        <a href="#owners" @click="closeMenu">For owners</a>
-        <a href="#faq" @click="closeMenu">FAQ</a>
+        <button @click="scrollToSection('#browse')">Browse</button>
+        <button @click="scrollToSection('#how-it-works')">How it works</button>
+        <button @click="scrollToSection('#owners')">For owners</button>
+        <button @click="scrollToSection('#faq')">FAQ</button>
       </nav>
 
       <div class="nav-actions">
-        <a href="#" class="btn btn-ghost btn-sm">Log in</a>
-        <a href="#" class="btn btn-primary btn-sm">Sign up</a>
+        <button class="btn btn-ghost btn-sm">Log in</button>
+        <button class="btn btn-primary btn-sm">Sign up</button>
         <button
           class="nav-toggle"
           :class="{ active: isMobileOpen }"

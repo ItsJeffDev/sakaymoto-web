@@ -5,8 +5,8 @@
       <h2 style="margin-top:14px;">Your next ride is a few taps away.</h2>
       <p>Join SakayMoto and skip the Messenger queue entirely.</p>
       <div class="final-cta-actions">
-        <a href="#browse" class="btn btn-primary">Browse motorcycles</a>
-        <a href="#owners" class="btn btn-ghost">List your shop</a>
+        <button class="btn btn-primary" onclick="document.querySelector('#browse')?.scrollIntoView({ behavior: 'smooth' })">Browse motorcycles</button>
+        <button class="btn btn-ghost" onclick="document.querySelector('#owners')?.scrollIntoView({ behavior: 'smooth' })">List your shop</button>
       </div>
     </div>
   </section>

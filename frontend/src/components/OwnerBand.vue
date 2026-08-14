@@ -26,7 +26,7 @@ const stats = [
           <span class="eyebrow" style="color:var(--plate-yellow);">For business owners</span>
           <h2>Run your rental shop without the spreadsheet chaos.</h2>
           <p>Manage your fleet, approve bookings, track payments, and generate reports — all from one dashboard built for how rental shops actually operate.</p>
-          <a href="#" class="btn btn-inverse">List your motorcycles</a>
+          <button class="btn btn-inverse">List your motorcycles</button>
         </div>
         <div class="owner-stats">
           <div class="owner-stat" v-for="stat in stats" :key="stat.title">
