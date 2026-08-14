@@ -41,12 +41,6 @@ const trustItems = [
           <button class="btn btn-primary" @click="scrollToSection('#browse')">Browse motorcycles</button>
           <button class="btn btn-ghost" @click="scrollToSection('#owners')">List your shop</button>
         </div>
-
-        <div class="hero-proof">
-          <div><strong>0</strong><span>Double bookings</span></div>
-          <div><strong>&lt;2min</strong><span>Avg. booking time</span></div>
-          <div><strong>24/7</strong><span>Live availability</span></div>
-        </div>
       </div>
 
       <div class="hero-visual">
