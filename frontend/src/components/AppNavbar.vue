@@ -25,7 +25,6 @@ function scrollToSection(sectionId) {
     <div class="container">
       <button class="brand" @click="closeMenu">
         <img src="../assets/images/logo.png" alt="sakaymoto image">
-        SakayMoto
       </button>
 
       <nav class="nav-links">
