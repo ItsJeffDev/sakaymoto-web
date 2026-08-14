@@ -163,6 +163,12 @@ h1, h2, h3, h4 {
   font-size: 20px;
   color: var(--text-primary);
 }
+.brand img {
+  width: 40px;
+  height: auto;
+  object-fit: contain;
+  flex-shrink: 0;
+}
 .brand-mark {
   width: 34px; height: 34px;
   border-radius: 10px;
@@ -693,7 +699,7 @@ footer { background: var(--bg-deep-alt); color: var(--text-inverse-muted); paddi
   text-transform: uppercase;
   margin-bottom: 16px;
 }
-.footer-col a, .footer-col button { display: block; font-size: 14px; margin-bottom: 11px; transition: color .2s ease; }
+.footer-col a, .footer-col button { display: block; color: gray; font-size: 14px; margin-bottom: 11px; transition: color .2s ease; }
 .footer-col a:hover, .footer-col button:hover { color: var(--plate-yellow); }
 .footer-bottom {
   display: flex;
@@ -706,6 +712,7 @@ footer { background: var(--bg-deep-alt); color: var(--text-inverse-muted); paddi
 }
 .social-row { display: flex; gap: 10px; }
 .social-row a, .social-row button {
+  color: #fff;
   width: 34px; height: 34px;
   border-radius: 50%;
   border: 1px solid rgba(255,255,255,0.14);
