@@ -13,6 +13,13 @@ function submitBooking() {
   document.querySelector('#browse')?.scrollIntoView({ behavior: 'smooth' })
 }
 
+function scrollToSection(sectionId) {
+  const element = document.querySelector(sectionId)
+  if (element) {
+    element.scrollIntoView({ behavior: 'smooth' })
+  }
+}
+
 const trustItems = [
   'Verified rental shops only',
   'Real-time availability',
@@ -31,8 +38,8 @@ const trustItems = [
         <p class="lead">SakayMoto replaces the back-and-forth on Messenger with real-time availability, instant booking, and verified rental shops — all in one place.</p>
 
         <div class="hero-actions">
-          <a href="#browse" class="btn btn-primary">Browse motorcycles</a>
-          <a href="#owners" class="btn btn-ghost">List your shop</a>
+          <button class="btn btn-primary" @click="scrollToSection('#browse')">Browse motorcycles</button>
+          <button class="btn btn-ghost" @click="scrollToSection('#owners')">List your shop</button>
         </div>
 
         <div class="hero-proof">
