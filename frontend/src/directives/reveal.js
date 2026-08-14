@@ -11,7 +11,7 @@ const observer = new IntersectionObserver(
       }
     })
   },
-  { threshold: 0.15 }
+  { threshold: 0.15 },
 )
 
 export const revealDirective = {
@@ -21,5 +21,5 @@ export const revealDirective = {
   },
   unmounted(el) {
     observer.unobserve(el)
-  }
+  },
 }

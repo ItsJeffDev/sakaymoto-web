@@ -13,7 +13,7 @@ export const motorcycles = [
     specs: ['160cc', '2 helmets incl.', 'Top box'],
     pricePerDay: 450,
     status: 'available',
-    accent: 'blue'
+    accent: 'blue',
   },
   {
     id: 2,
@@ -25,7 +25,7 @@ export const motorcycles = [
     specs: ['155cc', '2 helmets incl.', 'Fuel efficient'],
     pricePerDay: 500,
     status: 'available',
-    accent: 'orange'
+    accent: 'orange',
   },
   {
     id: 3,
@@ -37,7 +37,7 @@ export const motorcycles = [
     specs: ['200cc', '1 helmet incl.', 'Digital dash'],
     pricePerDay: 750,
     status: 'available',
-    accent: 'navy'
+    accent: 'navy',
   },
   {
     id: 4,
@@ -49,7 +49,7 @@ export const motorcycles = [
     specs: ['125cc', '2 helmets incl.', 'Underseat storage'],
     pricePerDay: 400,
     status: 'available',
-    accent: 'blue'
+    accent: 'blue',
   },
   {
     id: 5,
@@ -61,7 +61,7 @@ export const motorcycles = [
     specs: ['125cc', '2 helmets incl.', 'Great on gas'],
     pricePerDay: 380,
     status: 'available',
-    accent: 'orange'
+    accent: 'orange',
   },
   {
     id: 6,
@@ -73,13 +73,13 @@ export const motorcycles = [
     specs: ['150cc', '1 helmet incl.', 'Full fairing'],
     pricePerDay: 700,
     status: 'available',
-    accent: 'navy'
-  }
+    accent: 'navy',
+  },
 ]
 
 export const catalogFilters = [
   { value: 'all', label: 'All' },
   { value: 'scooter', label: 'Scooter' },
   { value: 'underbone', label: 'Underbone' },
-  { value: 'sport', label: 'Sport' }
+  { value: 'sport', label: 'Sport' },
 ]

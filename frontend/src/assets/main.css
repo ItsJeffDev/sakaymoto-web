@@ -35,7 +35,10 @@ body {
   overflow-x: hidden;
 }
 
-h1, h2, h3, h4 {
+h1,
+h2,
+h3,
+h4 {
   font-family: var(--ff-display);
   color: var(--navy);
   line-height: 1.15;
@@ -47,13 +50,21 @@ a {
   text-decoration: none;
 }
 
-img, svg {
+img,
+svg {
   display: block;
   max-width: 100%;
 }
 
-ul { list-style: none; }
-button { font-family: inherit; cursor: pointer; border: none; background: none; }
+ul {
+  list-style: none;
+}
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+}
 
 /* ===== Layout utilities ===== */
 .container {
@@ -63,15 +74,30 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   padding: 0 24px;
 }
 
-.section { padding: 100px 0; }
-
-@media (max-width: 760px) {
-  .section { padding: 70px 0; }
+.section {
+  padding: 100px 0;
 }
 
-.section-head { max-width: 640px; margin-bottom: 56px; }
-.section-head p { color: var(--ink-soft); font-size: 1.05rem; margin-top: 14px; }
-.section-head.center { margin-left: auto; margin-right: auto; text-align: center; }
+@media (max-width: 760px) {
+  .section {
+    padding: 70px 0;
+  }
+}
+
+.section-head {
+  max-width: 640px;
+  margin-bottom: 56px;
+}
+.section-head p {
+  color: var(--ink-soft);
+  font-size: 1.05rem;
+  margin-top: 14px;
+}
+.section-head.center {
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+}
 
 .eyebrow {
   display: inline-flex;
@@ -100,35 +126,83 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   font-size: 0.95rem;
   padding: 15px 28px;
   border-radius: 12px;
-  transition: transform .18s ease, box-shadow .18s ease, background .18s ease, color .18s ease;
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    background 0.18s ease,
+    color 0.18s ease;
   white-space: nowrap;
 }
-.btn-primary { background: var(--orange); color: #fff; box-shadow: 0 12px 24px -8px rgba(255, 106, 61, 0.55); }
-.btn-primary:hover { background: var(--orange-deep); transform: translateY(-2px); }
-.btn-outline { border: 1.5px solid rgba(255, 255, 255, 0.5); color: #fff; }
-.btn-outline:hover { background: rgba(255, 255, 255, 0.12); }
-.btn-navy { background: var(--navy); color: #fff; }
-.btn-navy:hover { background: var(--navy-deep); transform: translateY(-2px); }
-.btn-ghost-blue { border: 1.5px solid var(--line); color: var(--navy); background: #fff; }
-.btn-ghost-blue:hover { border-color: var(--blue); color: var(--blue); }
-.btn-sm { padding: 10px 18px; font-size: 0.85rem; border-radius: 10px; }
-.btn-block { width: 100%; }
+.btn-primary {
+  background: var(--orange);
+  color: #fff;
+  box-shadow: 0 12px 24px -8px rgba(255, 106, 61, 0.55);
+}
+.btn-primary:hover {
+  background: var(--orange-deep);
+  transform: translateY(-2px);
+}
+.btn-outline {
+  border: 1.5px solid rgba(255, 255, 255, 0.5);
+  color: #fff;
+}
+.btn-outline:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+.btn-navy {
+  background: var(--navy);
+  color: #fff;
+}
+.btn-navy:hover {
+  background: var(--navy-deep);
+  transform: translateY(-2px);
+}
+.btn-ghost-blue {
+  border: 1.5px solid var(--line);
+  color: var(--navy);
+  background: #fff;
+}
+.btn-ghost-blue:hover {
+  border-color: var(--blue);
+  color: var(--blue);
+}
+.btn-sm {
+  padding: 10px 18px;
+  font-size: 0.85rem;
+  border-radius: 10px;
+}
+.btn-block {
+  width: 100%;
+}
 
 /* ===== Reveal-on-scroll (paired with v-reveal directive) ===== */
 .reveal {
   opacity: 0;
   transform: translateY(24px);
-  transition: opacity .7s ease, transform .7s ease;
+  transition:
+    opacity 0.7s ease,
+    transform 0.7s ease;
 }
-.reveal.show { opacity: 1; transform: translateY(0); }
+.reveal.show {
+  opacity: 1;
+  transform: translateY(0);
+}
 
 @media (prefers-reduced-motion: reduce) {
-  .reveal { opacity: 1; transform: none; transition: none; }
-  html { scroll-behavior: auto; }
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  html {
+    scroll-behavior: auto;
+  }
 }
 
 /* ===== Accessibility ===== */
-a:focus-visible, button:focus-visible, input:focus-visible {
+a:focus-visible,
+button:focus-visible,
+input:focus-visible {
   outline: 2px solid var(--blue);
   outline-offset: 2px;
 }
