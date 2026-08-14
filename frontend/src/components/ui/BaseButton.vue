@@ -3,15 +3,15 @@ defineProps({
   variant: {
     type: String,
     default: 'primary', // primary | outline | navy | ghost
-    validator: (v) => ['primary', 'outline', 'navy', 'ghost'].includes(v)
+    validator: (v) => ['primary', 'outline', 'navy', 'ghost'].includes(v),
   },
   size: {
     type: String,
-    default: 'md' // md | sm
+    default: 'md', // md | sm
   },
   block: { type: Boolean, default: false },
   tag: { type: String, default: 'button' }, // 'button' | 'a'
-  href: { type: String, default: '#' }
+  href: { type: String, default: '#' },
 })
 
 defineEmits(['click'])
@@ -20,7 +20,7 @@ const variantClass = {
   primary: 'btn-primary',
   outline: 'btn-outline',
   navy: 'btn-navy',
-  ghost: 'btn-ghost-blue'
+  ghost: 'btn-ghost-blue',
 }
 </script>
 

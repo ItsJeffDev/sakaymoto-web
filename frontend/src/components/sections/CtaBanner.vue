@@ -18,7 +18,9 @@ const modal = useModalStore()
 </template>
 
 <style scoped>
-.cta-section { padding-top: 0; }
+.cta-section {
+  padding-top: 0;
+}
 .cta-banner {
   background: linear-gradient(120deg, var(--orange), var(--orange-deep));
   border-radius: 24px;
@@ -29,12 +31,27 @@ const modal = useModalStore()
   gap: 30px;
   flex-wrap: wrap;
 }
-.cta-banner h2 { color: #fff; font-size: 1.9rem; }
-.cta-banner p { color: rgba(255, 255, 255, 0.85); margin-top: 8px; }
-.cta-banner .btn-navy { background: #fff; color: var(--orange-deep); }
-.cta-banner .btn-navy:hover { background: #fff5f0; }
+.cta-banner h2 {
+  color: #fff;
+  font-size: 1.9rem;
+}
+.cta-banner p {
+  color: rgba(255, 255, 255, 0.85);
+  margin-top: 8px;
+}
+.cta-banner .btn-navy {
+  background: #fff;
+  color: var(--orange-deep);
+}
+.cta-banner .btn-navy:hover {
+  background: #fff5f0;
+}
 
 @media (max-width: 760px) {
-  .cta-banner { padding: 40px 26px; text-align: center; justify-content: center; }
+  .cta-banner {
+    padding: 40px 26px;
+    text-align: center;
+    justify-content: center;
+  }
 }
 </style>

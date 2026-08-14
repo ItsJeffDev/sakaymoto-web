@@ -8,7 +8,7 @@ const exploreLinks = [
   { label: 'Motorcycles', href: '#motorcycles' },
   { label: 'How It Works', href: '#how' },
   { label: 'For Shop Owners', href: '#owners' },
-  { label: 'Reviews', href: '#testimonials' }
+  { label: 'Reviews', href: '#testimonials' },
 ]
 </script>
 
@@ -18,7 +18,10 @@ const exploreLinks = [
       <div class="foot-grid">
         <div class="foot-brand">
           <a href="#home" class="brand">Sakay<span class="dot">Moto</span></a>
-          <p>A web-based motorcycle rental platform built to digitalize booking and management for local motorcycle rental businesses.</p>
+          <p>
+            A web-based motorcycle rental platform built to digitalize booking and management for
+            local motorcycle rental businesses.
+          </p>
           <div class="social-row">
             <a href="#" aria-label="Facebook"><Facebook :size="16" /></a>
             <a href="#" aria-label="Instagram"><Instagram :size="16" /></a>
@@ -29,7 +32,9 @@ const exploreLinks = [
         <div>
           <h5>Explore</h5>
           <ul>
-            <li v-for="link in exploreLinks" :key="link.href"><a :href="link.href">{{ link.label }}</a></li>
+            <li v-for="link in exploreLinks" :key="link.href">
+              <a :href="link.href">{{ link.label }}</a>
+            </li>
           </ul>
         </div>
 
@@ -62,29 +67,103 @@ const exploreLinks = [
 </template>
 
 <style scoped>
-footer { background: var(--navy-deep); color: rgba(255, 255, 255, 0.7); padding-top: 80px; }
-.foot-grid { display: grid; grid-template-columns: 1.4fr 1fr 1fr 1.2fr; gap: 40px; padding-bottom: 50px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
-.brand { display: flex; align-items: center; gap: 10px; font-family: var(--ff-display); font-weight: 800; font-size: 1.3rem; }
-.foot-brand .brand { color: #fff; margin-bottom: 14px; }
-.brand .dot { color: var(--orange); }
-.foot-brand p { font-size: 0.88rem; max-width: 280px; margin-bottom: 20px; }
+footer {
+  background: var(--navy-deep);
+  color: rgba(255, 255, 255, 0.7);
+  padding-top: 80px;
+}
+.foot-grid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr 1.2fr;
+  gap: 40px;
+  padding-bottom: 50px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--ff-display);
+  font-weight: 800;
+  font-size: 1.3rem;
+}
+.foot-brand .brand {
+  color: #fff;
+  margin-bottom: 14px;
+}
+.brand .dot {
+  color: var(--orange);
+}
+.foot-brand p {
+  font-size: 0.88rem;
+  max-width: 280px;
+  margin-bottom: 20px;
+}
 
-.social-row { display: flex; gap: 10px; }
-.social-row a { width: 36px; height: 36px; border-radius: 9px; background: rgba(255, 255, 255, 0.08); display: flex; align-items: center; justify-content: center; transition: background .2s; color: #fff; }
-.social-row a:hover { background: var(--orange); }
+.social-row {
+  display: flex;
+  gap: 10px;
+}
+.social-row a {
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+  color: #fff;
+}
+.social-row a:hover {
+  background: var(--orange);
+}
 
-footer h5 { font-family: var(--ff-display); color: #fff; font-size: 0.88rem; margin-bottom: 20px; letter-spacing: .03em; }
-footer ul li { margin-bottom: 12px; font-size: 0.87rem; }
-footer ul li a:hover { color: #fff; }
-.foot-contact li { display: flex; gap: 10px; font-size: 0.87rem; margin-bottom: 16px; }
-.foot-contact li :deep(svg) { stroke: var(--orange); flex-shrink: 0; margin-top: 2px; }
+footer h5 {
+  font-family: var(--ff-display);
+  color: #fff;
+  font-size: 0.88rem;
+  margin-bottom: 20px;
+  letter-spacing: 0.03em;
+}
+footer ul li {
+  margin-bottom: 12px;
+  font-size: 0.87rem;
+}
+footer ul li a:hover {
+  color: #fff;
+}
+.foot-contact li {
+  display: flex;
+  gap: 10px;
+  font-size: 0.87rem;
+  margin-bottom: 16px;
+}
+.foot-contact li :deep(svg) {
+  stroke: var(--orange);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
 
-.foot-bottom { display: flex; justify-content: space-between; align-items: center; padding: 26px 0; font-size: 0.8rem; flex-wrap: wrap; gap: 10px; }
+.foot-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 26px 0;
+  font-size: 0.8rem;
+  flex-wrap: wrap;
+  gap: 10px;
+}
 
 @media (max-width: 980px) {
-  .foot-grid { grid-template-columns: 1fr 1fr; row-gap: 40px; }
+  .foot-grid {
+    grid-template-columns: 1fr 1fr;
+    row-gap: 40px;
+  }
 }
 @media (max-width: 760px) {
-  .foot-grid { grid-template-columns: 1fr; }
+  .foot-grid {
+    grid-template-columns: 1fr;
+  }
 }
 </style>
