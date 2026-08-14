@@ -36,7 +36,7 @@
         </div>
       </div>
       <div class="footer-bottom">
-        <span>© 2026 SakayMoto. Built by Jeff Kolin Miranda.</span>
+        <span>© 2026 SakayMoto.</span>
         <span>Made for local rental shops, everywhere.</span>
       </div>
     </div>

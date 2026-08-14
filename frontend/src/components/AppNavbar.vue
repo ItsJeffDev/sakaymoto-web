@@ -24,7 +24,7 @@ function scrollToSection(sectionId) {
   <header class="navbar" :class="{ 'mobile-open': isMobileOpen }">
     <div class="container">
       <button class="brand" @click="closeMenu">
-        <img src="" alt="">
+        <img src="../assets/images/logo.png" alt="sakaymoto image">
         SakayMoto
       </button>
 
