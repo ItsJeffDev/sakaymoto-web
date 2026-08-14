@@ -1,8 +1,4 @@
-
-<script setup>
-
-</script>
-
+<script setup></script>
 
 <template>
   <div class="Booking">
@@ -10,6 +6,4 @@
   </div>
 </template>
 
-<style>
-
-</style>
+<style></style>

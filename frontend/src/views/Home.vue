@@ -1,196 +1,253 @@
-<script setup>
-</script>
-
 <template>
-  <div class="Home">
-    <section class="section-1">
-      <div class="section-1-content">
-
-        <div class="section-1-image">
-          <img src="../assets/images/sectionImg.png" alt="Motorcycle" />
-        </div>
-
-        <div class="section-1-title">
-          <h1>Rent Your Dream Motorcycle</h1>
-          <p>
-            Explore our collection of premium motorcycles and enjoy a smooth ride
-            wherever you go.
-          </p>
-          <button>Explore Motorcycles</button>
-        </div>
-
+  <section class="section-1">
+    <div class="section-1-container">
+      <!-- Motorcycle Image -->
+      <div class="section-1-image">
+        <img src="../assets/images/sectionImg.png" alt="Motorcycle" />
       </div>
-    </section>
-  </div>
+
+      <!-- Text Content -->
+      <div class="section-1-title">
+        <h1>Rent Your Dream Motorcycle</h1>
+
+        <p>
+          Explore our collection of premium motorcycles and enjoy a smooth ride
+          wherever you go.
+        </p>
+
+        <button type="button">Explore Motorcycles</button>
+      </div>
+    </div>
+  </section>
 </template>
 
 <style scoped>
-.Home {
-  width: 100%;
-  max-width: 1200px;
-  padding-top: 50px ;
-  margin: auto;
+/* ========================================
+   RESET
+======================================== */
+
+* {
+  box-sizing: border-box;
 }
+
+/* ========================================
+   SECTION
+======================================== */
 
 .section-1 {
   width: 100%;
-  height: 520px;
+  min-height: 100vh;
+
+  display: flex;
+  align-items: center;
+
+  padding: 80px 5%;
 }
 
-.section-1-content {
+/* ========================================
+   CONTAINER
+======================================== */
+
+.section-1-container {
   width: 100%;
-  height: 100%;
+  max-width: 1200px;
+
+  margin: 0 auto;
 
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 50px;
+
+  gap: 60px;
 }
 
-/* LEFT IMAGE */
+/* ========================================
+   IMAGE
+======================================== */
+
 .section-1-image {
   flex: 1;
+
   display: flex;
   justify-content: center;
+  align-items: center;
 }
 
 .section-1-image img {
   width: 100%;
   max-width: 600px;
   height: auto;
+
+  display: block;
+
   object-fit: contain;
 }
 
+/* ========================================
+   TEXT
+======================================== */
 
-/* RIGHT TEXT */
 .section-1-title {
   flex: 1;
+  max-width: 550px;
 }
 
 .section-1-title h1 {
-  font-size: 48px;
-  font-weight: 700;
-  margin-bottom: 20px;
+  font-size: clamp(2.5rem, 5vw, 4.5rem);
+  line-height: 1.1;
+
+  margin: 0 0 25px;
 }
 
 .section-1-title p {
-  font-size: 18px;
-  line-height: 1.6;
-  margin-bottom: 30px;
+  font-size: 1.1rem;
+  line-height: 1.7;
+
+  color: #666;
+
+  max-width: 500px;
+
+  margin: 0 0 30px;
 }
 
+/* ========================================
+   BUTTON
+======================================== */
+
 .section-1-title button {
-  padding: 12px 30px;
   border: none;
-  border-radius: 30px;
-  background: var(--primary-color);
+
+  background-color: #111;
   color: white;
-  font-weight: 700;
+
+  padding: 15px 28px;
+
+  border-radius: 6px;
+
+  font-size: 1rem;
+  font-weight: 600;
+
   cursor: pointer;
-}
 
-
-/* MOBILE */
-@media (max-width:768px) {
-  .section-1-content {
-    flex-direction: column;
-    text-align: center;
-  }
-
-  .section-1-title h1 {
-    font-size: 32px;
-  }
-
-  .section-1 {
-    height: auto;
-  }
-}
-
-
-/* IMAGE ANIMATION */
-.section-1-image {
-  animation: slideLeft 1s ease-out forwards;
-}
-
-.section-1-image img {
-  animation: float 3s ease-in-out infinite;
-}
-
-
-/* TEXT ANIMATION */
-.section-1-title {
-  animation: slideRight 1s ease-out forwards;
-}
-
-.section-1-title h1 {
-  animation: fadeUp 1s ease-out 0.3s both;
-}
-
-.section-1-title p {
-  animation: fadeUp 1s ease-out 0.5s both;
-}
-
-.section-1-title button {
-  animation: fadeUp 1s ease-out 0.7s both;
-}
-
-
-/* BUTTON HOVER */
-.section-1-title button {
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition: 0.3s ease;
 }
 
 .section-1-title button:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+  background-color: #333;
 }
 
+/* ========================================
+   TABLET
+======================================== */
 
-/* KEYFRAMES */
-
-@keyframes slideLeft {
-  from {
-    opacity: 0;
-    transform: translateX(-80px);
+@media (max-width: 1024px) {
+  .section-1 {
+    padding: 60px 5%;
   }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
 
-
-@keyframes slideRight {
-  from {
-    opacity: 0;
-    transform: translateX(80px);
+  .section-1-container {
+    gap: 40px;
   }
-  to {
-    opacity: 1;
-    transform: translateX(0);
+
+  .section-1-title h1 {
+    font-size: clamp(2.2rem, 5vw, 3.5rem);
+  }
+
+  .section-1-title p {
+    font-size: 1rem;
   }
 }
 
+/* ========================================
+   MOBILE
+======================================== */
 
-@keyframes fadeUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
+@media (max-width: 768px) {
+  .section-1 {
+    min-height: auto;
+
+    padding: 60px 20px;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+
+  .section-1-container {
+    /* Side by side → stacked */
+    flex-direction: column;
+
+    gap: 40px;
+
+    text-align: center;
+  }
+
+  /* Image */
+
+  .section-1-image {
+    width: 100%;
+
+    order: 1;
+  }
+
+  .section-1-image img {
+    width: 100%;
+
+    max-width: 500px;
+  }
+
+  /* Text */
+
+  .section-1-title {
+    width: 100%;
+    max-width: 600px;
+
+    order: 2;
+  }
+
+  .section-1-title h1 {
+    font-size: clamp(2rem, 9vw, 3rem);
+
+    margin-bottom: 20px;
+  }
+
+  .section-1-title p {
+    margin-left: auto;
+    margin-right: auto;
+
+    font-size: 1rem;
+
+    line-height: 1.6;
+  }
+
+  /* Button */
+
+  .section-1-title button {
+    padding: 14px 24px;
   }
 }
 
+/* ========================================
+   SMALL PHONE
+======================================== */
 
-@keyframes float {
-  0%, 100% {
-    transform: translateX(0);
+@media (max-width: 480px) {
+  .section-1 {
+    padding: 40px 15px;
   }
 
-  50% {
-    transform: translateX(-12px);
+  .section-1-container {
+    gap: 30px;
+  }
+
+  .section-1-title h1 {
+    font-size: 2rem;
+  }
+
+  .section-1-title p {
+    font-size: 0.95rem;
+  }
+
+  .section-1-title button {
+    width: 100%;
+
+    padding: 14px 20px;
   }
 }
 </style>
