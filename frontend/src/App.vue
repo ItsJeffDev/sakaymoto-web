@@ -1,19 +1,23 @@
 <script setup>
-import Navbar from "./components/Navigation-com/Navbar.vue";
+import AppNavbar from './components/AppNavbar.vue'
+import HeroSection from './components/HeroSection.vue'
+import WhySection from './components/WhySection.vue'
+import CatalogSection from './components/CatalogSection.vue'
+import HowItWorks from './components/HowItWorks.vue'
+import OwnerBand from './components/OwnerBand.vue'
+import Testimonials from './components/Testimonials.vue'
+import FinalCta from './components/FinalCta.vue'
+import AppFooter from './components/AppFooter.vue'
 </script>
 
 <template>
-  <div>
-    <Navbar />
-
-    <main class="Page-content">
-      <router-view />
-    </main>
-  </div>
+  <AppNavbar />
+  <HeroSection />
+  <WhySection />
+  <CatalogSection />
+  <HowItWorks />
+  <OwnerBand />
+  <Testimonials />
+  <FinalCta />
+  <AppFooter />
 </template>
-
-<style>
- .Page-content {
-  padding-top: 95px;
- }
-</style>

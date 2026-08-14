@@ -1,173 +1,187 @@
 @import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700&display=swap");
 
+:root {
+  --navbar-bg: rgba(255, 255, 255, 0.98);
+  --navbar-border: rgba(15, 23, 42, 0.08);
+  --navbar-shadow: rgba(15, 23, 42, 0.08);
+  --link-color: #1f2937;
+  --link-hover: #047a4b;
+  --button-color: #04995b;
+  --button-color-dark: #047248;
+}
+
+/* =====================================================
+   NAVBAR
+===================================================== */
+
 .Navbar {
-  width: 90%;
-  max-width: 1200px;
-  height: clamp(70px, 8vw, 90px);
+  width: 100%;
   position: fixed;
-  top: 2%;
-  left: 50%;
-  transform: translateX(-50%);
-  background: transparent;
-  font-family: "Montserrat", sans-serif;
+  top: 0;
+  left: 0;
   z-index: 1000;
+  backdrop-filter: saturate(180%) blur(18px);
 }
+
 .Navbar-in {
-  height: 100%;
-  max-width: 1000px;
-  border-radius: 80px;
-  padding: 0 3%;
-  margin: auto;
-  background: var(--primary-light);
+  width: min(96%, 1240px);
+  height: 76px;
+  margin: 0 auto;
+  padding: 0 30px;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  position: relative;
+  justify-content: space-between;
+  background: var(--navbar-bg);
+  border-bottom: 1px solid var(--navbar-border);
+  box-shadow: 0 12px 35px var(--navbar-shadow);
+  border-radius: 0 0 16px 16px;
 }
 
+/* =====================================================
+   LOGO
+===================================================== */
 
-
-.Navbar-in::before {
-  content: "";
-  position: absolute;
-
-  background: rgba(255, 255, 255, 0.12);
+.Logo {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
 }
 
-/* Logo */
 .Logo img {
-  width: clamp(85px, 10vw, 120px);
+  width: clamp(90px, 10vw, 122px);
   height: auto;
+  display: block;
 }
 
-/* Navigation */
+/* =====================================================
+   NAVIGATION
+===================================================== */
+
 .Nav-links ul {
   display: flex;
   align-items: center;
-  gap: clamp(15px, 3vw, 35px);
-
+  gap: clamp(20px, 2vw, 28px);
   list-style: none;
   margin: 0;
   padding: 0;
 }
 
+.Nav-links ul li {
+  display: flex;
+  align-items: center;
+}
+
 .Nav-links ul li a {
   position: relative;
-
-  color: #000;
+  color: var(--link-color);
   text-decoration: none;
-
-  font-size: clamp(14px, 1.3vw, 16px);
+  font-size: clamp(14px, 1.1vw, 16px);
   font-weight: 600;
-
-  padding-bottom: 8px;
-
-  transition: color 0.3s ease;
+  letter-spacing: 0.02em;
+  padding: 8px 0;
+  transition: color 0.22s ease;
 }
 
-/* Underline animation */
 .Nav-links ul li a::after {
   content: "";
-
   position: absolute;
-  left: 50%;
-  bottom: 0;
-
+  left: 0;
+  bottom: -2px;
   width: 0;
-  height: 3px;
-
-  background: var(--primary-color);
-  border-radius: 10px;
-
-  transform: translateX(-50%);
-  transition: width 0.3s ease;
+  height: 2px;
+  background: var(--button-color);
+  border-radius: 999px;
+  transition: width 0.22s ease;
 }
 
-/* Hover */
-.Nav-links ul li a:hover {
-  color: var(--primary-color);
-}
-
-.Nav-links ul li a:hover::after {
-  width: 100%;
-}
-
-/* Selected / Active link */
+.Nav-links ul li a:hover,
 .Nav-links ul li a.active {
-  color: white;
+  color: var(--link-hover);
 }
 
+.Nav-links ul li a:hover::after,
 .Nav-links ul li a.active::after {
   width: 100%;
 }
 
+/* =====================================================
+   NAV ACTIONS
+===================================================== */
+
 .Nav-actions {
   display: flex;
   align-items: center;
-  gap: 12px;
-  position: relative;
-  z-index: 1100;
+  gap: 14px;
+  flex-shrink: 0;
 }
 
-/* Rent Button */
+/* =====================================================
+   RENT BUTTON
+===================================================== */
+
 .Nav-btn a {
-  padding: clamp(10px, 2vw, 12px) clamp(18px, 3vw, 25px);
-
-  font-size: clamp(14px, 1.2vw, 15px);
-
-  background: var(--primary-color);
-  color: white;
-
-  border-radius: 30px;
-
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 24px;
+  background: var(--button-color);
+  color: #ffffff;
+  border-radius: 14px;
   text-decoration: none;
   font-weight: 700;
-
-  transition: all 0.3s ease;
+  font-size: 0.95rem;
+  letter-spacing: 0.04em;
+  transition:
+    background-color 0.22s ease,
+    transform 0.22s ease,
+    box-shadow 0.22s ease;
 }
 
 .Nav-btn a:hover {
-  opacity: 0.85;
-  transform: translateY(-2px);
+  background: var(--button-color-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 12px 20px rgba(4, 153, 91, 0.16);
 }
 
+/* =====================================================
+   HAMBURGER
+===================================================== */
+
 .Hamburger {
-  width: 48px;
-  height: 48px;
-
-  border-radius: 50%;
-  background: white;
-
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.94);
   display: none;
   justify-content: center;
   align-items: center;
   flex-direction: column;
-
-  gap: 5px;
-
+  gap: 6px;
   cursor: pointer;
-
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  transition:
+    transform 0.22s ease,
+    box-shadow 0.22s ease;
 }
 
 .Hamburger:hover {
-  transform: scale(1.05);
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
+  transform: scale(1.02);
+  box-shadow: 0 14px 24px rgba(15, 23, 42, 0.12);
 }
 
 .Hamburger span {
-  width: 22px;
-  height: 3px;
-
-  background: var(--primary-color);
-
-  border-radius: 20px;
-
-  transition: 0.3s;
+  width: 20px;
+  height: 2px;
+  background: var(--link-color);
+  border-radius: 999px;
+  transition:
+    transform 0.22s ease,
+    opacity 0.22s ease;
 }
 
 .Hamburger.active span:nth-child(1) {
-  transform: translateY(8px) rotate(45deg);
+  transform: translateY(7px) rotate(45deg);
 }
 
 .Hamburger.active span:nth-child(2) {
@@ -175,80 +189,156 @@
 }
 
 .Hamburger.active span:nth-child(3) {
-  transform: translateY(-8px) rotate(-45deg);
+  transform: translateY(-7px) rotate(-45deg);
 }
 
+/* =====================================================
+   MOBILE BUTTON
+===================================================== */
+
+.Mobile-btn {
+  display: none;
+}
+
+.Mobile-btn a {
+  display: block;
+  width: 100%;
+  text-align: center;
+  background: var(--button-color);
+  color: #ffffff;
+  padding: 14px;
+  border-radius: 14px;
+  text-decoration: none;
+  font-weight: 700;
+}
+
+/* =====================================================
+   TABLET
+   992px
+===================================================== */
+
 @media (max-width: 992px) {
-  .Navbar {
-    width: 95%;
+  .Navbar-in {
+    padding: 0 22px;
   }
 
   .Nav-links ul {
     gap: 20px;
   }
-}
 
-@media (max-width: 768px) {
-  .Hamburger {
-    display: flex;
-  }
-
-  .Nav-btn {
-    display: block;
+  .Nav-links ul li a,
+  .Nav-btn a {
+    font-size: 14px;
   }
 
   .Nav-btn a {
-    padding: 10px 18px;
-    font-size: 14px;
+    padding: 0 20px;
   }
+}
+
+/* =====================================================
+   MOBILE
+   768px
+===================================================== */
+
+@media (max-width: 768px) {
+  .Navbar-in {
+    width: 100%;
+    padding: 0 16px;
+    height: 70px;
+    border-radius: 0 0 16px 16px;
+  }
+
+  .Logo img {
+    width: 88px;
+  }
+
   .Nav-links {
     position: absolute;
-
-    top: 85px;
+    top: calc(100% + 8px);
     left: 0;
-    right: 0;
-
-    margin: auto;
-
-    background: white;
-
-    border-radius: 25px;
-
-    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);
-
-    padding: 25px;
-
+    width: 100%;
+    padding: 22px;
+    background: rgba(255, 255, 255, 0.98);
+    border-radius: 18px;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    box-shadow: 0 18px 42px rgba(15, 23, 42, 0.12);
     opacity: 0;
     visibility: hidden;
-
-    transform: translateY(-20px);
-
+    pointer-events: none;
+    transform: translateY(-10px);
+    transition:
+      opacity 0.22s ease,
+      visibility 0.22s ease,
+      transform 0.22s ease;
   }
 
   .Nav-links.active {
     opacity: 1;
     visibility: visible;
+    pointer-events: auto;
     transform: translateY(0);
-    background: var(--primary-light);
-    border-radius: 50px;
-    margin: auto;
   }
 
   .Nav-links ul {
     flex-direction: column;
-    gap: 25px;
+    align-items: stretch;
+    gap: 16px;
+  }
+
+  .Nav-links ul li {
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .Nav-links ul li a {
+    display: block;
+    width: 100%;
+    font-size: 15px;
+    padding: 12px 0;
+  }
+
+  .Nav-btn {
+    display: none;
   }
 
   .Mobile-btn {
+    display: block;
     width: 100%;
+    margin-top: 8px;
   }
 
-  .Mobile-btn a {
-    display: block;
-    text-align: center;
-    background: var(--primary-color);
-    color: white;
-    padding: 12px;
-    border-radius: 30px;
+  .Hamburger {
+    display: flex;
+  }
+}
+
+/* =====================================================
+   SMALL MOBILE
+   480px
+===================================================== */
+
+@media (max-width: 480px) {
+  .Navbar-in {
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+
+  .Logo img {
+    width: 78px;
+  }
+
+  .Hamburger {
+    width: 44px;
+    height: 44px;
+  }
+
+  .Nav-links {
+    top: calc(100% + 8px);
+    padding: 18px;
+  }
+
+  .Nav-links ul {
+    gap: 14px;
   }
 }
