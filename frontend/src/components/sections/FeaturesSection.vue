@@ -56,6 +56,7 @@ const features = [
 
 <style scoped>
 .section2 {
+  background: linear-gradient(155deg, var(--ink-soft) 0%, var(--orange-deep) 62%, #0617290e 100%);
 }
 
 .feat-grid {
