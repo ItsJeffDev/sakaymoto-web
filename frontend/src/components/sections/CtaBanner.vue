@@ -54,4 +54,14 @@ const modal = useModalStore()
     justify-content: center;
   }
 }
+
+@media (max-width: 480px) {
+  .cta-banner {
+    padding: 34px 20px;
+    border-radius: 18px;
+  }
+  .cta-banner h2 {
+    font-size: 1.5rem;
+  }
+}
 </style>

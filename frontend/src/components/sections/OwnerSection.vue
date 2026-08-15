@@ -20,8 +20,8 @@ const barHeights = [40, 65, 50, 85, 60, 95, 70]
         <span class="eyebrow owner-eyebrow">Behind the Scenes</span>
         <h2>We run our rental shop from one dashboard, not five notebooks</h2>
         <p>
-          We manage our fleet, review requests, and track payments in one place — no more doing
-          this over Messenger and spreadsheets.
+          We manage our fleet, review requests, and track payments in one place — no more doing this
+          over Messenger and spreadsheets.
         </p>
         <ul class="owner-list">
           <li v-for="perk in perks" :key="perk">
@@ -182,6 +182,12 @@ const barHeights = [40, 65, 50, 85, 60, 95, 70]
 
 @media (max-width: 980px) {
   .owner-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 420px) {
+  .dm-stats {
     grid-template-columns: 1fr;
   }
 }

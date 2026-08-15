@@ -124,6 +124,8 @@ onUnmounted(() => document.removeEventListener('keydown', onKeydown))
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 20px;
+  overflow-y: auto;
   z-index: 2000;
   opacity: 0;
   pointer-events: none;
@@ -232,5 +234,15 @@ onUnmounted(() => document.removeEventListener('keydown', onKeydown))
 }
 .form-panel.active {
   display: block;
+}
+
+@media (max-width: 480px) {
+  .modal-box {
+    padding: 26px 22px;
+    border-radius: 16px;
+  }
+  .modal-box h3 {
+    font-size: 1.15rem;
+  }
 }
 </style>
