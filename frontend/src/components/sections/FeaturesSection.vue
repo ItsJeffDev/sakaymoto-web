@@ -36,8 +36,8 @@ const features = [
         <span class="eyebrow">Why SakayMoto</span>
         <h2>Built to fix what Messenger and logbooks couldn't</h2>
         <p>
-          Every feature here maps to a problem local rental shops actually run into — slow replies,
-          unclear availability, and records that live in three different notebooks.
+          Every feature here maps to a problem we actually ran into — slow replies, unclear
+          availability, and records that lived in three different notebooks.
         </p>
       </div>
 

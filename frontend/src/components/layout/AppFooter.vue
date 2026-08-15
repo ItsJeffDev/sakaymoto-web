@@ -7,7 +7,7 @@ const modal = useModalStore()
 const exploreLinks = [
   { label: 'Motorcycles', href: '#motorcycles' },
   { label: 'How It Works', href: '#how' },
-  { label: 'For Shop Owners', href: '#owners' },
+  { label: 'Behind the Scenes', href: '#owners' },
   { label: 'Reviews', href: '#testimonials' },
 ]
 </script>
@@ -19,8 +19,8 @@ const exploreLinks = [
         <div class="foot-brand">
           <a href="#home" class="brand">Sakay<span class="dot">Moto</span></a>
           <p>
-            A web-based motorcycle rental platform built to digitalize booking and management for
-            local motorcycle rental businesses.
+            Our online booking system for motorcycle rentals in Calamba, Laguna — check
+            availability, book, and manage your rental all in one place.
           </p>
           <div class="social-row">
             <a href="#" aria-label="Facebook"><Facebook :size="16" /></a>
@@ -82,7 +82,6 @@ footer {
 .brand {
   display: flex;
   align-items: center;
-  gap: 10px;
   font-family: var(--ff-display);
   font-weight: 800;
   font-size: 1.3rem;

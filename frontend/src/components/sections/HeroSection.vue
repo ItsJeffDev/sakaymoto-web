@@ -16,7 +16,8 @@ const stats = [
         <h1>Renting a motorcycle<br />should feel as fast <em>as riding one.</em></h1>
         <p class="lead">
           SakayMoto replaces the back-and-forth Messenger chats and paper logbooks with real-time
-          availability, instant booking requests, and a dashboard your shop can actually run on.
+          availability, instant booking requests, and a simple dashboard we use to run things
+          smoothly.
         </p>
         <div class="hero-cta">
           <a href="#motorcycles" class="btn btn-primary">Browse Motorcycles</a>
@@ -32,10 +33,9 @@ const stats = [
 
       <div class="hero-visual">
         <div class="hero-card main">
-          <span class="tag">AVAILABLE NOW</span>
-          <img src="../../assets/images/motor_top2-removebg-preview.png" alt="">
+          <img src="../../assets/images/motor_top2-removebg-preview.png" alt="" />
           <div class="price-row">
-            <div><b>Honda Click 125</b> <br><span>Scooter · Automatic</span></div>
+            <div><b>Honda Click 125</b> <br /><span>Scooter · Automatic</span></div>
             <div><b>₱450 </b><span>per day</span></div>
           </div>
         </div>
@@ -119,23 +119,19 @@ const stats = [
 .hero-card.main {
   right: 0;
   top: 10px;
-  width: 88%;
-  height: 360px;
+  width: 90%;
+  height: 560px;
   background: linear-gradient(160deg, #123469, #0b2545);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
 }
-.hero-card.main .tag {
-  align-self: flex-start;
-  background: rgba(255, 255, 255, 0.12);
-  color: #fff;
-  font-size: 0.72rem;
-  font-family: var(--ff-display);
-  font-weight: 600;
-  padding: 6px 12px;
-  border-radius: 999px;
-  letter-spacing: 0.05em;
+
+.hero-card.main img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
 }
 .hero-card.main :deep(.bike-illustration) {
   align-self: center;

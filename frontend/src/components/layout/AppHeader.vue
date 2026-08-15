@@ -12,7 +12,7 @@ const navLinks = [
   { label: 'Home', href: '#home' },
   { label: 'Motorcycles', href: '#motorcycles' },
   { label: 'How It Works', href: '#how' },
-  { label: 'For Shop Owners', href: '#owners' },
+  { label: 'Behind the Scenes', href: '#owners' },
   { label: 'Contact', href: '#contact' },
 ]
 
@@ -75,7 +75,6 @@ header.scrolled {
 .brand {
   display: flex;
   align-items: center;
-  gap: 10px;
   font-family: var(--ff-display);
   font-weight: 800;
   font-size: 1.3rem;

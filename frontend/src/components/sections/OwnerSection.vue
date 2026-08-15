@@ -17,11 +17,11 @@ const barHeights = [40, 65, 50, 85, 60, 95, 70]
   <section class="section owner" id="owners">
     <div class="container owner-grid">
       <div v-reveal>
-        <span class="eyebrow owner-eyebrow">For Shop Owners</span>
-        <h2>Run your rental shop from one dashboard, not five notebooks</h2>
+        <span class="eyebrow owner-eyebrow">Behind the Scenes</span>
+        <h2>We run our rental shop from one dashboard, not five notebooks</h2>
         <p>
-          List your fleet, review requests, and track payments in one place — built for shops still
-          doing this over Messenger and spreadsheets.
+          We manage our fleet, review requests, and track payments in one place — no more doing
+          this over Messenger and spreadsheets.
         </p>
         <ul class="owner-list">
           <li v-for="perk in perks" :key="perk">
@@ -29,7 +29,7 @@ const barHeights = [40, 65, 50, 85, 60, 95, 70]
             {{ perk }}
           </li>
         </ul>
-        <button class="btn btn-primary" @click="modal.open('register')">List Your Shop</button>
+        <button class="btn btn-primary" @click="modal.open('register')">Create an Account</button>
       </div>
 
       <div v-reveal>
