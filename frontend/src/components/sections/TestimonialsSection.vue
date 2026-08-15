@@ -12,8 +12,8 @@ const avatarBg = {
   <section class="section" id="testimonials">
     <div class="container">
       <div class="section-head center" v-reveal>
-        <span class="eyebrow">Riders &amp; Owners</span>
-        <h2>What people say after switching from Messenger</h2>
+        <span class="eyebrow">Our Riders</span>
+        <h2>What our riders say</h2>
       </div>
 
       <div class="test-grid">
