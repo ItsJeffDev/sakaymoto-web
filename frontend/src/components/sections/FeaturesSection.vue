@@ -30,7 +30,7 @@ const features = [
 </script>
 
 <template>
-  <section class="section" id="features">
+  <section class="section section2" id="features">
     <div class="container">
       <div class="section-head" v-reveal>
         <span class="eyebrow">Why SakayMoto</span>
@@ -55,11 +55,15 @@ const features = [
 </template>
 
 <style scoped>
+.section2 {
+}
+
 .feat-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 22px;
 }
+
 .feat-card {
   background: #fff;
   border: 1px solid var(--line);
@@ -70,11 +74,13 @@ const features = [
     box-shadow 0.22s ease,
     border-color 0.22s ease;
 }
+
 .feat-card:hover {
   transform: translateY(-6px);
   box-shadow: var(--shadow);
   border-color: transparent;
 }
+
 .feat-card .icon-tile {
   width: 50px;
   height: 50px;
@@ -84,10 +90,12 @@ const features = [
   justify-content: center;
   margin-bottom: 20px;
 }
+
 .feat-card h3 {
   font-size: 1.08rem;
   margin-bottom: 10px;
 }
+
 .feat-card p {
   color: var(--ink-soft);
   font-size: 0.92rem;
@@ -97,10 +105,12 @@ const features = [
   background: var(--blue-soft);
   color: var(--blue);
 }
+
 .tile-orange {
   background: #fff0e9;
   color: var(--orange-deep);
 }
+
 .tile-navy {
   background: #e7ecf5;
   color: var(--navy);
@@ -111,6 +121,7 @@ const features = [
     grid-template-columns: repeat(2, 1fr);
   }
 }
+
 @media (max-width: 760px) {
   .feat-grid {
     grid-template-columns: 1fr;

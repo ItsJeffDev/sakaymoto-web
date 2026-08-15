@@ -165,4 +165,15 @@ footer ul li a:hover {
     grid-template-columns: 1fr;
   }
 }
+
+@media (max-width: 480px) {
+  footer {
+    padding-top: 56px;
+  }
+  .foot-bottom {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+}
 </style>
