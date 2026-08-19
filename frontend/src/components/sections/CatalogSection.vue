@@ -29,8 +29,8 @@ const accentColor = {
     <div class="container">
       <div class="section-head" v-reveal>
         <span class="eyebrow">The Lineup</span>
-        <h2>Find a motorcycle for the ride you're actually making</h2>
-        <p>
+        <h2 style=" color: var(--navy); ">Find a motorcycle for the ride you're actually making</h2>
+        <p class="eyebrow-desc">
           Scooters for the daily commute, underbones for longer trips, and a few for whenever you
           want something quicker.
         </p>

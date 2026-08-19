@@ -35,7 +35,7 @@ const features = [
       <div class="section-head" v-reveal>
         <span class="eyebrow">Why SakayMoto</span>
         <h2>Built to fix what Messenger and logbooks couldn't</h2>
-        <p>
+        <p class="eyebrow-desc">
           Every feature here maps to a problem we actually ran into — slow replies, unclear
           availability, and records that lived in three different notebooks.
         </p>
@@ -56,7 +56,7 @@ const features = [
 
 <style scoped>
 .section2 {
-  background: linear-gradient(155deg, var(--ink-soft) 0%, var(--orange-deep) 62%, #0617290e 100%);
+  background: linear-gradient(160deg, var(--navy), var(--navy-deep));
 }
 
 .feat-grid {

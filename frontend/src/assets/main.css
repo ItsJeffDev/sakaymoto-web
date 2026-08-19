@@ -9,6 +9,7 @@
   --bg: #f6f8fb;
   --ink: #111826;
   --ink-soft: #5b6472;
+  --ink-desc: rgba(255, 255, 255, 0.72);
   --line: #e4e9f1;
   --radius: 16px;
   --shadow: 0 20px 40px -20px rgba(11, 37, 69, 0.25);
@@ -50,7 +51,6 @@ a {
   text-decoration: none;
 }
 
-img,
 svg {
   display: block;
   max-width: 100%;
@@ -98,6 +98,9 @@ button {
   margin-right: auto;
   text-align: center;
 }
+.section-head h2 {
+  color: #fff;
+}
 
 .eyebrow {
   display: inline-flex;
@@ -113,6 +116,9 @@ button {
   padding: 7px 14px;
   border-radius: 999px;
   margin-bottom: 16px;
+}
+.eyebrow-desc {
+  color: var(--ink-desc);
 }
 
 /* ===== Buttons (also see components/ui/BaseButton.vue) ===== */

@@ -20,9 +20,8 @@ import MotoIcon from '../icons/MotoIcon.vue'
       <div>
         <h1>Renting a motorcycle<br />should feel as fast <em>as riding one.</em></h1>
         <p class="lead">
-          SakayMoto replaces the back-and-forth Messenger chats and paper logbooks with real-time
-          availability, instant booking requests, and a simple dashboard we use to run things
-          smoothly.
+          SakayMoto replaces the back and forth Messenger chats and paper logbooks with real time availability, instant
+          booking requests and a simple dashboard we use to run things smoothly.
         </p>
         <div class="hero-cta">
           <a href="#motorcycles" class="btn btn-primary">Browse Motorcycles</a>
@@ -32,13 +31,9 @@ import MotoIcon from '../icons/MotoIcon.vue'
 
       <div class="hero-visual">
         <span class="visual-glow" aria-hidden="true"></span>
-        <span class="visual-ring" aria-hidden="true"></span>
         <div class="hero-card main">
-          <img
-            src="../../assets/images/motor_top2-removebg-preview.png"
-            alt="Honda Click 125 scooter available for rent"
-            class="bike-img"
-          />
+          <img src="../../assets/images/motor_top2-removebg-preview.png"
+            alt="Honda Click 125 scooter available for rent" class="bike-img" />
           <div class="price-row">
             <div><b>Honda Click 125</b> <br /><span>Scooter · Automatic</span></div>
             <div><b>₱450 </b><span>per day</span></div>
@@ -56,6 +51,7 @@ import MotoIcon from '../icons/MotoIcon.vue'
   overflow: hidden;
   background: linear-gradient(155deg, var(--navy) 0%, var(--navy-deep) 62%, #061729 100%);
 }
+
 .hero::before {
   content: '';
   position: absolute;
@@ -91,6 +87,7 @@ import MotoIcon from '../icons/MotoIcon.vue'
   opacity: 0.55;
   animation: drift 14s ease-in-out infinite;
 }
+
 .blob-orange {
   width: 380px;
   height: 380px;
@@ -98,6 +95,7 @@ import MotoIcon from '../icons/MotoIcon.vue'
   top: -120px;
   background: radial-gradient(circle, rgba(255, 106, 61, 0.55), transparent 70%);
 }
+
 .blob-blue {
   width: 420px;
   height: 420px;
@@ -106,26 +104,32 @@ import MotoIcon from '../icons/MotoIcon.vue'
   background: radial-gradient(circle, rgba(47, 111, 237, 0.45), transparent 70%);
   animation-delay: -6s;
 }
+
 @keyframes drift {
+
   0%,
   100% {
     transform: translate(0, 0) scale(1);
   }
+
   50% {
     transform: translate(20px, -18px) scale(1.06);
   }
 }
+
 .ring {
   position: absolute;
   border-radius: 50%;
   border: 1.5px solid rgba(255, 255, 255, 0.14);
 }
+
 .ring-1 {
   width: 640px;
   height: 640px;
   right: -220px;
   top: -260px;
 }
+
 .ring-2 {
   width: 420px;
   height: 420px;
@@ -133,18 +137,21 @@ import MotoIcon from '../icons/MotoIcon.vue'
   top: -140px;
   border-color: rgba(255, 106, 61, 0.18);
 }
+
 .speed-line {
   position: absolute;
   height: 2px;
   border-radius: 2px;
   background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent);
 }
+
 .line-1 {
   width: 260px;
   left: 4%;
   top: 32%;
   transform: rotate(-8deg);
 }
+
 .line-2 {
   width: 180px;
   left: 10%;
@@ -152,6 +159,7 @@ import MotoIcon from '../icons/MotoIcon.vue'
   transform: rotate(-8deg);
   opacity: 0.6;
 }
+
 .line-3 {
   width: 140px;
   left: 2%;
@@ -174,32 +182,38 @@ import MotoIcon from '../icons/MotoIcon.vue'
   gap: 40px;
   align-items: center;
 }
+
 .hero h1 {
   color: #fff;
   font-size: clamp(2.4rem, 4.4vw, 3.6rem);
   font-weight: 700;
 }
+
 .hero h1 em {
   font-style: normal;
   color: var(--orange);
 }
+
 .hero p.lead {
   color: rgba(255, 255, 255, 0.75);
   font-size: 1.12rem;
   max-width: 520px;
   margin: 22px 0 34px;
 }
+
 .hero-cta {
   display: flex;
   gap: 14px;
   flex-wrap: wrap;
 }
+
 .hero-stats {
   display: flex;
   gap: 34px;
   margin-top: 56px;
   flex-wrap: wrap;
 }
+
 .hero-stats .stat b {
   display: block;
   font-family: var(--ff-display);
@@ -207,6 +221,7 @@ import MotoIcon from '../icons/MotoIcon.vue'
   font-size: 1.7rem;
   font-weight: 700;
 }
+
 .hero-stats .stat span {
   color: rgba(255, 255, 255, 0.6);
   font-size: 0.85rem;
@@ -220,6 +235,7 @@ import MotoIcon from '../icons/MotoIcon.vue'
   align-items: center;
   justify-content: center;
 }
+
 .visual-glow {
   position: absolute;
   width: 90%;
@@ -230,6 +246,7 @@ import MotoIcon from '../icons/MotoIcon.vue'
   filter: blur(10px);
   border-radius: 50%;
 }
+
 .visual-ring {
   position: absolute;
   width: 78%;
@@ -239,6 +256,7 @@ import MotoIcon from '../icons/MotoIcon.vue'
   border-radius: 50%;
   border: 1.5px dashed rgba(255, 255, 255, 0.18);
 }
+
 .hero-card {
   position: relative;
   width: 100%;
@@ -262,9 +280,11 @@ import MotoIcon from '../icons/MotoIcon.vue'
   filter: drop-shadow(0 30px 34px rgba(0, 0, 0, 0.45));
   transition: transform 0.35s ease;
 }
+
 .hero-card:hover .bike-img {
   transform: translateY(-6px) scale(1.02);
 }
+
 .hero-card.main .price-row {
   position: relative;
   display: flex;
@@ -272,10 +292,12 @@ import MotoIcon from '../icons/MotoIcon.vue'
   align-items: flex-end;
   color: #fff;
 }
+
 .hero-card.main .price-row b {
   font-family: var(--ff-display);
   font-size: 1.5rem;
 }
+
 .hero-card.main .price-row span {
   color: rgba(255, 255, 255, 0.55);
   font-size: 0.78rem;
@@ -291,6 +313,7 @@ import MotoIcon from '../icons/MotoIcon.vue'
   .hero-grid {
     grid-template-columns: 1fr;
   }
+
   .hero-visual {
     height: 420px;
     max-width: 460px;
@@ -302,17 +325,21 @@ import MotoIcon from '../icons/MotoIcon.vue'
   .hero {
     padding: 150px 0 90px;
   }
+
   .hero-visual {
     height: 340px;
   }
+
   .hero-card {
     padding: 20px 20px 18px;
     border-radius: 20px;
   }
+
   .hero-stats {
     gap: 22px;
     margin-top: 40px;
   }
+
   .hero-stats .stat b {
     font-size: 1.4rem;
   }
