@@ -121,7 +121,6 @@ button {
   color: var(--ink-desc);
 }
 
-/* ===== Buttons (also see components/ui/BaseButton.vue) ===== */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -139,14 +138,14 @@ button {
     color 0.18s ease;
   white-space: nowrap;
 }
+
 .btn-primary {
   background: var(--orange);
   color: #fff;
-  box-shadow: 0 12px 24px -8px rgba(255, 106, 61, 0.55);
 }
+
 .btn-primary:hover {
   background: var(--orange-deep);
-  transform: translateY(-2px);
 }
 .btn-outline {
   border: 1.5px solid rgba(255, 255, 255, 0.5);
