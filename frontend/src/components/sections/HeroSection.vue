@@ -32,11 +32,11 @@ import MotoIcon from '../icons/MotoIcon.vue'
       <div class="hero-visual">
         <span class="visual-glow" aria-hidden="true"></span>
         <div class="hero-card main">
-          <img src="../../assets/images/motor_top2-removebg-preview.png"
+          <img src="../../assets/images/motor-top.png"
             alt="Honda Click 125 scooter available for rent" class="bike-img" />
           <div class="price-row">
             <div><b>Honda Click 125</b> <br /><span>Scooter · Automatic</span></div>
-            <div><b>₱450 </b><span>per day</span></div>
+            <div><b>₱300 </b><span>per day</span></div>
           </div>
         </div>
       </div>

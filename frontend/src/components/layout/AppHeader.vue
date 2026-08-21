@@ -84,7 +84,7 @@ header {
     background 0.25s ease,
     box-shadow 0.25s ease,
     padding 0.25s ease;
-  padding: 22px 0;
+  padding: 50px 0;
 }
 header.scrolled {
   background: rgba(255, 255, 255, 0.96);
