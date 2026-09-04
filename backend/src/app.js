@@ -2,7 +2,7 @@ const express = require("express");
 const cors = require("cors");
 
 const authRoutes = require("./routes/authRoutes");
-// const motorcycleRoutes = require("./routes/motorcycleRoutes");
+const motorcycleRoutes = require("./routes/motorcycleRoutes");
 
 const app = express();
 
@@ -29,8 +29,7 @@ app.use(
     authRoutes
 );
 
-Your motorcycle routes
-app.use("/api/motorcycles", motorcycleRoutes);
+app.use("/api/motorcycles", authRoutes, motorcycleRoutes);
 
 
 // ============================
