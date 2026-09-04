@@ -1,12 +1,11 @@
 const db = require("../config/db");
+const { getAllMotorcycles } = require("../models/motorcycleModel");
 
 const getMotorcycles = async (req, res) => {
   try {
-    const [motorcycles] = await db.query(
-      "SELECT * FROM motorcycles"
-    );
+    const motorcycles = await getAllMotorcycles();
+    res.status(200).json(motorcycles);
 
-    res.json(motorcycles);
   } catch (error) {
     console.error(error);
 
