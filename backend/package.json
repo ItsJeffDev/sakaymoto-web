@@ -10,7 +10,7 @@
   },
   "scripts": {
     "dev": "nodemon server.js",
-    "start": "node server.js"
+    "start": "nodemon server.js"
   },
   "allowScripts": {
     "bcrypt@6.0.0": true

@@ -29,8 +29,8 @@ app.use(
     authRoutes
 );
 
-// Your motorcycle routes
-// app.use("/api/motorcycles", motorcycleRoutes);
+Your motorcycle routes
+app.use("/api/motorcycles", motorcycleRoutes);
 
 
 // ============================
