@@ -1,15 +1,3 @@
-<<<<<<< HEAD
-const db = require("../config/db");
-
-const getAllUsers = async () => {
-    const [results] = await db.query("SELECT * FROM users");
-    return results;
-};
-
-module.exports = {
-    getAllUsers,
-};
-=======
 const express = require("express");
 
 const {
@@ -29,4 +17,3 @@ router.post("/login", login);
 
 
 module.exports = router;
->>>>>>> 511ca6d (added jwt and setup backend)

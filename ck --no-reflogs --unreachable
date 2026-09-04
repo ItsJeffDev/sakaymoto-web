@@ -1,0 +1,87 @@
+[33m511ca6d[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;32mfeature/upload[m[33m)[m HEAD@{0}: checkout: moving from feature/file-upload to main
+[33m8ab0f56[m[33m ([m[1;31morigin/feature/file-upload[m[33m)[m HEAD@{1}: checkout: moving from main to feature/file-upload
+[33m511ca6d[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;32mfeature/upload[m[33m)[m HEAD@{2}: checkout: moving from feature/file-upload to main
+[33m8ab0f56[m[33m ([m[1;31morigin/feature/file-upload[m[33m)[m HEAD@{3}: checkout: moving from main to feature/file-upload
+[33mdb8b333[m[33m ([m[1;35mrefs/stash[m[33m)[m refs/stash@{0}: WIP on main: 511ca6d added jwt and setup backend
+[33m511ca6d[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;32mfeature/upload[m[33m)[m HEAD@{4}: reset: moving to HEAD
+[33m511ca6d[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;32mfeature/upload[m[33m)[m refs/heads/feature/upload@{0}: branch: Created from main
+[33m511ca6d[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;32mfeature/upload[m[33m)[m HEAD@{5}: checkout: moving from feature/auth-jwt to main
+[33m3c67afe[m[33m ([m[1;31morigin/feature/auth-jwt[m[33m, [m[1;32mfeature/auth-jwt[m[33m)[m refs/remotes/origin/feature/auth-jwt@{0}: update by push
+[33m3c67afe[m[33m ([m[1;31morigin/feature/auth-jwt[m[33m, [m[1;32mfeature/auth-jwt[m[33m)[m refs/heads/feature/auth-jwt@{0}: commit: feat(auth): add JWT authentication and backend setup
+[33m3c67afe[m[33m ([m[1;31morigin/feature/auth-jwt[m[33m, [m[1;32mfeature/auth-jwt[m[33m)[m HEAD@{6}: commit: feat(auth): add JWT authentication and backend setup
+[33m9b39a51[m refs/remotes/origin/feature/auth-jwt@{1}: update by push
+[33m9b39a51[m refs/heads/feature/auth-jwt@{1}: commit: feat: add authentication and JWT
+[33m9b39a51[m HEAD@{7}: commit: feat: add authentication and JWT
+[33m511ca6d[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;32mfeature/upload[m[33m)[m refs/heads/feature/auth-jwt@{2}: branch: Created from HEAD
+[33m511ca6d[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;32mfeature/upload[m[33m)[m HEAD@{8}: checkout: moving from main to feature/auth-jwt
+[33m511ca6d[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;32mfeature/upload[m[33m)[m HEAD@{9}: checkout: moving from main to main
+[33md7a902c[m[33m ([m[1;31morigin/oldSakayMoto[m[33m)[m refs/remotes/origin/oldSakayMoto@{0}: fetch origin: storing head
+[33m511ca6d[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;32mfeature/upload[m[33m)[m HEAD@{10}: rebase (abort): returning to refs/heads/main
+[33m5cb050d[m HEAD@{11}: commit: fix
+[33mad645b1[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m refs/remotes/origin/main@{0}: pull --rebase origin main: fast-forward
+[33mad645b1[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m HEAD@{12}: pull --rebase origin main (start): checkout ad645b10b33a7daff61db433c05ee44e57df69e4
+[33m511ca6d[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;32mfeature/upload[m[33m)[m refs/heads/main@{0}: commit: added jwt and setup backend
+[33m511ca6d[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;32mfeature/upload[m[33m)[m HEAD@{13}: commit: added jwt and setup backend
+[33m91ed4b8[m HEAD@{14}: checkout: moving from feature/user to main
+[33mda3e713[m[33m ([m[1;31morigin/feature/user[m[33m, [m[1;32mfeature/user[m[33m)[m refs/remotes/origin/feature/user@{0}: update by push
+[33mda3e713[m[33m ([m[1;31morigin/feature/user[m[33m, [m[1;32mfeature/user[m[33m)[m refs/heads/feature/user@{0}: commit: feat: add get users endpoint
+[33mda3e713[m[33m ([m[1;31morigin/feature/user[m[33m, [m[1;32mfeature/user[m[33m)[m HEAD@{15}: commit: feat: add get users endpoint
+[33m8ab0f56[m[33m ([m[1;31morigin/feature/file-upload[m[33m)[m refs/heads/feature/user@{1}: branch: Created from HEAD
+[33m8ab0f56[m[33m ([m[1;31morigin/feature/file-upload[m[33m)[m HEAD@{16}: checkout: moving from feature/file-upload to feature/user
+[33m8ab0f56[m[33m ([m[1;31morigin/feature/file-upload[m[33m)[m refs/remotes/origin/feature/file-upload@{0}: update by push
+[33m8ab0f56[m[33m ([m[1;31morigin/feature/file-upload[m[33m)[m HEAD@{17}: commit: feat: set up multer and add sample database data
+[33m91ed4b8[m refs/remotes/origin/feature/file-upload@{1}: update by push
+[33m91ed4b8[m HEAD@{18}: checkout: moving from main to feature/file-upload
+[33m91ed4b8[m refs/remotes/origin/main@{1}: update by push
+[33m91ed4b8[m refs/heads/main@{1}: commit: Changes to port in backend
+[33m91ed4b8[m HEAD@{19}: commit: Changes to port in backend
+[33mbb3eb58[m refs/remotes/origin/main@{2}: update by push
+[33mbb3eb58[m refs/heads/main@{2}: commit: some changes to backend the port
+[33mbb3eb58[m HEAD@{20}: commit: some changes to backend the port
+[33me9dcf28[m refs/remotes/origin/main@{3}: update by push
+[33me9dcf28[m refs/heads/main@{3}: commit: change image
+[33me9dcf28[m HEAD@{21}: commit: change image
+[33m096e36a[m refs/remotes/origin/main@{4}: update by push
+[33m096e36a[m refs/heads/main@{4}: commit: some changes on the text in the section and catalog
+[33m096e36a[m HEAD@{22}: commit: some changes on the text in the section and catalog
+[33m42ce553[m refs/remotes/origin/main@{5}: update by push
+[33m42ce553[m refs/heads/main@{5}: commit: changes to feature 2
+[33m42ce553[m HEAD@{23}: commit: changes to feature 2
+[33mee8c941[m refs/remotes/origin/main@{6}: update by push
+[33mee8c941[m refs/heads/main@{6}: commit: added some backend and also some changes
+[33mee8c941[m HEAD@{24}: commit: added some backend and also some changes
+[33mbbe4798[m refs/remotes/origin/main@{7}: update by push
+[33mbbe4798[m refs/heads/main@{7}: commit: major changes
+[33mbbe4798[m HEAD@{25}: commit: major changes
+[33md8b6d17[m refs/remotes/origin/main@{8}: update by push
+[33md8b6d17[m refs/heads/main@{8}: commit: some changes on the hero section
+[33md8b6d17[m HEAD@{26}: commit: some changes on the hero section
+[33m94ef1b9[m refs/remotes/origin/main@{9}: update by push
+[33m94ef1b9[m refs/heads/main@{9}: commit: v1
+[33m94ef1b9[m HEAD@{27}: commit: v1
+[33m178abdd[m refs/remotes/origin/main@{10}: update by push
+[33m178abdd[m refs/heads/main@{10}: commit: remove v1
+[33m178abdd[m HEAD@{28}: commit: remove v1
+[33md7a902c[m[33m ([m[1;31morigin/oldSakayMoto[m[33m)[m HEAD@{29}: reset: moving to HEAD
+[33md7a902c[m[33m ([m[1;31morigin/oldSakayMoto[m[33m)[m HEAD@{30}: reset: moving to HEAD
+[33md7a902c[m[33m ([m[1;31morigin/oldSakayMoto[m[33m)[m refs/remotes/origin/main@{11}: update by push
+[33md7a902c[m[33m ([m[1;31morigin/oldSakayMoto[m[33m)[m refs/heads/main@{11}: commit: added some
+[33md7a902c[m[33m ([m[1;31morigin/oldSakayMoto[m[33m)[m HEAD@{31}: commit: added some
+[33mac20a5c[m refs/remotes/origin/main@{12}: update by push
+[33mac20a5c[m refs/heads/main@{12}: commit: fix the brand logo to responsive
+[33mac20a5c[m HEAD@{32}: commit: fix the brand logo to responsive
+[33m57f95b1[m refs/remotes/origin/main@{13}: update by push
+[33m57f95b1[m refs/heads/main@{13}: commit: change the text and hyperlink into a button
+[33m57f95b1[m HEAD@{33}: commit: change the text and hyperlink into a button
+[33m7a40f04[m refs/remotes/origin/main@{14}: update by push
+[33m7a40f04[m refs/heads/main@{14}: merge feature/navbar: Fast-forward
+[33m7a40f04[m HEAD@{34}: merge feature/navbar: Fast-forward
+[33m6921177[m HEAD@{35}: checkout: moving from feature/navbar to main
+[33m7a40f04[m HEAD@{36}: checkout: moving from main to feature/navbar
+[33m6921177[m HEAD@{37}: checkout: moving from feature/navbar to main
+[33m7a40f04[m HEAD@{38}: commit: v1 of frontend
+[33m6921177[m HEAD@{39}: checkout: moving from main to feature/navbar
+[33m6921177[m HEAD@{40}: reset: moving to HEAD
+[33m6921177[m refs/heads/main@{15}: clone: from https://github.com/ItsJeffDev/sakaymoto-web.git
+[33m6921177[m refs/remotes/origin/HEAD@{0}: clone: from https://github.com/ItsJeffDev/sakaymoto-web.git
+[33m6921177[m HEAD@{41}: clone: from https://github.com/ItsJeffDev/sakaymoto-web.git
