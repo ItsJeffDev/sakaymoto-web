@@ -1,24 +1,17 @@
-<<<<<<< HEAD
 const db = require("../config/db");
-
-const getAllUsers = async () => {
-    const [results] = await db.query("SELECT * FROM users");
-    return results;
-};
-
-module.exports = {
-    getAllUsers,
-};
-=======
 const express = require("express");
+const router = express.Router();
 
 const {
     register,
     login
 } = require("../controllers/authController");
 
-const router = express.Router();
 
+const getAllUsers = async () => {
+    const [results] = await db.query("SELECT * FROM users");
+    return results;
+};
 
 // Register
 router.post("/register", register);
@@ -28,5 +21,8 @@ router.post("/register", register);
 router.post("/login", login);
 
 
-module.exports = router;
->>>>>>> 511ca6d (added jwt and setup backend)
+module.exports = {
+    getAllUsers,
+    router
+};
+

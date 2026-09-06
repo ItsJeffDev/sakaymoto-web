@@ -10,14 +10,10 @@
     "nodemon": "^3.1.14"
   },
   "scripts": {
-<<<<<<< HEAD
-    "start": "nodemon server.js"
-=======
     "dev": "nodemon server.js",
     "start": "node server.js"
   },
   "allowScripts": {
     "bcrypt@6.0.0": true
->>>>>>> 511ca6d (added jwt and setup backend)
   }
 }
