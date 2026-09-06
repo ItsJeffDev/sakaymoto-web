@@ -6,12 +6,6 @@ const db = require("./src/config/db");
 
 const PORT = process.env.PORT || 3000;
 
-<<<<<<< HEAD
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-}); 
-=======
-
 // Test database connection
 const startServer = async () => {
     try {
@@ -41,4 +35,3 @@ const startServer = async () => {
 
 
 startServer();
->>>>>>> 511ca6d (added jwt and setup backend)
