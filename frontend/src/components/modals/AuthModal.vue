@@ -2,19 +2,51 @@
 import { onMounted, onUnmounted, reactive, ref } from 'vue'
 import { ArrowRight, Check, Eye, EyeOff, LockKeyhole, Mail, UserRound, X } from 'lucide-vue-next'
 import { useModalStore } from '../../stores/modal'
+import { useAuthStore } from '../../stores/auth'
+import { useRouter } from 'vue-router'
 
 const modal = useModalStore()
+const auth = useAuthStore()
+const router = useRouter()
 const loginForm = reactive({ email: '', password: '' })
 const registerForm = reactive({ name: '', email: '', password: '' })
 const showLoginPassword = ref(false)
 const showRegisterPassword = ref(false)
+const isSubmitting = ref(false)
+const formError = ref('')
+const formSuccess = ref('')
 
-function handleLogin() {
-  console.log('login submit', { ...loginForm })
+async function handleLogin() {
+  formError.value = ''
+  isSubmitting.value = true
+  try {
+    const user = await auth.login(loginForm)
+    modal.close()
+    await router.push(user.role === 'admin' ? '/dashboard/admin' : '/dashboard/customer')
+  } catch (error) {
+    formError.value = error.message
+  } finally {
+    isSubmitting.value = false
+  }
 }
 
-function handleRegister() {
-  console.log('register submit', { ...registerForm })
+async function handleRegister() {
+  formError.value = ''
+  formSuccess.value = ''
+  isSubmitting.value = true
+  try {
+    await auth.register(registerForm)
+    formSuccess.value = 'Account created. Log in to continue.'
+    modal.setTab('login')
+    loginForm.email = registerForm.email
+    registerForm.name = ''
+    registerForm.email = ''
+    registerForm.password = ''
+  } catch (error) {
+    formError.value = error.message
+  } finally {
+    isSubmitting.value = false
+  }
 }
 
 function onKeydown(e) {
@@ -55,11 +87,13 @@ onUnmounted(() => document.removeEventListener('keydown', onKeydown))
           <p class="form-kicker">Rider access</p>
           <h1 id="auth-title">Welcome back</h1>
           <p class="sub">Log in to manage your bookings and rental history.</p>
+          <p v-if="formError" class="form-message error">{{ formError }}</p>
+          <p v-if="formSuccess" class="form-message success">{{ formSuccess }}</p>
           <form @submit.prevent="handleLogin">
             <div class="field"><label for="login-email">Email address</label><div class="input-wrap"><Mail :size="17" /><input id="login-email" v-model="loginForm.email" type="email" placeholder="you@email.com" required /></div></div>
             <div class="field"><label for="login-password">Password</label><div class="input-wrap"><LockKeyhole :size="17" /><input id="login-password" v-model="loginForm.password" :type="showLoginPassword ? 'text' : 'password'" placeholder="Enter your password" required /><button type="button" class="password-toggle" aria-label="Toggle password visibility" @click="showLoginPassword = !showLoginPassword"><EyeOff v-if="showLoginPassword" :size="17" /><Eye v-else :size="17" /></button></div></div>
             <div class="form-options"><label class="check-label"><input type="checkbox" /> <span>Remember me</span></label><a href="#">Forgot password?</a></div>
-            <button class="btn btn-primary btn-block" type="submit">Log In <ArrowRight :size="17" /></button>
+            <button class="btn btn-primary btn-block" type="submit" :disabled="isSubmitting">{{ isSubmitting ? 'Logging in...' : 'Log In' }} <ArrowRight :size="17" /></button>
           </form>
           <p class="modal-note">No account yet? <a href="#" @click.prevent="modal.setTab('register')">Register here</a></p>
         </div>
@@ -68,12 +102,13 @@ onUnmounted(() => document.removeEventListener('keydown', onKeydown))
           <p class="form-kicker">Start riding</p>
           <h1 id="auth-title">Create your account</h1>
           <p class="sub">One profile for every future rental.</p>
+          <p v-if="formError" class="form-message error">{{ formError }}</p>
           <form @submit.prevent="handleRegister">
             <div class="field"><label for="reg-name">Full name</label><div class="input-wrap"><UserRound :size="17" /><input id="reg-name" v-model="registerForm.name" type="text" placeholder="Juan Dela Cruz" required /></div></div>
             <div class="field"><label for="reg-email">Email address</label><div class="input-wrap"><Mail :size="17" /><input id="reg-email" v-model="registerForm.email" type="email" placeholder="you@email.com" required /></div></div>
             <div class="field"><label for="reg-password">Password</label><div class="input-wrap"><LockKeyhole :size="17" /><input id="reg-password" v-model="registerForm.password" :type="showRegisterPassword ? 'text' : 'password'" placeholder="Create a password" required minlength="8" /><button type="button" class="password-toggle" aria-label="Toggle password visibility" @click="showRegisterPassword = !showRegisterPassword"><EyeOff v-if="showRegisterPassword" :size="17" /><Eye v-else :size="17" /></button></div></div>
             <p class="terms">By creating an account, you agree to our <a href="#">Terms</a> and <a href="#">Privacy Policy</a>.</p>
-            <button class="btn btn-primary btn-block" type="submit">Create Account <ArrowRight :size="17" /></button>
+            <button class="btn btn-primary btn-block" type="submit" :disabled="isSubmitting">{{ isSubmitting ? 'Creating account...' : 'Create Account' }} <ArrowRight :size="17" /></button>
           </form>
           <p class="modal-note">Already registered? <a href="#" @click.prevent="modal.setTab('login')">Log in</a></p>
         </div>
@@ -96,6 +131,7 @@ onUnmounted(() => document.removeEventListener('keydown', onKeydown))
 .aside-list { display: grid; gap: 12px; position: relative; z-index: 1; }.aside-list li { display: flex; align-items: center; gap: 10px; color: rgba(255, 255, 255, 0.84); font-size: 0.79rem; }.aside-list li span { display: grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: rgba(255, 106, 61, 0.18); color: var(--orange); }.aside-footer { display: flex; align-items: baseline; gap: 8px; border-top: 1px solid rgba(255, 255, 255, 0.12); padding-top: 22px; margin-top: 28px; position: relative; z-index: 1; }.aside-footer strong { font: 700 1rem var(--ff-display); }.aside-footer span { color: rgba(255, 255, 255, 0.5); font-size: 0.68rem; }.aside-close { display: none; }
 .auth-content { padding: 46px 58px 38px; position: relative; }.modal-tabs { display: flex; gap: 6px; background: var(--bg); padding: 5px; border-radius: 11px; margin-bottom: 30px; max-width: 290px; }.modal-tabs button { flex: 1; padding: 10px; border-radius: 8px; font-family: var(--ff-display); font-weight: 600; font-size: 0.85rem; color: var(--ink-soft); transition: all 0.2s; }.modal-tabs button.active { background: #fff; color: var(--navy); box-shadow: 0 4px 10px -4px rgba(0, 0, 0, 0.15); }
 .form-panel { max-width: 400px; animation: form-in 0.25s ease both; }.form-kicker { margin-bottom: 8px; }.auth-content h1 { font-size: 1.8rem; margin-bottom: 7px; }.sub { color: var(--ink-soft); font-size: 0.86rem; margin-bottom: 24px; }.field { margin-bottom: 16px; }.field label { display: block; font-size: 0.82rem; font-family: var(--ff-display); font-weight: 600; color: var(--navy); margin-bottom: 7px; }.input-wrap { display: flex; align-items: center; gap: 10px; border: 1.5px solid var(--line); border-radius: 10px; padding-left: 13px; color: #9aa4b4; transition: border-color 0.2s, box-shadow 0.2s; }.input-wrap:focus-within { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(47, 111, 237, 0.1); color: var(--blue); }.field input { width: 100%; padding: 12px 12px 12px 0; border: 0; font-family: var(--ff-body); font-size: 0.9rem; background: transparent; }.field input:focus { outline: none; }.password-toggle { color: #9aa4b4; padding: 10px 13px 10px 4px; }.form-options { display: flex; justify-content: space-between; align-items: center; margin: -2px 0 23px; font-size: 0.74rem; color: var(--ink-soft); }.form-options a, .terms a, .modal-note a { color: var(--blue); font-weight: 600; }.check-label { display: flex; align-items: center; gap: 6px; }.check-label input { accent-color: var(--blue); }.terms { color: var(--ink-soft); font-size: 0.7rem; line-height: 1.5; margin: -2px 0 20px; }.modal-note { text-align: center; font-size: 0.82rem; color: var(--ink-soft); margin-top: 22px; }.modal-box .btn { gap: 10px; }.modal-box .btn svg { transition: transform 0.2s; }.modal-box .btn:hover svg { transform: translateX(3px); }
+.form-message { padding: 10px 12px; border-radius: 8px; font-size: .76rem; margin: -8px 0 16px; }.form-message.error { color: #a33b32; background: #fff0ed; }.form-message.success { color: #18734d; background: #e7f7ef; }.modal-box .btn:disabled { opacity: .65; cursor: wait; }
 @keyframes form-in { from { opacity: 0; transform: translateX(5px); } to { opacity: 1; transform: translateX(0); } }
 @media (max-width: 700px) { .modal-box { grid-template-columns: 1fr; max-width: 460px; min-height: 0; max-height: calc(100dvh - 30px); overflow-y: auto; }.auth-aside { min-height: 190px; padding: 27px 25px 24px; }.aside-copy { margin: 34px 0 0; }.aside-copy h2 { font-size: 1.65rem; }.aside-copy > p:last-child, .aside-list, .aside-footer { display: none; }.content-close { display: none; }.aside-close { display: flex; }.auth-content { padding: 28px 25px 30px; }.modal-tabs { margin-bottom: 25px; } }
 @media (min-width: 701px) { .content-close { display: flex; } }

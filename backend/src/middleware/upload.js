@@ -12,29 +12,32 @@ mkdirSync(uploadMotor, { recursive: true });
 mkdirSync(uploadUser, { recursive: true });
 mkdirSync(uploadUserProfile, { recursive: true });
 
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-
-        if (req.uploadType === "motorcycle") {
-            cb(null, uploadMotor);
-
-        } else if (req.uploadType === "user") {
-            cb(null, uploadUser);
-
-        } else if (req.uploadType === "profile") {
-            cb(null, uploadUserProfile);
-
-        } else {
-            cb(null, uploadDir);
-        }
-    },
+const createUpload = (destination) => multer({
+    storage: multer.diskStorage({
+        destination,
     filename: (req, file, cb) => {
         const uniqueName =
             `${Math.round(Math.random() * 1E9)}${path.extname(file.originalname)}`;
         cb(null, uniqueName);
     }
+    }),
+    limits: { fileSize: 5 * 1024 * 1024 },
+    fileFilter: (req, file, cb) => {
+        if (!file.mimetype.startsWith('image/') && destination !== uploadUser) {
+            return cb(new multer.MulterError('LIMIT_UNEXPECTED_FILE'));
+        }
+        cb(null, true);
+    },
 });
 
-const upload = multer({ storage });
-
-module.exports = upload;
+module.exports = {
+    motorcycleUpload: createUpload(uploadMotor),
+    documentUpload: multer({
+        storage: multer.diskStorage({
+            destination: uploadUser,
+            filename: (req, file, cb) => cb(null, `${Date.now()}-${Math.round(Math.random() * 1E9)}${path.extname(file.originalname)}`),
+        }),
+        limits: { fileSize: 8 * 1024 * 1024 },
+    }),
+    profileUpload: createUpload(uploadUserProfile),
+};
