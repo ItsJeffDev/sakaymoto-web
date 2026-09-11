@@ -56,8 +56,7 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `motorcycle_images`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
+
 CREATE TABLE `motorcycle_images` (
   `id` int NOT NULL AUTO_INCREMENT,
   `motorcycle_id` int NOT NULL,
@@ -260,6 +259,7 @@ CREATE TABLE `users` (
   `role` enum('customer','admin') NOT NULL DEFAULT 'customer',
   `phone` varchar(20) DEFAULT NULL,
   `address` varchar(100) DEFAULT NULL,
+  `profile_image` varchar(255) DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
