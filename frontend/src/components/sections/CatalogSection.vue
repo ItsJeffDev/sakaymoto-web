@@ -23,17 +23,21 @@ async function loadMotorcycles() {
   loadError.value = ''
   try {
     const response = await api.motorcycles()
-    motorcycles.value = response.map((bike) => ({
-      ...bike,
-      pricePerDay: Number(bike.price_per_day),
-      category: 'all',
-      categoryLabel: `${bike.brand} · ${bike.color}`,
-      specs: [`${bike.year}`, bike.color, 'Available to book'],
-      accent: 'blue',
-    }))
+    motorcycles.value = response
+      .filter((bike) => (bike.status || 'available') !== 'inactive')
+      .map((bike) => ({
+        ...bike,
+        pricePerDay: Number(bike.price_per_day),
+        category: 'all',
+        categoryLabel: `${bike.brand} · ${bike.color}`,
+        specs: [`${bike.year}`, bike.color, bike.status === 'maintenance' ? 'Under maintenance' : 'Available to book'],
+        accent: 'blue',
+      }))
   } catch (error) {
     loadError.value = error.message
-    motorcycles.value = fallbackMotorcycles
+    motorcycles.value = fallbackMotorcycles.filter(
+      (bike) => (bike.status || 'available') !== 'inactive',
+    )
   } finally {
     isLoading.value = false
   }
@@ -47,10 +51,15 @@ const filteredBikes = computed(() => {
 onMounted(loadMotorcycles)
 
 function openBooking(bike) {
+  if ((bike.status || 'available') !== 'available') {
+    return
+  }
+
   if (!auth.isAuthenticated) {
     modal.open('login')
     return
   }
+
   selectedBike.value = bike
   bookingForm.value = { start_date: '', end_date: '' }
   bookingError.value = ''
@@ -128,7 +137,9 @@ const accentColor = {
       <div v-else class="bike-grid">
         <div class="bike-card" v-reveal v-for="bike in filteredBikes" :key="bike.id">
           <div class="bike-thumb" :style="{ background: accentBg[bike.accent] }">
-            <span class="avail">Available</span>
+            <span class="avail" :class="{ maintenance: bike.status === 'maintenance' }">
+              {{ bike.status === 'maintenance' ? 'Maintenance' : 'Available' }}
+            </span>
             <MotoIcon :wheel-color="accentColor[bike.accent]" frame-color="#0B2545" />
           </div>
           <div class="bike-body">
@@ -142,8 +153,13 @@ const accentColor = {
                 <b>₱{{ bike.pricePerDay }}</b
                 ><span>/ day</span>
               </div>
-              <button class="btn btn-navy btn-sm" type="button" @click="openBooking(bike)">
-                Book Now
+              <button
+                class="btn btn-navy btn-sm"
+                type="button"
+                :disabled="(bike.status || 'available') !== 'available'"
+                @click="openBooking(bike)"
+              >
+                {{ (bike.status || 'available') === 'available' ? 'Book Now' : 'Unavailable' }}
               </button>
             </div>
           </div>
