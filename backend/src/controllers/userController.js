@@ -19,7 +19,7 @@ const getUsers = async (req, res) => {
 
 const getProfile = async (req, res) => {
     const [rows] = await db.execute(
-        "SELECT id, name, email, role, phone, address, created_at, updated_at FROM users WHERE id = ?",
+        "SELECT id, name, email, role, phone, address, profile_image, created_at, updated_at FROM users WHERE id = ?",
         [req.user.id]
     );
     if (!rows.length) return res.status(404).json({ message: "User not found" });
@@ -28,11 +28,35 @@ const getProfile = async (req, res) => {
 
 const updateProfile = async (req, res) => {
     const normalizedName = String(req.body.name || '').trim();
-    if (!normalizedName) return res.status(400).json({ message: "Name is required" });
+
+    if (!normalizedName) {
+        return res.status(400).json({ message: "Name is required" });
+    }
+
+    const updates = ["name = ?"];
+    const values = [normalizedName];
+
+    const phone = req.body.phone ? String(req.body.phone).trim() : null;
+    const address = req.body.address ? String(req.body.address).trim() : null;
+
+    updates.push("phone = ?");
+    values.push(phone);
+
+    updates.push("address = ?");
+    values.push(address);
+
+    if (req.file) {
+        updates.push("profile_image = ?");
+        values.push(`/uploads/users/profile/${req.file.filename}`);
+    }
+
+    values.push(req.user.id);
+
     await db.execute(
-        "UPDATE users SET name = ?, phone = ?, address = ? WHERE id = ?",
-        [normalizedName, req.body.phone ? String(req.body.phone).trim() : null, req.body.address ? String(req.body.address).trim() : null, req.user.id]
+        `UPDATE users SET ${updates.join(", ")} WHERE id = ?`,
+        values
     );
+
     return getProfile(req, res);
 };
 
