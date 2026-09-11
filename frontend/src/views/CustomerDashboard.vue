@@ -161,7 +161,10 @@ onMounted(async () => {
     <aside class="dashboard-sidebar" :class="{ open: isMenuOpen }">
       <div class="dashboard-brand">Sakay<span>Moto</span></div>
       <div class="profile-mini">
-        <div class="avatar avatar-coral">{{ initials }}</div>
+        <div v-if="profileImageSrc" class="avatar avatar-image">
+          <img :src="profileImageSrc" alt="Profile photo" />
+        </div>
+        <div v-else class="avatar avatar-coral">{{ initials }}</div>
         <div><strong>{{ displayName }}</strong><span>Rider account</span></div>
       </div>
       <nav class="dashboard-nav" aria-label="Customer navigation">
@@ -313,10 +316,13 @@ onMounted(async () => {
                   <img :src="profileImageSrc" alt="Profile photo preview" />
                 </div>
                 <div v-else class="avatar avatar-coral avatar-large">{{ initials }}</div>
-                <label class="file-input profile-upload">
-                  Upload profile photo
-                  <input type="file" accept="image/*" @change="profileImageFile = $event.target.files[0]" />
-                </label>
+                <div class="profile-upload-wrap">
+                  <label class="btn btn-secondary btn-sm profile-upload">
+                    Change photo
+                    <input type="file" accept="image/*" @change="profileImageFile = $event.target.files[0]" />
+                  </label>
+                  <small v-if="profileImageFile">Selected: {{ profileImageFile.name }}</small>
+                </div>
               </div>
               <label>Full name<input v-model="profile.name" required /></label>
               <label>Email address<input :value="profile.email" type="email" disabled /></label>
@@ -555,6 +561,39 @@ onMounted(async () => {
 
 .file-input input {
   padding: 8px 10px;
+}
+
+.profile-photo-preview {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  grid-column: 1 / -1;
+  margin-bottom: 6px;
+}
+
+.profile-upload-wrap {
+  display: grid;
+  gap: 6px;
+}
+
+.profile-upload {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.profile-upload input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.profile-upload-wrap small {
+  color: var(--ink-soft);
+  font-size: .72rem;
 }
 
 .setting-state {
