@@ -14,7 +14,7 @@ import {
   Users,
   X,
 } from 'lucide-vue-next'
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import AdminManagementPanel from '../components/dashboard/AdminManagementPanel.vue'
 import { api } from '../services/api'
@@ -22,6 +22,7 @@ import { useAuthStore } from '../stores/auth'
 
 const auth = useAuthStore()
 const router = useRouter()
+const apiBaseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:3000/api').replace(/\/api$/, '')
 const isMenuOpen = ref(false)
 const activeSection = ref('Dashboard')
 const isLoading = ref(true)
@@ -37,6 +38,22 @@ const sections = [
   { label: 'Notifications', icon: Bell },
   { label: 'Settings', icon: Settings },
 ]
+const adminDisplayName = computed(() => auth.user?.name || 'SakayMoto Admin')
+const adminInitials = computed(() => {
+  const source = auth.user?.name || adminDisplayName.value
+  return source
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((name) => name[0])
+    .join('')
+    .toUpperCase() || 'SA'
+})
+const profileImageSrc = computed(() => {
+  if (!auth.user?.profile_image) return ''
+  const imagePath = auth.user.profile_image.startsWith('/') ? auth.user.profile_image : `/${auth.user.profile_image}`
+  return `${apiBaseUrl}${imagePath}`
+})
 
 function selectSection(label) {
   activeSection.value = label
@@ -69,7 +86,10 @@ async function loadDashboard() {
   }
 }
 
-onMounted(loadDashboard)
+onMounted(async () => {
+  await auth.hydrate()
+  loadDashboard()
+})
 </script>
 
 <template>
@@ -77,8 +97,11 @@ onMounted(loadDashboard)
     <aside class="dashboard-sidebar admin-sidebar" :class="{ open: isMenuOpen }">
       <div class="dashboard-brand">Sakay<span>Moto</span><small>ADMIN CONSOLE</small></div>
       <div class="admin-profile">
-        <div class="avatar avatar-blue">SA</div>
-        <div><strong>SakayMoto Admin</strong><span>Operations team</span></div>
+        <div v-if="profileImageSrc" class="avatar avatar-image">
+          <img :src="profileImageSrc" alt="Admin profile photo" />
+        </div>
+        <div v-else class="avatar avatar-blue">{{ adminInitials }}</div>
+        <div><strong>{{ adminDisplayName }}</strong><span>Operations team</span></div>
         <ShieldCheck :size="16" />
       </div>
       <nav class="dashboard-nav" aria-label="Admin navigation">
@@ -132,7 +155,10 @@ onMounted(loadDashboard)
           >
             <Bell :size="20" />
           </button>
-          <div class="avatar avatar-blue">SA</div>
+          <div v-if="profileImageSrc" class="avatar avatar-image">
+            <img :src="profileImageSrc" alt="Admin profile photo" />
+          </div>
+          <div v-else class="avatar avatar-blue">{{ adminInitials }}</div>
           <ChevronDown :size="16" class="topbar-chevron" />
         </div>
       </header>
@@ -328,6 +354,18 @@ onMounted(loadDashboard)
 }
 .admin-profile > svg {
   color: #7bd3b0;
+}
+.admin-profile .avatar,
+.topbar-actions .avatar {
+  overflow: hidden;
+  border-radius: 50%;
+}
+.admin-profile .avatar img,
+.topbar-actions .avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 .admin-topbar {
   border-bottom: 1px solid var(--line);
