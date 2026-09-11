@@ -273,7 +273,15 @@ button {
   place-items: center;
   flex: 0 0 auto;
   border-radius: 50%;
+  overflow: hidden;
   font: 700 .72rem var(--ff-display);
+}
+
+.avatar img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
 }
 
 .avatar-coral {
