@@ -17,6 +17,15 @@ const bookingForm = ref({ start_date: '', end_date: '' })
 const bookingError = ref('')
 const bookingSuccess = ref('')
 const isBooking = ref(false)
+const apiBaseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:3000/api').replace(/\/api$/, '')
+
+function getBikeImageUrl(bike) {
+  const images = Array.isArray(bike.images) ? bike.images : []
+  const image = images.find((item) => item.is_primary) || images[0]
+
+  if (!image?.image_url) return ''
+  return image.image_url.startsWith('http') ? image.image_url : `${apiBaseUrl}${image.image_url}`
+}
 
 async function loadMotorcycles() {
   isLoading.value = true
@@ -140,7 +149,17 @@ const accentColor = {
             <span class="avail" :class="{ maintenance: bike.status === 'maintenance' }">
               {{ bike.status === 'maintenance' ? 'Maintenance' : 'Available' }}
             </span>
-            <MotoIcon :wheel-color="accentColor[bike.accent]" frame-color="#0B2545" />
+            <img
+              v-if="getBikeImageUrl(bike)"
+              class="bike-image"
+              :src="getBikeImageUrl(bike)"
+              :alt="`${bike.brand} ${bike.model}`"
+            />
+            <MotoIcon
+              v-else
+              :wheel-color="accentColor[bike.accent]"
+              frame-color="#0B2545"
+            />
           </div>
           <div class="bike-body">
             <span class="cat">{{ bike.categoryLabel }}</span>
@@ -323,9 +342,16 @@ const accentColor = {
   align-items: center;
   justify-content: center;
   position: relative;
+  overflow: hidden;
 }
 .bike-thumb :deep(svg) {
   width: 68%;
+}
+.bike-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 .bike-thumb .avail {
   position: absolute;

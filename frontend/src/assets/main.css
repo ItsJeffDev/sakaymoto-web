@@ -87,21 +87,25 @@ button {
 
 /* ===== Role dashboards ===== */
 .dashboard-frame {
+  height: 100vh;
   min-height: 100vh;
   display: flex;
   background: var(--bg);
+  overflow: hidden;
 }
 
 .dashboard-sidebar {
   width: 244px;
   flex: 0 0 244px;
   min-height: 100vh;
+  height: 100vh;
   display: flex;
   flex-direction: column;
   padding: 32px 20px 24px;
   color: rgba(255, 255, 255, 0.8);
   background: var(--navy-deep);
-  position: relative;
+  position: sticky;
+  top: 0;
   z-index: 20;
 }
 
@@ -211,6 +215,8 @@ button {
 .dashboard-main {
   flex: 1;
   min-width: 0;
+  height: 100vh;
+  overflow-y: auto;
 }
 
 .dashboard-topbar {
@@ -437,6 +443,11 @@ button {
 }
 
 @media (max-width: 760px) {
+  .dashboard-frame {
+    height: auto;
+    overflow: visible;
+  }
+
   .dashboard-sidebar {
     position: fixed;
     inset: 0 auto 0 0;
@@ -496,6 +507,11 @@ button {
 
   .topbar-chevron {
     display: none;
+  }
+
+  .dashboard-main {
+    height: auto;
+    overflow: visible;
   }
 
   .dashboard-content {
