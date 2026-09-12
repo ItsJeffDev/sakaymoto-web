@@ -35,6 +35,7 @@ const profileImageFile = ref(null)
 const documents = ref([])
 const selectedDocument = ref(null)
 const documentType = ref('drivers_license')
+const editingDocumentId = ref(null)
 const isSaving = ref(false)
 const actionMessage = ref('')
 const actionError = ref('')
@@ -250,8 +251,25 @@ async function saveProfile() {
   }
 }
 
+function editDocument(document) {
+  documentType.value = document.document_type
+  editingDocumentId.value = document.id
+  selectedDocument.value = null
+  actionMessage.value = `Editing document #${document.id}. Select a new file and choose the correct ID type to update it.`
+  actionError.value = ''
+}
+
+function cancelDocumentEdit() {
+  editingDocumentId.value = null
+  selectedDocument.value = null
+  documentType.value = 'drivers_license'
+  actionMessage.value = 'Edit canceled. You can upload a new document now.'
+  actionError.value = ''
+}
+
 async function uploadDocument() {
   if (!selectedDocument.value) return
+  const isEditing = editingDocumentId.value !== null
   isSaving.value = true
   actionError.value = ''
   const formData = new FormData()
@@ -260,7 +278,11 @@ async function uploadDocument() {
   try {
     await api.uploadDocument(formData)
     selectedDocument.value = null
-    actionMessage.value = 'Document uploaded for verification.'
+    actionMessage.value = isEditing
+      ? 'Document updated for verification.'
+      : 'Document uploaded for verification.'
+    editingDocumentId.value = null
+    documentType.value = 'drivers_license'
     await loadDocuments()
   } catch (error) {
     actionError.value = error.message
@@ -652,18 +674,25 @@ onMounted(async () => {
           </template>
           <template v-else-if="activeSection === 'Notifications'">
             <p class="subpage-description">Booking updates and verification notices appear here.</p>
-            <div class="document-upload"><label>Document type<select v-model="documentType">
+            <div class="document-upload">
+              <div v-if="editingDocumentId" class="document-edit-banner">
+                Editing document #{{ editingDocumentId }}
+                <button class="text-button doc-edit-button" type="button" @click="cancelDocumentEdit">Cancel</button>
+              </div>
+              <label>Document type<select v-model="documentType">
                   <option value="drivers_license">Driver's license</option>
                   <option value="valid_id">Valid ID</option>
                   <option value="other">Other</option>
                 </select></label><label class="file-input">Upload requirement<input type="file" accept="image/*,.pdf"
                   @change="selectedDocument = $event.target.files[0]" /></label><button class="btn btn-primary btn-sm"
                 type="button" :disabled="!selectedDocument || isSaving" @click="uploadDocument">{{ isSaving ?
-                  'Uploading...' : 'Upload document' }}</button></div>
+                  'Uploading...' : editingDocumentId ? 'Update document' : 'Upload document' }}</button>
+            </div>
             <div class="customer-detail-list">
               <div v-for="document in documents" :key="document.id" class="customer-detail-row"><span
                   class="detail-number">{{ document.document_type }}</span><strong>{{ document.status
-                  }}</strong><span>{{ document.uploaded_at?.slice(0, 10) }}</span></div>
+                  }}</strong><span>{{ document.uploaded_at?.slice(0, 10) }}</span><button
+                  class="text-button doc-edit-button" type="button" @click="editDocument(document)">Edit</button></div>
               <div v-if="!documents.length" class="panel-empty">
                 <Bell :size="24" />
                 <p>No documents submitted yet.</p>
