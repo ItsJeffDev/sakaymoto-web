@@ -28,7 +28,6 @@ app.use(express.urlencoded({
     extended: true
 }));
 
-
 // ============================
 // ROUTES
 // ============================

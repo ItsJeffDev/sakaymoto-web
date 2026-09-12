@@ -12,7 +12,7 @@ export async function apiRequest(path, options = {}) {
   const payload = contentType.includes('application/json') ? await response.json() : null
   if (!response.ok) throw new Error(payload?.message || 'Something went wrong. Please try again.')
   return payload
-}
+} 
 
 export const api = {
   login: (body) => apiRequest('/auth/login', { method: 'POST', body: JSON.stringify(body) }),
