@@ -26,7 +26,10 @@ export const api = {
   booking: (body) => apiRequest('/bookings', { method: 'POST', body: JSON.stringify(body) }),
   updateBookingStatus: (id, status) =>
     apiRequest(`/bookings/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) }),
-  documents: () => apiRequest('/documents'),
+  documents: (userId = null) =>
+    apiRequest(userId ? `/documents?user_id=${encodeURIComponent(userId)}` : '/documents'),
+  updateDocumentStatus: (id, status) =>
+    apiRequest(`/documents/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) }),
   uploadDocument: (formData) => apiRequest('/documents', { method: 'POST', body: formData }),
   payments: () => apiRequest('/payments'),
   payment: (body) => apiRequest('/payments', { method: 'POST', body: JSON.stringify(body) }),
