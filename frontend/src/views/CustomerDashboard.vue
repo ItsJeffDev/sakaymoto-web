@@ -1,7 +1,8 @@
 <script setup>
-import { Bell, CalendarDays, ChevronRight, CircleHelp, ClipboardList, LayoutDashboard, LogOut, Menu, Settings, UserRound, X } from 'lucide-vue-next'
+import { Bell, Bike, CalendarDays, ChevronRight, CircleHelp, ClipboardList, LayoutDashboard, LogOut, Menu, Settings, UserRound, X } from 'lucide-vue-next'
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { motorcycles as fallbackMotorcycles, catalogFilters } from '../data/motorcycles'
 import { api } from '../services/api'
 import { useAuthStore } from '../stores/auth'
 
@@ -14,6 +15,7 @@ const router = useRouter()
 const apiBaseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:3000/api').replace(/\/api$/, '')
 const navItems = [
   { label: 'Dashboard', icon: LayoutDashboard },
+  { label: 'Browse motorcycles', icon: Bike },
   { label: 'My bookings', icon: ClipboardList },
   { label: 'Profile & account', icon: UserRound },
   { label: 'Notifications', icon: Bell, count: 3 },
@@ -36,6 +38,15 @@ const documentType = ref('drivers_license')
 const isSaving = ref(false)
 const actionMessage = ref('')
 const actionError = ref('')
+const browseMotorcycles = ref([])
+const browseIsLoading = ref(false)
+const browseLoadError = ref('')
+const activeBikeFilter = ref('all')
+const selectedBike = ref(null)
+const bookingForm = ref({ start_date: '', end_date: '' })
+const bookingError = ref('')
+const bookingSuccess = ref('')
+const isBooking = ref(false)
 const displayName = computed(() => auth.user?.name || profile.name || 'Rider')
 const initials = computed(() => displayName.value.split(' ').filter(Boolean).slice(0, 2).map((name) => name[0]).join('').toUpperCase() || 'R')
 const profileImageSrc = computed(() => {
@@ -43,6 +54,42 @@ const profileImageSrc = computed(() => {
   const imagePath = profile.profile_image.startsWith('/') ? profile.profile_image : `/${profile.profile_image}`
   return `${apiBaseUrl}${imagePath}`
 })
+const browseAvailableCount = computed(() => browseMotorcycles.value.filter((bike) => (bike.status || 'available') === 'available').length)
+const filteredBrowseMotorcycles = computed(() => {
+  if (activeBikeFilter.value === 'all') return browseMotorcycles.value
+  return browseMotorcycles.value.filter((bike) => bike.category === activeBikeFilter.value)
+})
+
+function getBikeImageUrl(bike) {
+  const images = Array.isArray(bike.images) ? bike.images : []
+  const image = images.find((item) => item.is_primary) || images[0]
+
+  if (!image?.image_url) return ''
+  return image.image_url.startsWith('http') ? image.image_url : `${apiBaseUrl}${image.image_url}`
+}
+
+function normalizeBrowseMotorcycle(bike) {
+  const fallbackMatch = fallbackMotorcycles.find(
+    (entry) => entry.brand.toLowerCase() === String(bike.brand || '').toLowerCase() && entry.model.toLowerCase() === String(bike.model || '').toLowerCase(),
+  )
+
+  const base = fallbackMatch || {
+    category: 'scooter',
+    categoryLabel: `${bike.brand || 'Motorcycle'} · ${bike.color || 'Standard'}`,
+    specs: [String(bike.year || '2024'), bike.color || 'Standard', (bike.status || 'available') === 'maintenance' ? 'Under maintenance' : 'Available to book'],
+    accent: 'blue',
+    pricePerDay: Number(bike.price_per_day || 0),
+  }
+
+  return {
+    ...bike,
+    category: base.category,
+    categoryLabel: base.categoryLabel,
+    specs: base.specs,
+    accent: base.accent,
+    pricePerDay: Number(bike.price_per_day ?? bike.pricePerDay ?? base.pricePerDay ?? 0),
+  }
+}
 
 async function loadDashboard() {
   isLoading.value = true
@@ -57,6 +104,25 @@ async function loadDashboard() {
   }
 }
 
+async function loadBrowseMotorcycles() {
+  browseIsLoading.value = true
+  browseLoadError.value = ''
+
+  try {
+    const response = await api.motorcycles()
+    browseMotorcycles.value = response
+      .filter((bike) => (bike.status || 'available') !== 'inactive')
+      .map(normalizeBrowseMotorcycle)
+  } catch (error) {
+    browseLoadError.value = error.message
+    browseMotorcycles.value = fallbackMotorcycles
+      .filter((bike) => (bike.status || 'available') !== 'inactive')
+      .map(normalizeBrowseMotorcycle)
+  } finally {
+    browseIsLoading.value = false
+  }
+}
+
 function selectSection(label) {
   activeSection.value = label
   isMenuOpen.value = false
@@ -64,6 +130,7 @@ function selectSection(label) {
   actionError.value = ''
   if (label === 'Profile & account') loadProfile()
   if (label === 'Notifications') loadDocuments()
+  if (label === 'Browse motorcycles') loadBrowseMotorcycles()
 }
 
 async function loadProfile() {
@@ -83,6 +150,45 @@ async function loadDocuments() {
     documents.value = response.data || []
   } catch (error) {
     actionError.value = error.message
+  }
+}
+
+function openBooking(bike) {
+  if ((bike.status || 'available') !== 'available') return
+
+  selectedBike.value = bike
+  bookingForm.value = { start_date: '', end_date: '' }
+  bookingError.value = ''
+  bookingSuccess.value = ''
+}
+
+async function submitBooking() {
+  bookingError.value = ''
+  bookingSuccess.value = ''
+
+  if (
+    !bookingForm.value.start_date ||
+    !bookingForm.value.end_date ||
+    bookingForm.value.end_date < bookingForm.value.start_date
+  ) {
+    bookingError.value = 'Choose a valid start and end date.'
+    return
+  }
+
+  isBooking.value = true
+
+  try {
+    const response = await api.booking({
+      motorcycle_id: selectedBike.value.id,
+      ...bookingForm.value,
+    })
+
+    bookingSuccess.value = `${response.message}. Total: PHP ${Number(response.total_price).toLocaleString()}`
+    await loadDashboard()
+  } catch (error) {
+    bookingError.value = error.message
+  } finally {
+    isBooking.value = false
   }
 }
 
@@ -215,10 +321,11 @@ onMounted(async () => {
         <section class="welcome-panel">
           <div><span class="eyebrow">Your next adventure</span>
             <h2>Ready for the open road?</h2>
-            <p>Find a ride that fits your plans and book it in a few taps.</p><a href="#"
-              class="btn btn-primary btn-sm">Browse motorcycles
+            <p>Find a ride that fits your plans and book it in a few taps.</p>
+            <button class="btn btn-primary btn-sm" type="button" @click="selectSection('Browse motorcycles')">
+              Browse motorcycles
               <ChevronRight :size="16" />
-            </a>
+            </button>
           </div>
           <div class="welcome-mark">
             <CalendarDays :size="60" stroke-width="1.2" />
@@ -283,6 +390,138 @@ onMounted(async () => {
           </section>
         </div>
       </div>
+      <div v-else-if="activeSection === 'Browse motorcycles'" class="dashboard-content customer-subpage">
+        <section class="dashboard-panel browse-panel">
+          <div class="panel-heading">
+            <div>
+              <span class="panel-label">Explore rentals</span>
+              <h2>Choose your next ride</h2>
+            </div>
+            <button class="text-button" type="button" @click="selectSection('Dashboard')">Back to dashboard</button>
+          </div>
+
+          <p class="subpage-description">Filter by type, compare daily rates, and book the motorcycle that fits your plans.</p>
+
+          <div class="browse-toolbar">
+            <div class="filter-row browse-filter-row">
+              <button
+                v-for="filter in catalogFilters"
+                :key="filter.value"
+                type="button"
+                class="chip browse-chip"
+                :class="{ active: activeBikeFilter === filter.value }"
+                @click="activeBikeFilter = filter.value"
+              >
+                {{ filter.label }}
+              </button>
+            </div>
+
+            <div class="browse-summary">
+              <span>{{ filteredBrowseMotorcycles.length }} bikes</span>
+              <span>{{ browseAvailableCount }} available</span>
+            </div>
+          </div>
+
+          <p v-if="browseIsLoading" class="catalog-state">Loading available motorcycles...</p>
+          <p v-else-if="browseLoadError" class="catalog-state error">
+            Live catalog unavailable. Showing saved catalog data.
+          </p>
+          <p v-else-if="!filteredBrowseMotorcycles.length" class="catalog-state">
+            No motorcycles are available under this filter.
+          </p>
+
+          <div v-else class="browse-grid">
+            <article v-for="bike in filteredBrowseMotorcycles" :key="bike.id" class="browse-card">
+              <div
+                class="browse-thumb"
+                :style="{
+                  background:
+                    bike.accent === 'orange'
+                      ? 'linear-gradient(160deg,#FFF0E9,#FFE1D2)'
+                      : bike.accent === 'navy'
+                        ? 'linear-gradient(160deg,#E7ECF5,#D3DBEA)'
+                        : 'linear-gradient(160deg,#EAF1FF,#D6E4FF)',
+                }"
+              >
+                <span class="browse-badge" :class="{ maintenance: bike.status === 'maintenance' }">
+                  {{ bike.status === 'maintenance' ? 'Maintenance' : 'Available' }}
+                </span>
+
+                <img
+                  v-if="getBikeImageUrl(bike)"
+                  class="browse-image"
+                  :src="getBikeImageUrl(bike)"
+                  :alt="`${bike.brand} ${bike.model}`"
+                />
+
+                <div v-else class="browse-placeholder">
+                  <span>{{ (bike.brand || 'SM').slice(0, 2).toUpperCase() }}</span>
+                </div>
+              </div>
+
+              <div class="browse-body">
+                <span class="browse-category">{{ bike.categoryLabel }}</span>
+                <h3>{{ bike.brand }} {{ bike.model }}</h3>
+
+                <div class="browse-specs">
+                  <span v-for="spec in bike.specs" :key="`${bike.id}-${spec}`">{{ spec }}</span>
+                </div>
+
+                <div class="browse-foot">
+                  <div class="browse-price">
+                    <b>₱{{ bike.pricePerDay }}</b>
+                    <span>/ day</span>
+                  </div>
+
+                  <button
+                    class="btn btn-navy btn-sm"
+                    type="button"
+                    :disabled="(bike.status || 'available') !== 'available'"
+                    @click="openBooking(bike)"
+                  >
+                    {{ (bike.status || 'available') === 'available' ? 'Book Now' : 'Unavailable' }}
+                  </button>
+                </div>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <div v-if="selectedBike" class="booking-overlay" @click.self="selectedBike = null">
+          <form class="booking-dialog" @submit.prevent="submitBooking">
+            <button
+              class="dialog-close"
+              type="button"
+              aria-label="Close booking form"
+              @click="selectedBike = null"
+            >
+              ×
+            </button>
+
+            <span class="eyebrow">Booking request</span>
+            <h3>{{ selectedBike.brand }} {{ selectedBike.model }}</h3>
+            <p>Select your rental dates. The request will be reviewed by SakayMoto.</p>
+
+            <label>
+              Start date
+              <input v-model="bookingForm.start_date" type="date" required />
+            </label>
+
+            <label>
+              End date
+              <input v-model="bookingForm.end_date" type="date" required />
+            </label>
+
+            <p v-if="bookingError" class="booking-message error">{{ bookingError }}</p>
+            <p v-if="bookingSuccess" class="booking-message success">{{ bookingSuccess }}</p>
+
+            <button class="btn btn-primary btn-block" type="submit" :disabled="isBooking || !!bookingSuccess">
+              {{ isBooking ? 'Submitting...' : bookingSuccess ? 'Request submitted' : 'Submit booking request' }}
+            </button>
+          </form>
+        </div>
+      </div>
+
       <div v-else class="dashboard-content customer-subpage">
         <section class="dashboard-panel subpage-panel">
           <div class="panel-heading">
@@ -295,7 +534,7 @@ onMounted(async () => {
           <template v-if="activeSection === 'My bookings'">
             <p class="subpage-description">Keep track of upcoming rides, payments, and your rental history.</p>
             <div v-if="!bookings.length" class="panel-empty">
-              <ClipboardL`ist :size="24" />
+              <ClipboardList :size="24" />
               <p>No bookings yet. Browse available motorcycles to get started.</p>
             </div>
             <div v-else class="subpage-bookings">
@@ -386,6 +625,269 @@ onMounted(async () => {
   color: var(--ink-soft);
   font-size: .9rem;
   margin: 8px 0 26px;
+}
+
+.browse-panel {
+  min-height: 360px;
+}
+
+.filter-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 38px;
+  flex-wrap: wrap;
+}
+
+.chip {
+  padding: 10px 20px;
+  border-radius: 999px;
+  border: 1.5px solid var(--line);
+  background: #fff;
+  color: var(--ink-soft);
+  font-family: var(--ff-display);
+  font-weight: 600;
+  font-size: 0.85rem;
+  transition: all 0.2s ease;
+}
+
+.chip.active,
+.chip:hover {
+  background: var(--navy);
+  border-color: var(--navy);
+  color: #fff;
+}
+
+.browse-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 28px;
+}
+
+.browse-filter-row {
+  margin-bottom: 0;
+}
+
+.browse-chip {
+  background: #fff;
+}
+
+.browse-summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  color: var(--ink-soft);
+  font-size: .78rem;
+}
+
+.browse-summary span {
+  padding: 7px 10px;
+  border-radius: 999px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+}
+
+.browse-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 22px;
+}
+
+.browse-card {
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 12px 24px -18px rgba(11, 37, 69, 0.25);
+}
+
+.browse-thumb {
+  position: relative;
+  display: grid;
+  place-items: center;
+  height: 210px;
+  overflow: hidden;
+}
+
+.browse-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.browse-placeholder {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  font: 700 2rem var(--ff-display);
+  color: var(--navy);
+  background: linear-gradient(160deg,#eaf1ff,#d6e4ff);
+}
+
+.browse-badge {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  z-index: 1;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.92);
+  color: #178a4c;
+  font: 700 .68rem var(--ff-display);
+}
+
+.browse-badge.maintenance {
+  color: #a8651e;
+}
+
+.browse-badge::before {
+  content: '';
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-right: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.browse-body {
+  display: grid;
+  gap: 12px;
+  padding: 22px;
+}
+
+.browse-category {
+  color: var(--ink-soft);
+  font: 600 .68rem var(--ff-display);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.browse-body h3 {
+  font-size: 1.1rem;
+}
+
+.browse-specs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.browse-specs span {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 5px 9px;
+  background: var(--bg);
+  color: var(--ink-soft);
+  font-size: .69rem;
+}
+
+.browse-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.browse-price {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.browse-price b {
+  font: 700 1.2rem var(--ff-display);
+  color: var(--navy);
+}
+
+.browse-price span {
+  color: var(--ink-soft);
+  font-size: .76rem;
+}
+
+.booking-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1500;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(8, 27, 54, 0.58);
+}
+
+.booking-dialog {
+  width: min(100%, 440px);
+  display: grid;
+  gap: 14px;
+  padding: 30px;
+  position: relative;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 25px 70px -25px rgba(8, 27, 54, 0.5);
+}
+
+.booking-dialog h3 {
+  font-size: 1.35rem;
+  margin-top: -6px;
+}
+
+.booking-dialog > p {
+  color: var(--ink-soft);
+  font-size: 0.82rem;
+  margin-top: -7px;
+}
+
+.booking-dialog label {
+  display: grid;
+  gap: 6px;
+  color: var(--navy);
+  font: 600 0.77rem var(--ff-display);
+}
+
+.booking-dialog input {
+  width: 100%;
+  padding: 11px 12px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  color: var(--ink);
+  background: #fff;
+  font: 400 0.85rem var(--ff-body);
+}
+
+.dialog-close {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  color: var(--ink-soft);
+  font-size: 1.4rem;
+}
+
+.booking-message {
+  padding: 9px 11px;
+  border-radius: 8px;
+  font-size: 0.76rem;
+}
+
+.booking-message.error {
+  color: #a33b32;
+  background: #fff0ed;
+}
+
+.booking-message.success {
+  color: #18734d;
+  background: #e7f7ef;
+}
+
+.booking-dialog .btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
 }
 
 .customer-detail-list {
@@ -783,6 +1285,20 @@ onMounted(async () => {
     position: absolute;
     right: -15px;
     opacity: .65;
+  }
+
+  .browse-toolbar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .browse-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .browse-foot {
+    flex-direction: column;
+    align-items: flex-start;
   }
 
   .booking-row {
