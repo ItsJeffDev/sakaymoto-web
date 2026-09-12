@@ -7,12 +7,87 @@ const rows = ref([])
 const report = ref(null)
 const isLoading = ref(false)
 const error = ref('')
+const customerDocuments = ref({})
+const selectedUser = ref(null)
+const selectedDocumentPreview = ref('')
+const apiBaseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:3000/api').replace(/\/api$/, '')
+
+function getFileUrl(path) {
+  if (!path) return ''
+  return path.startsWith('http') ? path : `${apiBaseUrl}${path}`
+}
+
+function formatDocumentType(type) {
+  return {
+    drivers_license: "Driver's license",
+    valid_id: 'Valid ID',
+    other: 'Other document',
+  }[type] || type || 'Document'
+}
+
+function getCustomerDocuments(userId) {
+  return customerDocuments.value[userId] || []
+}
+
+function getCustomerIdentitySummary(userId) {
+  const documents = getCustomerDocuments(userId)
+
+  if (!documents.length) {
+    return { label: 'No ID / docs', tone: 'muted' }
+  }
+
+  const hasVerifiedIdentity = documents.some(
+    (document) => ['drivers_license', 'valid_id'].includes(document.document_type) && document.status === 'verified',
+  )
+
+  const hasPendingDocuments = documents.some((document) => document.status === 'pending')
+
+  if (hasVerifiedIdentity) {
+    return { label: 'Verified identity', tone: 'verified' }
+  }
+
+  if (hasPendingDocuments) {
+    return { label: 'Pending review', tone: 'pending' }
+  }
+
+  return { label: 'ID uploaded', tone: 'info' }
+}
+
+function formatMotorcyclePrice(value) {
+  const numericValue = Number(value)
+
+  if (!Number.isFinite(numericValue) || numericValue < 0) {
+    return 'Price unavailable'
+  }
+
+  return `PHP ${numericValue.toLocaleString()}`
+}
+
+async function loadCustomerDocuments(users = []) {
+  if (!users.length) {
+    customerDocuments.value = {}
+    return
+  }
+
+  const results = await Promise.all(
+    users.map(async (user) => {
+      const response = await api.documents(user.id)
+      return [user.id, response.data || []]
+    }),
+  )
+
+  customerDocuments.value = Object.fromEntries(results)
+}
 
 async function load() {
   isLoading.value = true
   error.value = ''
   try {
-    if (props.section === 'Customers') rows.value = (await api.users()).data || []
+    if (props.section === 'Customers') {
+      const response = await api.users()
+      rows.value = response.data || []
+      await loadCustomerDocuments(rows.value)
+    }
     if (props.section === 'Bookings') rows.value = (await api.bookings()).data || []
     if (props.section === 'Motorcycles') rows.value = await api.motorcyclesAdmin()
     if (props.section === 'Reports & analytics') report.value = (await api.reports()).data
@@ -30,6 +105,25 @@ async function updateBooking(id, status) {
   } catch (updateError) {
     error.value = updateError.message
   }
+}
+
+async function updateDocumentStatus(documentId, status) {
+  try {
+    await api.updateDocumentStatus(documentId, status)
+    await load()
+  } catch (updateError) {
+    error.value = updateError.message
+  }
+}
+
+function inspectUser(user) {
+  selectedUser.value = user
+  selectedDocumentPreview.value = ''
+}
+
+function closeInspection() {
+  selectedUser.value = null
+  selectedDocumentPreview.value = ''
 }
 
 watch(() => props.section, load)
@@ -71,6 +165,8 @@ onMounted(load)
             <th>Name</th>
             <th>Email</th>
             <th>Phone</th>
+            <th>Identity</th>
+            <th>Documents</th>
             <th>Joined</th>
           </tr>
         </thead>
@@ -79,11 +175,127 @@ onMounted(load)
             <td class="amount">{{ user.name }}</td>
             <td>{{ user.email }}</td>
             <td>{{ user.phone || 'Not provided' }}</td>
+            <td>
+              <span class="table-status" :class="getCustomerIdentitySummary(user.id).tone">
+                {{ getCustomerIdentitySummary(user.id).label }}
+              </span>
+            </td>
+            <td>
+              <div class="customer-docs-cell">
+                <span>{{ getCustomerDocuments(user.id).length }} uploaded</span>
+                <button class="table-action" type="button" @click="inspectUser(user)">
+                  Inspect
+                </button>
+              </div>
+            </td>
             <td>{{ user.created_at?.slice(0, 10) }}</td>
           </tr>
         </tbody>
       </table>
       <p v-if="!rows.length" class="management-state">No customers found.</p>
+    </div>
+
+    <div
+      v-if="selectedUser"
+      class="customer-inspect-overlay"
+      @click.self="closeInspection"
+    >
+      <div class="customer-inspect-panel">
+        <button class="dialog-close" type="button" aria-label="Close inspection" @click="closeInspection">
+          ×
+        </button>
+
+        <div class="customer-inspect-header">
+          <div class="customer-inspect-avatar">
+            <img
+              v-if="selectedUser.profile_image"
+              :src="getFileUrl(selectedUser.profile_image)"
+              :alt="`${selectedUser.name} profile`"
+            />
+            <span v-else>{{ selectedUser.name?.slice(0, 2).toUpperCase() || 'US' }}</span>
+          </div>
+          <div>
+            <span class="panel-label">Customer identity</span>
+            <h3>{{ selectedUser.name }}</h3>
+          </div>
+        </div>
+
+        <div class="customer-inspect-grid">
+          <div class="customer-inspect-card">
+            <span class="card-label">Contact</span>
+            <p>{{ selectedUser.email }}</p>
+            <p>{{ selectedUser.phone || 'No phone number provided' }}</p>
+            <p>Joined {{ selectedUser.created_at?.slice(0, 10) }}</p>
+          </div>
+          <div class="customer-inspect-card">
+            <span class="card-label">Verification</span>
+            <p class="identity-check">
+              <strong>{{ getCustomerIdentitySummary(selectedUser.id).label }}</strong>
+            </p>
+            <p>
+              {{ getCustomerDocuments(selectedUser.id).length
+                ? `${getCustomerDocuments(selectedUser.id).length} uploaded file(s)`
+                : 'No uploaded files yet' }}
+            </p>
+          </div>
+        </div>
+
+        <div v-if="getCustomerDocuments(selectedUser.id).length" class="document-grid">
+          <article
+            v-for="document in getCustomerDocuments(selectedUser.id)"
+            :key="document.id"
+            class="document-card"
+          >
+            <button
+              class="document-preview"
+              type="button"
+              @click="selectedDocumentPreview = getFileUrl(document.file_url)"
+            >
+              <img
+                v-if="document.file_url"
+                :src="getFileUrl(document.file_url)"
+                :alt="`${formatDocumentType(document.document_type)} preview`"
+              />
+              <span v-else>No preview</span>
+            </button>
+            <div class="document-details">
+              <span>{{ formatDocumentType(document.document_type) }}</span>
+              <strong>{{ document.status }}</strong>
+              <small>Uploaded {{ document.uploaded_at?.slice(0, 10) }}</small>
+              <div v-if="document.status === 'pending'" class="document-actions">
+                <button class="table-action" type="button" @click="updateDocumentStatus(document.id, 'verified')">
+                  Confirm
+                </button>
+                <button class="table-action danger" type="button" @click="updateDocumentStatus(document.id, 'rejected')">
+                  Remove
+                </button>
+              </div>
+            </div>
+          </article>
+        </div>
+
+        <div v-else class="management-state no-documents">
+          <p>No uploaded ID or documents found for this customer.</p>
+        </div>
+      </div>
+    </div>
+
+    <div
+      v-if="selectedDocumentPreview"
+      class="image-preview-overlay"
+      @click.self="selectedDocumentPreview = ''"
+    >
+      <div class="image-preview-panel">
+        <button
+          class="dialog-close"
+          type="button"
+          aria-label="Close preview"
+          @click="selectedDocumentPreview = ''"
+        >
+          ×
+        </button>
+        <img :src="selectedDocumentPreview" alt="Document preview" />
+      </div>
     </div>
     <div v-else-if="section === 'Bookings'" class="table-scroll">
       <table>
@@ -138,11 +350,11 @@ onMounted(load)
         </thead>
         <tbody>
           <tr v-for="bike in rows" :key="bike.id">
-            <td class="amount">{{ bike.brand }} {{ bike.model }}</td>
-            <td>{{ bike.plate_number }}</td>
-            <td>PHP {{ Number(bike.price_per_day).toLocaleString() }}</td>
+            <td class="amount">{{ bike.brand || 'Unknown' }} {{ bike.model || '' }}</td>
+            <td>{{ bike.plate_number || 'Not provided' }}</td>
+            <td>{{ formatMotorcyclePrice(bike.price_per_day) }}</td>
             <td>
-              <span class="table-status" :class="bike.status">{{ bike.status }}</span>
+              <span class="table-status" :class="bike.status || 'pending'">{{ bike.status || 'Unknown' }}</span>
             </td>
           </tr>
         </tbody>
@@ -202,8 +414,164 @@ onMounted(load)
 .table-action.danger {
   color: #a33b32;
 }
+.customer-docs-cell {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.customer-docs-cell span {
+  color: var(--ink-soft);
+}
+.customer-inspect-overlay,
+.image-preview-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1500;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(8, 27, 54, 0.6);
+}
+.customer-inspect-panel {
+  width: min(100%, 760px);
+  padding: 26px;
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 0 25px 70px -20px rgba(8, 27, 54, 0.45);
+  position: relative;
+}
+.customer-inspect-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.customer-inspect-avatar {
+  width: 62px;
+  height: 62px;
+  border-radius: 18px;
+  background: linear-gradient(160deg, #dfeeff, #cfe0ff);
+  display: grid;
+  place-items: center;
+  color: var(--navy);
+  font: 700 1rem var(--ff-display);
+  overflow: hidden;
+}
+.customer-inspect-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.customer-inspect-header h3 {
+  font-size: 1.4rem;
+  margin-top: 4px;
+}
+.customer-inspect-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 22px;
+}
+.customer-inspect-card {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 16px;
+  background: var(--bg);
+}
+.card-label {
+  display: block;
+  color: var(--ink-soft);
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+.customer-inspect-card p {
+  color: var(--ink-soft);
+  font-size: 0.8rem;
+  margin-bottom: 4px;
+}
+.identity-check strong {
+  color: var(--navy);
+}
+.document-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+}
+.document-card {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #fff;
+  overflow: hidden;
+}
+.document-preview {
+  display: block;
+  width: 100%;
+  height: 160px;
+  background: #edf3fb;
+  border: 0;
+  padding: 0;
+  overflow: hidden;
+  cursor: pointer;
+}
+.document-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.document-details {
+  display: grid;
+  gap: 4px;
+  padding: 12px 14px 14px;
+}
+.document-details span,
+.document-details small {
+  color: var(--ink-soft);
+  font-size: 0.72rem;
+}
+.document-details strong {
+  color: var(--navy);
+  font-size: 0.82rem;
+}
+.no-documents {
+  min-height: 120px;
+  color: var(--ink-soft);
+}
+.image-preview-panel {
+  width: min(100%, 760px);
+  position: relative;
+  border-radius: 18px;
+  background: #fff;
+  padding: 18px;
+  box-shadow: 0 25px 70px -20px rgba(8, 27, 54, 0.45);
+}
+.image-preview-panel img {
+  width: 100%;
+  max-height: 74vh;
+  object-fit: contain;
+  border-radius: 12px;
+  display: block;
+}
+.dialog-close {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  color: var(--ink-soft);
+  font-size: 1.5rem;
+  line-height: 1;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
 @media (max-width: 700px) {
   .report-grid {
+    grid-template-columns: 1fr;
+  }
+  .customer-inspect-grid {
     grid-template-columns: 1fr;
   }
 }
