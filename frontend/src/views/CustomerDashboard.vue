@@ -47,6 +47,8 @@ const bookingForm = ref({ start_date: '', end_date: '' })
 const bookingError = ref('')
 const bookingSuccess = ref('')
 const isBooking = ref(false)
+const previewImageIndexes = reactive({})
+const activeImagePreview = ref(null)
 const displayName = computed(() => auth.user?.name || profile.name || 'Rider')
 const initials = computed(() => displayName.value.split(' ').filter(Boolean).slice(0, 2).map((name) => name[0]).join('').toUpperCase() || 'R')
 const profileImageSrc = computed(() => {
@@ -60,12 +62,44 @@ const filteredBrowseMotorcycles = computed(() => {
   return browseMotorcycles.value.filter((bike) => bike.category === activeBikeFilter.value)
 })
 
-function getBikeImageUrl(bike) {
-  const images = Array.isArray(bike.images) ? bike.images : []
-  const image = images.find((item) => item.is_primary) || images[0]
+function getBikeImages(bike) {
+  return Array.isArray(bike.images) ? bike.images.filter(Boolean) : []
+}
 
-  if (!image?.image_url) return ''
-  return image.image_url.startsWith('http') ? image.image_url : `${apiBaseUrl}${image.image_url}`
+function getBikeImageUrl(bike, imageIndex = null) {
+  const images = getBikeImages(bike)
+  const selectedImage =
+    typeof imageIndex === 'number' && images[imageIndex]
+      ? images[imageIndex]
+      : images.find((item) => item.is_primary) || images[0]
+
+  if (!selectedImage?.image_url) return ''
+  return selectedImage.image_url.startsWith('http')
+    ? selectedImage.image_url
+    : `${apiBaseUrl}${selectedImage.image_url}`
+}
+
+function getPreviewImageIndex(bikeId) {
+  return previewImageIndexes[bikeId] ?? 0
+}
+
+function setPreviewImageIndex(bikeId, index) {
+  previewImageIndexes[bikeId] = index
+}
+
+function openImagePreview(bike) {
+  const images = getBikeImages(bike)
+  if (!images.length) return
+
+  activeImagePreview.value = {
+    bike,
+    images,
+    index: getPreviewImageIndex(bike.id),
+  }
+}
+
+function closeImagePreview() {
+  activeImagePreview.value = null
 }
 
 function normalizeBrowseMotorcycle(bike) {
@@ -442,21 +476,39 @@ onMounted(async () => {
                         ? 'linear-gradient(160deg,#E7ECF5,#D3DBEA)'
                         : 'linear-gradient(160deg,#EAF1FF,#D6E4FF)',
                 }"
+                role="button"
+                tabindex="0"
+                @click="openImagePreview(bike)"
+                @keydown.enter.prevent="openImagePreview(bike)"
+                @keydown.space.prevent="openImagePreview(bike)"
               >
                 <span class="browse-badge" :class="{ maintenance: bike.status === 'maintenance' }">
                   {{ bike.status === 'maintenance' ? 'Maintenance' : 'Available' }}
                 </span>
 
                 <img
-                  v-if="getBikeImageUrl(bike)"
+                  v-if="getBikeImageUrl(bike, getPreviewImageIndex(bike.id))"
                   class="browse-image"
-                  :src="getBikeImageUrl(bike)"
+                  :src="getBikeImageUrl(bike, getPreviewImageIndex(bike.id))"
                   :alt="`${bike.brand} ${bike.model}`"
                 />
 
                 <div v-else class="browse-placeholder">
                   <span>{{ (bike.brand || 'SM').slice(0, 2).toUpperCase() }}</span>
                 </div>
+              </div>
+
+              <div v-if="getBikeImages(bike).length > 1" class="browse-thumbs">
+                <button
+                  v-for="(image, index) in getBikeImages(bike)"
+                  :key="`${bike.id}-thumb-${index}`"
+                  type="button"
+                  class="browse-thumb-btn"
+                  :class="{ active: getPreviewImageIndex(bike.id) === index }"
+                  @click.stop="setPreviewImageIndex(bike.id, index)"
+                >
+                  <img :src="getBikeImageUrl(bike, index)" :alt="`${bike.brand} ${bike.model} image ${index + 1}`" />
+                </button>
               </div>
 
               <div class="browse-body">
@@ -486,6 +538,34 @@ onMounted(async () => {
             </article>
           </div>
         </section>
+
+        <div v-if="activeImagePreview" class="image-preview-overlay" @click.self="closeImagePreview()">
+          <div class="image-preview-dialog">
+            <button class="dialog-close" type="button" aria-label="Close image preview" @click="closeImagePreview()">
+              ×
+            </button>
+
+            <div class="image-preview-stage">
+              <img
+                :src="getBikeImageUrl(activeImagePreview.bike, activeImagePreview.index)"
+                :alt="`${activeImagePreview.bike.brand} ${activeImagePreview.bike.model}`"
+              />
+            </div>
+
+            <div v-if="activeImagePreview.images.length > 1" class="image-preview-thumbs">
+              <button
+                v-for="(image, index) in activeImagePreview.images"
+                :key="`${activeImagePreview.bike.id}-preview-${index}`"
+                type="button"
+                class="image-preview-thumb"
+                :class="{ active: activeImagePreview.index === index }"
+                @click="activeImagePreview.index = index"
+              >
+                <img :src="getBikeImageUrl(activeImagePreview.bike, index)" :alt="`${activeImagePreview.bike.brand} ${activeImagePreview.bike.model} preview ${index + 1}`" />
+              </button>
+            </div>
+          </div>
+        </div>
 
         <div v-if="selectedBike" class="booking-overlay" @click.self="selectedBike = null">
           <form class="booking-dialog" @submit.prevent="submitBooking">
@@ -709,8 +789,10 @@ onMounted(async () => {
   position: relative;
   display: grid;
   place-items: center;
-  height: 210px;
+  aspect-ratio: 16 / 11;
+  min-height: 180px;
   overflow: hidden;
+  cursor: pointer;
 }
 
 .browse-image {
@@ -754,6 +836,96 @@ onMounted(async () => {
   margin-right: 6px;
   border-radius: 50%;
   background: currentColor;
+}
+
+.browse-thumbs {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(52px, 1fr));
+  gap: 8px;
+  padding: 14px 16px 0;
+}
+
+.browse-thumb-btn {
+  width: 100%;
+  height: 52px;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 2px solid transparent;
+  background: #f3f6fb;
+  padding: 0;
+}
+
+.browse-thumb-btn img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.browse-thumb-btn.active {
+  border-color: var(--orange);
+}
+
+.image-preview-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1600;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(8, 27, 54, 0.7);
+}
+
+.image-preview-dialog {
+  width: min(100%, 760px);
+  padding: 26px;
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 0 28px 80px -30px rgba(8, 27, 54, 0.6);
+  position: relative;
+}
+
+.image-preview-stage {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #edf3fb;
+}
+
+.image-preview-stage img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.image-preview-thumbs {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(76px, 1fr));
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.image-preview-thumb {
+  width: 100%;
+  height: 76px;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 2px solid transparent;
+  background: #edf3fb;
+  padding: 0;
+}
+
+.image-preview-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.image-preview-thumb.active {
+  border-color: var(--blue);
 }
 
 .browse-body {
