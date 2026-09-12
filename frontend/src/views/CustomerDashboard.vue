@@ -34,6 +34,7 @@ const profile = reactive({ name: '', email: '', phone: '', address: '', profile_
 const profileImageFile = ref(null)
 const documents = ref([])
 const selectedDocument = ref(null)
+const selectedDocumentPreview = ref('')
 const documentType = ref('drivers_license')
 const editingDocumentId = ref(null)
 const isSaving = ref(false)
@@ -255,6 +256,7 @@ function editDocument(document) {
   documentType.value = document.document_type
   editingDocumentId.value = document.id
   selectedDocument.value = null
+  selectedDocumentPreview.value = ''
   actionMessage.value = `Editing document #${document.id}. Select a new file and choose the correct ID type to update it.`
   actionError.value = ''
 }
@@ -262,8 +264,16 @@ function editDocument(document) {
 function cancelDocumentEdit() {
   editingDocumentId.value = null
   selectedDocument.value = null
+  selectedDocumentPreview.value = ''
   documentType.value = 'drivers_license'
   actionMessage.value = 'Edit canceled. You can upload a new document now.'
+  actionError.value = ''
+}
+
+function handleDocumentSelection(event) {
+  const file = event.target.files?.[0] || null
+  selectedDocument.value = file
+  selectedDocumentPreview.value = file && file.type.startsWith('image/') ? URL.createObjectURL(file) : ''
   actionError.value = ''
 }
 
@@ -278,6 +288,7 @@ async function uploadDocument() {
   try {
     await api.uploadDocument(formData)
     selectedDocument.value = null
+    selectedDocumentPreview.value = ''
     actionMessage.value = isEditing
       ? 'Document updated for verification.'
       : 'Document uploaded for verification.'
@@ -683,8 +694,18 @@ onMounted(async () => {
                   <option value="drivers_license">Driver's license</option>
                   <option value="valid_id">Valid ID</option>
                   <option value="other">Other</option>
-                </select></label><label class="file-input">Upload requirement<input type="file" accept="image/*,.pdf"
-                  @change="selectedDocument = $event.target.files[0]" /></label><button class="btn btn-primary btn-sm"
+                </select></label>
+              <label class="file-input">Upload requirement<input type="file" accept="image/*,.pdf"
+                  @change="handleDocumentSelection" /></label>
+
+              <div v-if="selectedDocumentPreview" class="document-preview-box">
+                <img :src="selectedDocumentPreview" alt="Selected document preview" />
+              </div>
+              <div v-else-if="selectedDocument" class="document-preview-box placeholder">
+                <span>{{ selectedDocument.name }}</span>
+              </div>
+
+              <button class="btn btn-primary btn-sm"
                 type="button" :disabled="!selectedDocument || isSaving" @click="uploadDocument">{{ isSaving ?
                   'Uploading...' : editingDocumentId ? 'Update document' : 'Upload document' }}</button>
             </div>
@@ -1260,6 +1281,33 @@ onMounted(async () => {
   align-items: end;
   gap: 14px;
   margin-bottom: 25px;
+}
+
+.document-preview-box {
+  grid-column: 1 / -1;
+  width: min(100%, 240px);
+  min-height: 120px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+  background: #f6f8fc;
+  display: grid;
+  place-items: center;
+  margin-top: 4px;
+}
+
+.document-preview-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.document-preview-box.placeholder {
+  padding: 12px;
+  color: var(--ink-soft);
+  font-size: 0.76rem;
+  text-align: center;
 }
 
 .file-input input {
