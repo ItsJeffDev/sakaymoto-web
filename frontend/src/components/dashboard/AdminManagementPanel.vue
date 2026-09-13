@@ -227,12 +227,8 @@ onMounted(load)
         <h2>{{ section }}</h2>
       </div>
       <div class="panel-actions">
-        <button
-          v-if="section === 'Motorcycles'"
-          class="btn btn-navy btn-sm"
-          type="button"
-          @click="showAddMotorcycleForm = !showAddMotorcycleForm"
-        >
+        <button v-if="section === 'Motorcycles'" class="btn btn-navy btn-sm" type="button"
+          @click="showAddMotorcycleForm = !showAddMotorcycleForm">
           {{ showAddMotorcycleForm ? 'Close form' : 'Add motorcycle' }}
         </button>
         <button class="text-button" type="button" @click="load">Refresh</button>
@@ -244,10 +240,7 @@ onMounted(load)
       <p>{{ error }}</p>
       <button class="btn btn-navy btn-sm" type="button" @click="load">Try again</button>
     </div>
-    <div
-      v-else-if="section === 'Motorcycles' && showAddMotorcycleForm"
-      class="motorcycle-form-panel"
-    >
+    <div v-else-if="section === 'Motorcycles' && showAddMotorcycleForm" class="motorcycle-form-panel">
       <div class="motorcycle-form-header">
         <div>
           <span class="panel-label">New inventory</span>
@@ -282,7 +275,8 @@ onMounted(load)
           </div>
           <div class="form-field">
             <label for="motorcycle-price">Price per day</label>
-            <input id="motorcycle-price" v-model="motorcycleForm.price_per_day" type="number" min="1" step="0.01" placeholder="850" />
+            <input id="motorcycle-price" v-model="motorcycleForm.price_per_day" type="number" min="1" step="0.01"
+              placeholder="850" />
           </div>
           <div class="form-field">
             <label for="motorcycle-status">Status</label>
@@ -300,12 +294,8 @@ onMounted(load)
 
         <div class="form-field full-width">
           <label for="motorcycle-description">Description</label>
-          <textarea
-            id="motorcycle-description"
-            v-model="motorcycleForm.description"
-            rows="4"
-            placeholder="Optional notes about the bike, condition, or features"
-          />
+          <textarea id="motorcycle-description" v-model="motorcycleForm.description" rows="4"
+            placeholder="Optional notes about the bike, condition, or features" />
         </div>
 
         <div class="motorcycle-form-actions">
@@ -319,16 +309,13 @@ onMounted(load)
 
     <div v-else-if="section === 'Reports & analytics'" class="report-grid">
       <div>
-        <strong>{{ report?.customers || 0 }}</strong
-        ><span>Customers</span>
+        <strong>{{ report?.customers || 0 }}</strong><span>Customers</span>
       </div>
       <div>
-        <strong>{{ report?.active_bookings || 0 }}</strong
-        ><span>Active bookings</span>
+        <strong>{{ report?.active_bookings || 0 }}</strong><span>Active bookings</span>
       </div>
       <div>
-        <strong>PHP {{ Number(report?.verified_revenue || 0).toLocaleString() }}</strong
-        ><span>Verified revenue</span>
+        <strong>PHP {{ Number(report?.verified_revenue || 0).toLocaleString() }}</strong><span>Verified revenue</span>
       </div>
     </div>
     <div v-else-if="section === 'Customers'" class="table-scroll">
@@ -368,11 +355,7 @@ onMounted(load)
       <p v-if="!rows.length" class="management-state">No customers found.</p>
     </div>
 
-    <div
-      v-if="selectedUser"
-      class="customer-inspect-overlay"
-      @click.self="closeInspection"
-    >
+    <div v-if="selectedUser" class="customer-inspect-overlay" @click.self="closeInspection">
       <div class="customer-inspect-panel">
         <button class="dialog-close" type="button" aria-label="Close inspection" @click="closeInspection">
           ×
@@ -380,11 +363,8 @@ onMounted(load)
 
         <div class="customer-inspect-header">
           <div class="customer-inspect-avatar">
-            <img
-              v-if="selectedUser.profile_image"
-              :src="getFileUrl(selectedUser.profile_image)"
-              :alt="`${selectedUser.name} profile`"
-            />
+            <img v-if="selectedUser.profile_image" :src="getFileUrl(selectedUser.profile_image)"
+              :alt="`${selectedUser.name} profile`" />
             <span v-else>{{ selectedUser.name?.slice(0, 2).toUpperCase() || 'US' }}</span>
           </div>
           <div>
@@ -414,21 +394,11 @@ onMounted(load)
         </div>
 
         <div v-if="getCustomerDocuments(selectedUser.id).length" class="document-grid">
-          <article
-            v-for="document in getCustomerDocuments(selectedUser.id)"
-            :key="document.id"
-            class="document-card"
-          >
-            <button
-              class="document-preview"
-              type="button"
-              @click="selectedDocumentPreview = getFileUrl(document.file_url)"
-            >
-              <img
-                v-if="document.file_url"
-                :src="getFileUrl(document.file_url)"
-                :alt="`${formatDocumentType(document.document_type)} preview`"
-              />
+          <article v-for="document in getCustomerDocuments(selectedUser.id)" :key="document.id" class="document-card">
+            <button class="document-preview" type="button"
+              @click="selectedDocumentPreview = getFileUrl(document.file_url)">
+              <img v-if="document.file_url" :src="getFileUrl(document.file_url)"
+                :alt="`${formatDocumentType(document.document_type)} preview`" />
               <span v-else>No preview</span>
             </button>
             <div class="document-details">
@@ -439,7 +409,8 @@ onMounted(load)
                 <button class="table-action" type="button" @click="updateDocumentStatus(document.id, 'verified')">
                   Confirm
                 </button>
-                <button class="table-action danger" type="button" @click="updateDocumentStatus(document.id, 'rejected')">
+                <button class="table-action danger" type="button"
+                  @click="updateDocumentStatus(document.id, 'rejected')">
                   Remove
                 </button>
               </div>
@@ -453,18 +424,9 @@ onMounted(load)
       </div>
     </div>
 
-    <div
-      v-if="selectedDocumentPreview"
-      class="image-preview-overlay"
-      @click.self="selectedDocumentPreview = ''"
-    >
+    <div v-if="selectedDocumentPreview" class="image-preview-overlay" @click.self="selectedDocumentPreview = ''">
       <div class="image-preview-panel">
-        <button
-          class="dialog-close"
-          type="button"
-          aria-label="Close preview"
-          @click="selectedDocumentPreview = ''"
-        >
+        <button class="dialog-close" type="button" aria-label="Close preview" @click="selectedDocumentPreview = ''">
           ×
         </button>
         <img :src="selectedDocumentPreview" alt="Document preview" />
@@ -490,19 +452,10 @@ onMounted(load)
               <span class="table-status" :class="booking.status">{{ booking.status }}</span>
             </td>
             <td>
-              <button
-                v-if="booking.status === 'pending'"
-                class="table-action"
-                type="button"
-                @click="updateBooking(booking.id, 'confirmed')"
-              >
-                Approve</button
-              ><button
-                v-if="booking.status === 'pending'"
-                class="table-action danger"
-                type="button"
-                @click="updateBooking(booking.id, 'cancelled')"
-              >
+              <button v-if="booking.status === 'pending'" class="table-action" type="button"
+                @click="updateBooking(booking.id, 'confirmed')">
+                Approve</button><button v-if="booking.status === 'pending'" class="table-action danger" type="button"
+                @click="updateBooking(booking.id, 'cancelled')">
                 Reject
               </button>
             </td>
@@ -543,6 +496,82 @@ onMounted(load)
   max-width: 1100px;
   text-align: left;
 }
+
+.management-panel table {
+  width: 100%;
+  border-collapse: collapse;
+  white-space: nowrap;
+}
+
+.management-panel th {
+  color: #919baa;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  font-weight: 700;
+  text-align: left;
+  padding: 12px 10px;
+  border-bottom: 1px solid var(--line);
+}
+
+.management-panel td {
+  color: var(--ink-soft);
+  font-size: 0.76rem;
+  padding: 14px 10px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: middle;
+}
+
+.management-panel tr:last-child td {
+  border-bottom: 0;
+}
+
+.management-panel .amount {
+  color: var(--navy);
+  font-weight: 700;
+}
+
+.table-status {
+  display: inline-block;
+  padding: 5px 8px;
+  border-radius: 5px;
+  font-size: 0.64rem;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.table-status.confirmed {
+  background: #e7f7ef;
+  color: #18734d;
+}
+
+.table-status.pending {
+  background: #fff4dc;
+  color: #a96c11;
+}
+
+.table-status.completed {
+  background: #f0f2f5;
+  color: #667085;
+}
+
+.table-status.cancelled,
+.table-status.rejected {
+  background: #fff0ed;
+  color: #a33b32;
+}
+
+.management-panel .table-action {
+  color: var(--blue);
+  font-size: 0.7rem;
+  font-weight: 700;
+  margin-right: 10px;
+}
+
+.management-panel .table-action.danger {
+  color: #a33b32;
+}
+
 .management-state {
   min-height: 130px;
   display: grid;
@@ -552,50 +581,61 @@ onMounted(load)
   color: var(--ink-soft);
   font-size: 0.8rem;
 }
+
 .management-state.error {
   color: #a33b32;
 }
+
 .report-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 14px;
 }
+
 .report-grid div {
   padding: 20px;
   border: 1px solid var(--line);
   border-radius: 10px;
 }
+
 .report-grid strong,
 .report-grid span {
   display: block;
 }
+
 .report-grid strong {
   color: var(--navy);
   font: 700 1.35rem var(--ff-display);
 }
+
 .report-grid span {
   color: var(--ink-soft);
   font-size: 0.74rem;
   margin-top: 5px;
 }
+
 .table-action {
   color: var(--blue);
   font-size: 0.7rem;
   font-weight: 700;
   margin-right: 10px;
 }
+
 .table-action.danger {
   color: #a33b32;
 }
+
 .customer-docs-cell {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
 }
+
 .customer-docs-cell span {
   color: var(--ink-soft);
 }
+
 .customer-inspect-overlay,
 .image-preview-overlay {
   position: fixed;
@@ -606,6 +646,7 @@ onMounted(load)
   padding: 24px;
   background: rgba(8, 27, 54, 0.6);
 }
+
 .customer-inspect-panel {
   width: min(100%, 760px);
   padding: 26px;
@@ -614,12 +655,14 @@ onMounted(load)
   box-shadow: 0 25px 70px -20px rgba(8, 27, 54, 0.45);
   position: relative;
 }
+
 .customer-inspect-header {
   display: flex;
   align-items: center;
   gap: 16px;
   margin-bottom: 20px;
 }
+
 .customer-inspect-avatar {
   width: 62px;
   height: 62px;
@@ -631,27 +674,32 @@ onMounted(load)
   font: 700 1rem var(--ff-display);
   overflow: hidden;
 }
+
 .customer-inspect-avatar img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
+
 .customer-inspect-header h3 {
   font-size: 1.4rem;
   margin-top: 4px;
 }
+
 .customer-inspect-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
   margin-bottom: 22px;
 }
+
 .customer-inspect-card {
   border: 1px solid var(--line);
   border-radius: 14px;
   padding: 16px;
   background: var(--bg);
 }
+
 .card-label {
   display: block;
   color: var(--ink-soft);
@@ -661,25 +709,30 @@ onMounted(load)
   font-weight: 700;
   margin-bottom: 10px;
 }
+
 .customer-inspect-card p {
   color: var(--ink-soft);
   font-size: 0.8rem;
   margin-bottom: 4px;
 }
+
 .identity-check strong {
   color: var(--navy);
 }
+
 .document-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 16px;
 }
+
 .document-card {
   border: 1px solid var(--line);
   border-radius: 14px;
   background: #fff;
   overflow: hidden;
 }
+
 .document-preview {
   display: block;
   width: 100%;
@@ -690,30 +743,36 @@ onMounted(load)
   overflow: hidden;
   cursor: pointer;
 }
+
 .document-preview img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
 }
+
 .document-details {
   display: grid;
   gap: 4px;
   padding: 12px 14px 14px;
 }
+
 .document-details span,
 .document-details small {
   color: var(--ink-soft);
   font-size: 0.72rem;
 }
+
 .document-details strong {
   color: var(--navy);
   font-size: 0.82rem;
 }
+
 .no-documents {
   min-height: 120px;
   color: var(--ink-soft);
 }
+
 .image-preview-panel {
   width: min(100%, 760px);
   position: relative;
@@ -722,6 +781,7 @@ onMounted(load)
   padding: 18px;
   box-shadow: 0 25px 70px -20px rgba(8, 27, 54, 0.45);
 }
+
 .image-preview-panel img {
   width: 100%;
   max-height: 74vh;
@@ -729,6 +789,7 @@ onMounted(load)
   border-radius: 12px;
   display: block;
 }
+
 .dialog-close {
   position: absolute;
   top: 14px;
@@ -740,11 +801,13 @@ onMounted(load)
   border: 0;
   cursor: pointer;
 }
+
 .panel-actions {
   display: flex;
   align-items: center;
   gap: 10px;
 }
+
 .motorcycle-form-panel {
   margin-bottom: 18px;
   padding: 18px;
@@ -752,29 +815,36 @@ onMounted(load)
   border-radius: 16px;
   background: linear-gradient(180deg, #f8fbff, #ffffff);
 }
+
 .motorcycle-form-header {
   margin-bottom: 14px;
 }
+
 .motorcycle-form-header h3 {
   margin-top: 6px;
   font-size: 1.1rem;
 }
+
 .motorcycle-form {
   display: grid;
   gap: 18px;
 }
+
 .form-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
 }
+
 .form-field {
   display: grid;
   gap: 6px;
 }
+
 .form-field.full-width {
   grid-column: 1 / -1;
 }
+
 .form-field label {
   color: var(--navy);
   font-size: 0.72rem;
@@ -782,6 +852,7 @@ onMounted(load)
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
+
 .form-field input,
 .form-field select,
 .form-field textarea {
@@ -793,38 +864,45 @@ onMounted(load)
   color: var(--navy);
   font: inherit;
 }
+
 .form-field textarea {
   resize: vertical;
   min-height: 100px;
 }
+
 .form-field input:focus,
 .form-field select:focus,
 .form-field textarea:focus {
   outline: 2px solid rgba(58, 113, 221, 0.22);
   border-color: var(--blue);
 }
+
 .motorcycle-form-actions {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 12px;
 }
+
 .form-message {
   padding: 10px 12px;
   border-radius: 10px;
   margin-bottom: 14px;
   font-size: 0.8rem;
 }
+
 .form-message.error {
   background: #fff0ed;
   color: #a33b32;
   border: 1px solid rgba(163, 59, 50, 0.2);
 }
+
 .form-message.success {
   background: #eafaf1;
   color: #18734d;
   border: 1px solid rgba(24, 115, 77, 0.2);
 }
+
 @media (max-width: 700px) {
   .report-grid,
   .form-grid {
@@ -832,71 +910,85 @@ onMounted(load)
   .report-grid {
     grid-template-columns: 1fr;
   }
+
   .customer-inspect-grid {
     grid-template-columns: 1fr;
   }
+
   .panel-actions {
     width: 100%;
     justify-content: flex-end;
   }
+
+  .management-panel table {
+    width: 100%;
+    border-collapse: collapse;
+    white-space: nowrap;
+  }
+
+  .management-panel th {
+    color: #919baa;
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    font-weight: 700;
+    text-align: left;
+    padding: 12px 10px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .management-panel td {
+    color: var(--ink-soft);
+    font-size: 0.76rem;
+    padding: 14px 10px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .management-panel tr:last-child td {
+    border-bottom: 0;
+  }
+
+  .management-panel .amount {
+    color: var(--navy);
+    font-weight: 700;
+  }
+
+  .table-status {
+    display: inline-block;
+    padding: 5px 8px;
+    border-radius: 5px;
+    font-size: 0.64rem;
+    font-weight: 700;
+    text-transform: capitalize;
+  }
+
+  .table-status.confirmed {
+    background: #e7f7ef;
+    color: #18734d;
+  }
+
+  .table-status.pending {
+    background: #fff4dc;
+    color: #a96c11;
+  }
+
+  .table-status.completed {
+    background: #f0f2f5;
+    color: #667085;
+  }
+
+  .table-status.cancelled {
+    background: #fff0ed;
+    color: #a33b32;
+  }
+
+  .management-panel .table-action {
+    padding: 5px 0;
+  }
+
+  .management-panel .table-action:focus-visible {
+    outline: 2px solid var(--blue);
+    outline-offset: 3px;
+  }
 }
-.management-panel table {
-  width: 100%;
-  border-collapse: collapse;
-  white-space: nowrap;
-}
-.management-panel th {
-  color: #919baa;
-  font-size: 0.65rem;
-  text-transform: uppercase;
-  letter-spacing: 0.07em;
-  font-weight: 700;
-  text-align: left;
-  padding: 12px 10px;
-  border-bottom: 1px solid var(--line);
-}
-.management-panel td {
-  color: var(--ink-soft);
-  font-size: 0.76rem;
-  padding: 14px 10px;
-  border-bottom: 1px solid var(--line);
-}
-.management-panel tr:last-child td {
-  border-bottom: 0;
-}
-.management-panel .amount {
-  color: var(--navy);
-  font-weight: 700;
-}
-.table-status {
-  display: inline-block;
-  padding: 5px 8px;
-  border-radius: 5px;
-  font-size: 0.64rem;
-  font-weight: 700;
-  text-transform: capitalize;
-}
-.table-status.confirmed {
-  background: #e7f7ef;
-  color: #18734d;
-}
-.table-status.pending {
-  background: #fff4dc;
-  color: #a96c11;
-}
-.table-status.completed {
-  background: #f0f2f5;
-  color: #667085;
-}
-.table-status.cancelled {
-  background: #fff0ed;
-  color: #a33b32;
-}
-.management-panel .table-action {
-  padding: 5px 0;
-}
-.management-panel .table-action:focus-visible {
-  outline: 2px solid var(--blue);
-  outline-offset: 3px;
-}
-</style>
+  </style>
