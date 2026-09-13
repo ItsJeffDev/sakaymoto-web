@@ -5,8 +5,9 @@ export const useModalStore = defineStore('modal', () => {
   const isOpen = ref(false)
   const activeTab = ref('login')
 
-  function open() {
+  function open(tab) {
     isOpen.value = true
+    if (tab) activeTab.value = tab
   }
 
   function close() {
