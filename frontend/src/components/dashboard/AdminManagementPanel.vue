@@ -7,6 +7,24 @@ const rows = ref([])
 const report = ref(null)
 const isLoading = ref(false)
 const error = ref('')
+const formError = ref('')
+const successMessage = ref('')
+const customerDocuments = ref({})
+const selectedUser = ref(null)
+const selectedDocumentPreview = ref('')
+const showAddMotorcycleForm = ref(false)
+const selectedImage = ref(null)
+const apiBaseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:3000/api').replace(/\/api$/, '')
+const motorcycleForm = ref({
+  brand: '',
+  model: '',
+  year: '',
+  plate_number: '',
+  color: '',
+  price_per_day: '',
+  status: 'available',
+  description: '',
+})
 const customerDocuments = ref({})
 const selectedUser = ref(null)
 const selectedDocumentPreview = ref('')
@@ -79,6 +97,77 @@ async function loadCustomerDocuments(users = []) {
   customerDocuments.value = Object.fromEntries(results)
 }
 
+function resetMotorcycleForm() {
+  motorcycleForm.value = {
+    brand: '',
+    model: '',
+    year: '',
+    plate_number: '',
+    color: '',
+    price_per_day: '',
+    status: 'available',
+    description: '',
+  }
+  selectedImage.value = null
+  formError.value = ''
+}
+
+function onImageChange(event) {
+  selectedImage.value = event.target.files?.[0] || null
+}
+
+async function submitMotorcycle() {
+  formError.value = ''
+  successMessage.value = ''
+
+  const { brand, model, year, plate_number, color, price_per_day, status, description } = motorcycleForm.value
+
+  if (!brand || !model || !year || !plate_number || !color || !price_per_day) {
+    formError.value = 'Please fill in all required motorcycle fields.'
+    return
+  }
+
+  const yearValue = Number(year)
+  const priceValue = Number(price_per_day)
+
+  if (!Number.isInteger(yearValue) || yearValue < 2000 || yearValue > new Date().getFullYear() + 1) {
+    formError.value = 'Please enter a valid year between 2000 and the next year.'
+    return
+  }
+
+  if (!Number.isFinite(priceValue) || priceValue <= 0) {
+    formError.value = 'Please enter a valid daily rate greater than zero.'
+    return
+  }
+
+  try {
+    const createdMotorcycle = await api.createMotorcycle({
+      brand: brand.trim(),
+      model: model.trim(),
+      year: yearValue,
+      plate_number: plate_number.trim(),
+      color: color.trim(),
+      price_per_day: priceValue,
+      status,
+      description: description.trim() || null,
+    })
+
+    if (selectedImage.value) {
+      const imagePayload = new FormData()
+      imagePayload.append('image', selectedImage.value)
+      imagePayload.append('is_primary', 'true')
+      await api.uploadMotorcycleImage(createdMotorcycle.id, imagePayload)
+    }
+
+    successMessage.value = 'Motorcycle added successfully.'
+    resetMotorcycleForm()
+    showAddMotorcycleForm.value = false
+    await load()
+  } catch (submitError) {
+    formError.value = submitError.message
+  }
+}
+
 async function load() {
   isLoading.value = true
   error.value = ''
@@ -137,6 +226,17 @@ onMounted(load)
         <span class="panel-label">Management</span>
         <h2>{{ section }}</h2>
       </div>
+      <div class="panel-actions">
+        <button
+          v-if="section === 'Motorcycles'"
+          class="btn btn-navy btn-sm"
+          type="button"
+          @click="showAddMotorcycleForm = !showAddMotorcycleForm"
+        >
+          {{ showAddMotorcycleForm ? 'Close form' : 'Add motorcycle' }}
+        </button>
+        <button class="text-button" type="button" @click="load">Refresh</button>
+      </div>
       <button class="text-button" type="button" @click="load">Refresh</button>
     </div>
     <div v-if="isLoading" class="management-state">Loading {{ section.toLowerCase() }}...</div>
@@ -144,6 +244,79 @@ onMounted(load)
       <p>{{ error }}</p>
       <button class="btn btn-navy btn-sm" type="button" @click="load">Try again</button>
     </div>
+    <div
+      v-else-if="section === 'Motorcycles' && showAddMotorcycleForm"
+      class="motorcycle-form-panel"
+    >
+      <div class="motorcycle-form-header">
+        <div>
+          <span class="panel-label">New inventory</span>
+          <h3>Add a motorcycle</h3>
+        </div>
+      </div>
+
+      <div v-if="formError" class="form-message error">{{ formError }}</div>
+      <div v-if="successMessage" class="form-message success">{{ successMessage }}</div>
+
+      <form class="motorcycle-form" @submit.prevent="submitMotorcycle">
+        <div class="form-grid">
+          <div class="form-field">
+            <label for="motorcycle-brand">Brand</label>
+            <input id="motorcycle-brand" v-model="motorcycleForm.brand" type="text" placeholder="Honda" />
+          </div>
+          <div class="form-field">
+            <label for="motorcycle-model">Model</label>
+            <input id="motorcycle-model" v-model="motorcycleForm.model" type="text" placeholder="Click 125" />
+          </div>
+          <div class="form-field">
+            <label for="motorcycle-year">Year</label>
+            <input id="motorcycle-year" v-model="motorcycleForm.year" type="number" min="2000" placeholder="2026" />
+          </div>
+          <div class="form-field">
+            <label for="motorcycle-plate">Plate number</label>
+            <input id="motorcycle-plate" v-model="motorcycleForm.plate_number" type="text" placeholder="ABC 1234" />
+          </div>
+          <div class="form-field">
+            <label for="motorcycle-color">Color</label>
+            <input id="motorcycle-color" v-model="motorcycleForm.color" type="text" placeholder="Black" />
+          </div>
+          <div class="form-field">
+            <label for="motorcycle-price">Price per day</label>
+            <input id="motorcycle-price" v-model="motorcycleForm.price_per_day" type="number" min="1" step="0.01" placeholder="850" />
+          </div>
+          <div class="form-field">
+            <label for="motorcycle-status">Status</label>
+            <select id="motorcycle-status" v-model="motorcycleForm.status">
+              <option value="available">Available</option>
+              <option value="maintenance">Maintenance</option>
+              <option value="inactive">Inactive</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label for="motorcycle-image">Image</label>
+            <input id="motorcycle-image" type="file" accept="image/*" @change="onImageChange" />
+          </div>
+        </div>
+
+        <div class="form-field full-width">
+          <label for="motorcycle-description">Description</label>
+          <textarea
+            id="motorcycle-description"
+            v-model="motorcycleForm.description"
+            rows="4"
+            placeholder="Optional notes about the bike, condition, or features"
+          />
+        </div>
+
+        <div class="motorcycle-form-actions">
+          <button class="btn btn-navy btn-sm" type="submit">Save motorcycle</button>
+          <button class="text-button" type="button" @click="showAddMotorcycleForm = false; resetMotorcycleForm()">
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
+
     <div v-else-if="section === 'Reports & analytics'" class="report-grid">
       <div>
         <strong>{{ report?.customers || 0 }}</strong
@@ -567,12 +740,104 @@ onMounted(load)
   border: 0;
   cursor: pointer;
 }
+.panel-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.motorcycle-form-panel {
+  margin-bottom: 18px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: linear-gradient(180deg, #f8fbff, #ffffff);
+}
+.motorcycle-form-header {
+  margin-bottom: 14px;
+}
+.motorcycle-form-header h3 {
+  margin-top: 6px;
+  font-size: 1.1rem;
+}
+.motorcycle-form {
+  display: grid;
+  gap: 18px;
+}
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+.form-field {
+  display: grid;
+  gap: 6px;
+}
+.form-field.full-width {
+  grid-column: 1 / -1;
+}
+.form-field label {
+  color: var(--navy);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.form-field input,
+.form-field select,
+.form-field textarea {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 12px;
+  background: #fff;
+  color: var(--navy);
+  font: inherit;
+}
+.form-field textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+.form-field input:focus,
+.form-field select:focus,
+.form-field textarea:focus {
+  outline: 2px solid rgba(58, 113, 221, 0.22);
+  border-color: var(--blue);
+}
+.motorcycle-form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+.form-message {
+  padding: 10px 12px;
+  border-radius: 10px;
+  margin-bottom: 14px;
+  font-size: 0.8rem;
+}
+.form-message.error {
+  background: #fff0ed;
+  color: #a33b32;
+  border: 1px solid rgba(163, 59, 50, 0.2);
+}
+.form-message.success {
+  background: #eafaf1;
+  color: #18734d;
+  border: 1px solid rgba(24, 115, 77, 0.2);
+}
+@media (max-width: 700px) {
+  .report-grid,
+  .form-grid {
 @media (max-width: 700px) {
   .report-grid {
     grid-template-columns: 1fr;
   }
   .customer-inspect-grid {
     grid-template-columns: 1fr;
+  }
+  .panel-actions {
+    width: 100%;
+    justify-content: flex-end;
   }
 }
 .management-panel table {

@@ -37,6 +37,8 @@ export const api = {
   motorcyclesAdmin: () => apiRequest('/motorcycles?status=all'),
   createMotorcycle: (body) =>
     apiRequest('/motorcycles', { method: 'POST', body: JSON.stringify(body) }),
+  uploadMotorcycleImage: (id, formData) =>
+    apiRequest(`/motorcycles/${id}/images`, { method: 'POST', body: formData }),
   updateMotorcycle: (id, body) =>
     apiRequest(`/motorcycles/${id}`, { method: 'PATCH', body: JSON.stringify(body) }),
   deleteMotorcycle: (id) => apiRequest(`/motorcycles/${id}`, { method: 'DELETE' }),
