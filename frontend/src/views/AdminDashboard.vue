@@ -159,7 +159,6 @@ onMounted(async () => {
             <img :src="profileImageSrc" alt="Admin profile photo" />
           </div>
           <div v-else class="avatar avatar-blue">{{ adminInitials }}</div>
-          <ChevronDown :size="16" class="topbar-chevron" />
         </div>
       </header>
 

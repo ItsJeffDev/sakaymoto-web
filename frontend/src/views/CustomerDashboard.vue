@@ -1460,6 +1460,20 @@ onMounted(async () => {
   background: #e7f7ef;
 }
 
+<<<<<<< HEAD
+=======
+.booking-status.pending {
+  color: #a96c11;
+  background: #fff4dc;
+}
+
+.booking-status.cancelled,
+.booking-status.rejected {
+  color: #a33b32;
+  background: #fff0ed;
+}
+
+>>>>>>> 7b8435d (Update admin dashboard)
 .booking-status.completed {
   color: #667085;
   background: #f0f2f5;
