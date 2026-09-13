@@ -20,8 +20,9 @@ import MotoIcon from '../icons/MotoIcon.vue'
       <div>
         <h1>Renting a motorcycle<br />should feel as fast <em>as riding one.</em></h1>
         <p class="lead">
-          SakayMoto replaces the back and forth Messenger chats and paper logbooks with real time availability, instant
-          booking requests and a simple dashboard we use to run things smoothly.
+          SakayMoto replaces the back and forth Messenger chats and paper logbooks with real time
+          availability, instant booking requests and a simple dashboard we use to run things
+          smoothly.
         </p>
         <div class="hero-cta">
           <a href="#motorcycles" class="btn btn-primary">Browse Motorcycles</a>
@@ -32,8 +33,11 @@ import MotoIcon from '../icons/MotoIcon.vue'
       <div class="hero-visual">
         <span class="visual-glow" aria-hidden="true"></span>
         <div class="hero-card main">
-          <img src="../../assets/images/motor-top.png"
-            alt="Honda Click 125 scooter available for rent" class="bike-img" />
+          <img
+            src="../../assets/images/motor-top.png"
+            alt="Honda Click 125 scooter available for rent"
+            class="bike-img"
+          />
           <div class="price-row">
             <div><b>Honda Click 125</b> <br /><span>Scooter · Automatic</span></div>
             <div><b>₱300 </b><span>per day</span></div>
@@ -106,7 +110,6 @@ import MotoIcon from '../icons/MotoIcon.vue'
 }
 
 @keyframes drift {
-
   0%,
   100% {
     transform: translate(0, 0) scale(1);

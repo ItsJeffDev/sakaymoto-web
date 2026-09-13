@@ -25,6 +25,10 @@ const motorcycleForm = ref({
   status: 'available',
   description: '',
 })
+const customerDocuments = ref({})
+const selectedUser = ref(null)
+const selectedDocumentPreview = ref('')
+const apiBaseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:3000/api').replace(/\/api$/, '')
 
 function getFileUrl(path) {
   if (!path) return ''
@@ -233,6 +237,7 @@ onMounted(load)
         </button>
         <button class="text-button" type="button" @click="load">Refresh</button>
       </div>
+      <button class="text-button" type="button" @click="load">Refresh</button>
     </div>
     <div v-if="isLoading" class="management-state">Loading {{ section.toLowerCase() }}...</div>
     <div v-else-if="error" class="management-state error">
@@ -823,6 +828,8 @@ onMounted(load)
 @media (max-width: 700px) {
   .report-grid,
   .form-grid {
+@media (max-width: 700px) {
+  .report-grid {
     grid-template-columns: 1fr;
   }
   .customer-inspect-grid {

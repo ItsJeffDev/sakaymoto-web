@@ -37,3 +37,6 @@ __screenshots__/
 
 # Vite
 *.timestamp-*-*.mjs
+
+# Ignore the entire need_it folder
+need_it/
