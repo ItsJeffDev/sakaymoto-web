@@ -29,6 +29,45 @@ const selectedDocument = ref(null)
 const selectedDocumentPreview = ref('')
 const documentType = ref('drivers_license')
 const editingDocumentId = ref(null)
+const settings = reactive({
+  darkMode: false,
+  bookingReminders: true,
+  emailAlerts: true,
+  profileVisibility: false,
+  twoFactor: false,
+})
+const settingsList = computed(() => [
+  {
+    key: 'darkMode',
+    label: 'Dark mode',
+    description: 'Use a darker dashboard theme for night viewing.',
+    enabled: settings.darkMode,
+  },
+  {
+    key: 'bookingReminders',
+    label: 'Booking reminders',
+    description: 'Receive reminders before your booked rides begin.',
+    enabled: settings.bookingReminders,
+  },
+  {
+    key: 'emailAlerts',
+    label: 'Email alerts',
+    description: 'Receive email updates for bookings, payments, and verification.',
+    enabled: settings.emailAlerts,
+  },
+  {
+    key: 'profileVisibility',
+    label: 'Profile visibility',
+    description: 'Allow matched contacts to see your rider profile details.',
+    enabled: settings.profileVisibility,
+  },
+  {
+    key: 'twoFactor',
+    label: 'Two-factor authentication',
+    description: 'Require an extra verification step when signing in.',
+    enabled: settings.twoFactor,
+  },
+])
 const isSaving = ref(false)
 const actionMessage = ref('')
 const actionError = ref('')
@@ -348,6 +387,10 @@ async function saveProfile() {
   }
 }
 
+function toggleSetting(key) {
+  settings[key] = !settings[key]
+}
+
 function editDocument(document) {
   documentType.value = document.document_type
   editingDocumentId.value = document.id
@@ -427,7 +470,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="dashboard-frame customer-frame">
+  <div class="dashboard-frame customer-frame" :class="{ 'theme-dark': settings.darkMode }">
     <aside class="dashboard-sidebar" :class="{ open: isMenuOpen }">
       <div class="dashboard-brand">Sakay<span>Moto</span></div>
       <div class="profile-mini">
@@ -836,9 +879,20 @@ onMounted(async () => {
           </template>
           <template v-else>
             <p class="subpage-description">Review the account preferences supported by your SakayMoto profile.</p>
+            <div class="settings-grid">
+              <div v-for="item in settingsList" :key="item.key" class="setting-card">
+                <div class="setting-copy">
+                  <strong>{{ item.label }}</strong>
+                  <span>{{ item.description }}</span>
+                </div>
+                <button class="toggle-button" :class="{ active: item.enabled }" type="button" @click="toggleSetting(item.key)">
+                  <span>{{ item.enabled ? 'On' : 'Off' }}</span>
+                </button>
+              </div>
+            </div>
             <div class="customer-detail-list">
               <div class="customer-detail-row"><span class="detail-number">01</span><strong>Booking
-                  reminders</strong><span class="setting-state">On</span></div>
+                  reminders</strong><span class="setting-state">{{ settings.bookingReminders ? 'On' : 'Off' }}</span></div>
               <div class="customer-detail-row"><span class="detail-number">02</span><strong>Account
                   verification</strong><span class="setting-state" :class="verificationState.tone">{{ verificationState.label }}</span></div>
               <div class="customer-detail-row"><span class="detail-number">03</span><strong>Uploaded documents</strong><span class="setting-state">{{ documents.length }}</span></div>
@@ -1465,6 +1519,118 @@ onMounted(async () => {
 .setting-state {
   color: #26976a;
   font-size: .75rem;
+}
+
+.settings-grid {
+  display: grid;
+  gap: 14px;
+  max-width: 720px;
+  margin-bottom: 28px;
+}
+
+.setting-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 18px 20px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #fff;
+}
+
+.setting-copy {
+  display: grid;
+  gap: 4px;
+}
+
+.setting-copy strong {
+  color: var(--navy);
+  font-size: .86rem;
+}
+
+.setting-copy span {
+  color: var(--ink-soft);
+  font-size: .75rem;
+}
+
+.toggle-button {
+  min-width: 76px;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #f1f4f8;
+  color: var(--ink-soft);
+  font: 700 .72rem var(--ff-display);
+  transition: all 0.2s ease;
+}
+
+.toggle-button.active {
+  background: var(--navy);
+  border-color: var(--navy);
+  color: #fff;
+}
+
+.customer-frame.theme-dark {
+  --navy: #edf3ff;
+  --ink: #edf3ff;
+  --ink-soft: #b7c9e5;
+  --line: #33455f;
+  --bg: #0f172a;
+  background: #0b1220;
+}
+
+.customer-frame.theme-dark .dashboard-sidebar,
+.customer-frame.theme-dark .dashboard-panel,
+.customer-frame.theme-dark .stat-card,
+.customer-frame.theme-dark .browse-card,
+.customer-frame.theme-dark .setting-card,
+.customer-frame.theme-dark .booking-dialog,
+.customer-frame.theme-dark .image-preview-dialog,
+.customer-frame.theme-dark .image-preview-panel,
+.customer-frame.theme-dark .customer-inspect-panel,
+.customer-frame.theme-dark .document-card,
+.customer-frame.theme-dark .customer-inspect-card,
+.customer-frame.theme-dark .image-preview-stage,
+.customer-frame.theme-dark .document-preview-box,
+.customer-frame.theme-dark .welcome-panel {
+  background: #111827;
+  border-color: var(--line);
+}
+
+.customer-frame.theme-dark .dashboard-main,
+.customer-frame.theme-dark .dashboard-content,
+.customer-frame.theme-dark .dashboard-panel,
+.customer-frame.theme-dark .stat-card,
+.customer-frame.theme-dark .browse-card,
+.customer-frame.theme-dark .setting-card,
+.customer-frame.theme-dark .customer-detail-row,
+.customer-frame.theme-dark .document-card,
+.customer-frame.theme-dark .customer-inspect-card {
+  color: var(--ink);
+}
+
+.customer-frame.theme-dark .notice p,
+.customer-frame.theme-dark .notice small,
+.customer-frame.theme-dark .booking-info span,
+.customer-frame.theme-dark .customer-docs-cell span,
+.customer-frame.theme-dark .setting-copy span,
+.customer-frame.theme-dark .browse-summary,
+.customer-frame.theme-dark .browse-category,
+.customer-frame.theme-dark .profile-upload-wrap small,
+.customer-frame.theme-dark .detail-number {
+  color: var(--ink-soft);
+}
+
+.customer-frame.theme-dark .toggle-button {
+  background: #1a2437;
+  border-color: var(--line);
+  color: var(--ink);
+}
+
+.customer-frame.theme-dark .toggle-button.active {
+  background: var(--blue);
+  border-color: var(--blue);
 }
 
 .welcome-panel {
