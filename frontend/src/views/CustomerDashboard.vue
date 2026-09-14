@@ -825,23 +825,7 @@ onMounted(async () => {
               <label>Address<input v-model="profile.address" placeholder="Your address" /></label>
               <button class="btn btn-primary btn-sm" type="submit" :disabled="isSaving">{{ isSaving ? 'Saving...' : 'Save profile' }}</button>
             </form>
-          </template>
-          <template v-else-if="activeSection === 'Notifications'">
-            <p class="subpage-description">Booking updates and verification notices appear here.</p>
-            <div class="notification-list">
-              <div v-for="item in notifications" :key="item.id" class="notice notification-item">
-                <span class="notice-dot" :class="item.tone"></span>
-                <div>
-                  <strong>{{ item.title }}</strong>
-                  <p>{{ item.description }}</p>
-                  <small>{{ formatNotificationDate(item.date) }}</small>
-                </div>
-              </div>
-              <div v-if="!notifications.length" class="panel-empty">
-                <Bell :size="24" />
-                <p>No notifications yet.</p>
-              </div>
-            </div>
+
             <div class="document-upload">
               <div v-if="editingDocumentId" class="document-edit-banner">
                 Editing document #{{ editingDocumentId }}
@@ -866,6 +850,13 @@ onMounted(async () => {
                 type="button" :disabled="!selectedDocument || isSaving" @click="uploadDocument">{{ isSaving ?
                   'Uploading...' : editingDocumentId ? 'Update document' : 'Upload document' }}</button>
             </div>
+
+            <div class="customer-detail-list">
+              <div class="customer-detail-row"><span class="detail-number">01</span><strong>Account
+                  verification</strong><span class="setting-state" :class="verificationState.tone">{{ verificationState.label }}</span></div>
+              <div class="customer-detail-row"><span class="detail-number">02</span><strong>Uploaded documents</strong><span class="setting-state">{{ documents.length }}</span></div>
+            </div>
+
             <div class="customer-detail-list">
               <div v-for="document in documents" :key="document.id" class="customer-detail-row"><span
                   class="detail-number">{{ document.document_type }}</span><strong>{{ document.status
@@ -874,6 +865,23 @@ onMounted(async () => {
               <div v-if="!documents.length" class="panel-empty">
                 <Bell :size="24" />
                 <p>No documents submitted yet.</p>
+              </div>
+            </div>
+          </template>
+          <template v-else-if="activeSection === 'Notifications'">
+            <p class="subpage-description">Booking updates and verification notices appear here.</p>
+            <div class="notification-list">
+              <div v-for="item in notifications" :key="item.id" class="notice notification-item">
+                <span class="notice-dot" :class="item.tone"></span>
+                <div>
+                  <strong>{{ item.title }}</strong>
+                  <p>{{ item.description }}</p>
+                  <small>{{ formatNotificationDate(item.date) }}</small>
+                </div>
+              </div>
+              <div v-if="!notifications.length" class="panel-empty">
+                <Bell :size="24" />
+                <p>No notifications yet.</p>
               </div>
             </div>
           </template>
@@ -1450,6 +1458,7 @@ onMounted(async () => {
   align-items: end;
   gap: 14px;
   margin-bottom: 25px;
+  margin-top: 10px;
 }
 
 .document-preview-box {
@@ -1892,6 +1901,6 @@ onMounted(async () => {
   .document-upload {
     grid-template-columns: 1fr;
     align-items: stretch;
-  }
+    }
 }
 </style>
