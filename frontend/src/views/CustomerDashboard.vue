@@ -13,14 +13,6 @@ const loadError = ref('')
 const auth = useAuthStore()
 const router = useRouter()
 const apiBaseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:3000/api').replace(/\/api$/, '')
-const navItems = [
-  { label: 'Dashboard', icon: LayoutDashboard },
-  { label: 'Browse motorcycles', icon: Bike },
-  { label: 'My bookings', icon: ClipboardList },
-  { label: 'Profile & account', icon: UserRound },
-  { label: 'Notifications', icon: Bell, count: 3 },
-  { label: 'Settings', icon: Settings },
-]
 const sectionContent = {
   'My bookings': { eyebrow: 'Ride history', title: 'Your bookings', description: 'Keep track of upcoming rides and revisit your rental history.', action: 'Find another ride', items: ['Honda Click 160 - Confirmed', 'Yamaha NMAX - Completed'] },
   'Profile & account': { eyebrow: 'Personal details', title: 'Profile & account', description: 'Manage the information used for bookings and rider verification.', action: 'Edit profile', items: ['Juan Dela Cruz', 'juan.delacruz@email.com', 'Verified rider'] },
@@ -63,6 +55,110 @@ const filteredBrowseMotorcycles = computed(() => {
   if (activeBikeFilter.value === 'all') return browseMotorcycles.value
   return browseMotorcycles.value.filter((bike) => bike.category === activeBikeFilter.value)
 })
+const notifications = computed(() => {
+  const items = []
+
+  bookings.value.forEach((booking) => {
+    items.push({
+      id: `booking-${booking.id}`,
+      tone: booking.status === 'cancelled' ? 'error' : booking.status === 'confirmed' ? 'success' : 'pending',
+      title: `${booking.brand || 'Motorcycle'} ${booking.model || ''} is ${booking.status}`,
+      description:
+        booking.status === 'confirmed'
+          ? `Booking #${booking.id} has been confirmed.`
+          : booking.status === 'cancelled'
+            ? `Booking #${booking.id} was cancelled.`
+            : `Booking #${booking.id} is still waiting for review.`,
+      date: booking.updated_at || booking.start_date || booking.end_date,
+    })
+  })
+
+  documents.value.forEach((document) => {
+    items.push({
+      id: `document-${document.id}`,
+      tone: document.status === 'verified' ? 'success' : document.status === 'rejected' ? 'error' : 'pending',
+      title: `${formatDocumentType(document.document_type)} ${document.status}`,
+      description:
+        document.status === 'verified'
+          ? 'This document has been verified and can be used for bookings.'
+          : document.status === 'rejected'
+            ? 'This document needs to be re-uploaded or corrected.'
+            : 'This document is currently pending verification.',
+      date: document.uploaded_at,
+    })
+  })
+
+  return items.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0))
+})
+const notificationCount = computed(() => notifications.value.length)
+const verificationState = computed(() => {
+  if (!documents.value.length) {
+    return {
+      label: 'Verification required',
+      detail: 'No ID uploaded yet.',
+      tone: 'required',
+    }
+  }
+
+  if (documents.value.some((document) => document.status === 'rejected')) {
+    return {
+      label: 'Needs attention',
+      detail: 'One or more uploaded IDs were rejected.',
+      tone: 'error',
+    }
+  }
+
+  if (documents.value.some((document) => document.status === 'pending')) {
+    return {
+      label: 'Pending review',
+      detail: 'Your uploaded ID is being reviewed.',
+      tone: 'pending',
+    }
+  }
+
+  if (documents.value.some((document) => document.status === 'verified')) {
+    return {
+      label: 'Verified',
+      detail: 'Your ID has been verified successfully.',
+      tone: 'verified',
+    }
+  }
+
+  return {
+    label: 'ID uploaded',
+    detail: 'Waiting for admin review.',
+    tone: 'info',
+  }
+})
+const navItems = computed(() => [
+  { label: 'Dashboard', icon: LayoutDashboard },
+  { label: 'Browse motorcycles', icon: Bike },
+  { label: 'My bookings', icon: ClipboardList },
+  { label: 'Profile & account', icon: UserRound },
+  { label: 'Notifications', icon: Bell, count: notificationCount.value },
+  { label: 'Settings', icon: Settings },
+])
+
+function formatDocumentType(type) {
+  return {
+    drivers_license: "Driver's license",
+    valid_id: 'Valid ID',
+    other: 'Other document',
+  }[type] || type || 'Document'
+}
+
+function formatNotificationDate(value) {
+  if (!value) return 'Recently'
+
+  const parsedDate = new Date(value)
+  if (Number.isNaN(parsedDate.getTime())) return 'Recently'
+
+  return parsedDate.toLocaleDateString('en-PH', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  })
+}
 
 function getBikeImages(bike) {
   return Array.isArray(bike.images) ? bike.images.filter(Boolean) : []
@@ -325,6 +421,7 @@ onMounted(async () => {
   await auth.hydrate()
   await loadDashboard()
   await loadProfile()
+  await loadDocuments()
 })
 
 </script>
@@ -364,7 +461,7 @@ onMounted(async () => {
           <p class="dashboard-kicker">Monday, September 7, 2026</p>
           <h1>{{ activeSection === 'Dashboard' ? `Good morning, ${displayName.split(' ')[0]}` : activeSection }}</h1>
         </div>
-        <div class="topbar-actions"><button class="icon-button has-dot" type="button" aria-label="Notifications"
+        <div class="topbar-actions"><button class="icon-button" :class="{ 'has-dot': notificationCount > 0 }" type="button" aria-label="Notifications"
             @click="selectSection('Notifications')">
             <Bell :size="20" />
           </button>
@@ -445,13 +542,16 @@ onMounted(async () => {
                 <h2>Booking updates</h2>
               </div><button class="text-button" type="button" @click="selectSection('Notifications')">View all</button>
             </div>
-            <div v-if="!bookings.length" class="panel-empty">
+            <div v-if="!notifications.length" class="panel-empty">
               <Bell :size="24" />
               <p>No new booking updates.</p>
             </div>
-            <div v-else class="notice"><span class="notice-dot orange"></span>
-              <div><strong>{{ bookings[0].brand }} {{ bookings[0].model }} is {{ bookings[0].status }}</strong>
-                <p>Booking #{{ bookings[0].id }} is in your rental history.</p><small>Updated recently</small>
+            <div v-else class="notice">
+              <span class="notice-dot" :class="notifications[0].tone"></span>
+              <div>
+                <strong>{{ notifications[0].title }}</strong>
+                <p>{{ notifications[0].description }}</p>
+                <small>{{ formatNotificationDate(notifications[0].date) }}</small>
               </div>
             </div>
           </section>
@@ -685,6 +785,20 @@ onMounted(async () => {
           </template>
           <template v-else-if="activeSection === 'Notifications'">
             <p class="subpage-description">Booking updates and verification notices appear here.</p>
+            <div class="notification-list">
+              <div v-for="item in notifications" :key="item.id" class="notice notification-item">
+                <span class="notice-dot" :class="item.tone"></span>
+                <div>
+                  <strong>{{ item.title }}</strong>
+                  <p>{{ item.description }}</p>
+                  <small>{{ formatNotificationDate(item.date) }}</small>
+                </div>
+              </div>
+              <div v-if="!notifications.length" class="panel-empty">
+                <Bell :size="24" />
+                <p>No notifications yet.</p>
+              </div>
+            </div>
             <div class="document-upload">
               <div v-if="editingDocumentId" class="document-edit-banner">
                 Editing document #{{ editingDocumentId }}
@@ -726,7 +840,8 @@ onMounted(async () => {
               <div class="customer-detail-row"><span class="detail-number">01</span><strong>Booking
                   reminders</strong><span class="setting-state">On</span></div>
               <div class="customer-detail-row"><span class="detail-number">02</span><strong>Account
-                  verification</strong><span class="setting-state">Required</span></div>
+                  verification</strong><span class="setting-state" :class="verificationState.tone">{{ verificationState.label }}</span></div>
+              <div class="customer-detail-row"><span class="detail-number">03</span><strong>Uploaded documents</strong><span class="setting-state">{{ documents.length }}</span></div>
             </div>
           </template>
         </section>
@@ -1460,8 +1575,6 @@ onMounted(async () => {
   background: #e7f7ef;
 }
 
-<<<<<<< HEAD
-=======
 .booking-status.pending {
   color: #a96c11;
   background: #fff4dc;
@@ -1473,7 +1586,6 @@ onMounted(async () => {
   background: #fff0ed;
 }
 
->>>>>>> 7b8435d (Update admin dashboard)
 .booking-status.completed {
   color: #667085;
   background: #f0f2f5;

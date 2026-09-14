@@ -25,10 +25,10 @@ const motorcycleForm = ref({
   status: 'available',
   description: '',
 })
-const customerDocuments = ref({})
-const selectedUser = ref(null)
-const selectedDocumentPreview = ref('')
-const apiBaseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:3000/api').replace(/\/api$/, '')
+// const customerDocuments = ref({})
+// const selectedUser = ref(null)
+// const selectedDocumentPreview = ref('')
+// const apiBaseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:3000/api').replace(/\/api$/, '')
 
 function getFileUrl(path) {
   if (!path) return ''
@@ -906,8 +906,6 @@ onMounted(load)
 @media (max-width: 700px) {
   .report-grid,
   .form-grid {
-@media (max-width: 700px) {
-  .report-grid {
     grid-template-columns: 1fr;
   }
 
@@ -991,4 +989,4 @@ onMounted(load)
     outline-offset: 3px;
   }
 }
-  </style>
+</style>
