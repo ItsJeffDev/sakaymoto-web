@@ -8,25 +8,27 @@ const db = require("../config/db");
 const register = async (req, res) => {
     try {
         const { name, email, password } = req.body;
+        const normalizedEmail = String(email || '').trim().toLowerCase();
+        const normalizedName = String(name || '').trim();
 
         // Validate input
-        if (!name || !email || !password) {
+        if (!normalizedName || !normalizedEmail || !password) {
             return res.status(400).json({
                 message: "Name, email and password are required"
             });
         }
 
         // Check password length
-        if (password.length < 6) {
+        if (password.length < 8) {
             return res.status(400).json({
-                message: "Password must be at least 6 characters"
+                message: "Password must be at least 8 characters"
             });
         }
 
         // Check if email already exists
         const [existingUser] = await db.execute(
             "SELECT id FROM users WHERE email = ?",
-            [email]
+            [normalizedEmail]
         );
 
         if (existingUser.length > 0) {
@@ -44,8 +46,8 @@ const register = async (req, res) => {
             (name, email, password, role)
             VALUES (?, ?, ?, 'customer')`,
             [
-                name,
-                email,
+                normalizedName,
+                normalizedEmail,
                 hashedPassword
             ]
         );
@@ -54,9 +56,9 @@ const register = async (req, res) => {
             message: "Registration successful",
             user: {
                 id: result.insertId,
-                name,
-                email,
-                role: "user"
+                name: normalizedName,
+                email: normalizedEmail,
+                role: "customer"
             }
         });
 
@@ -76,6 +78,7 @@ const register = async (req, res) => {
 const login = async (req, res) => {
     try {
         const { email, password } = req.body;
+        const normalizedEmail = String(email || '').trim().toLowerCase();
 
         // Validate input
         if (!email || !password) {
@@ -87,7 +90,7 @@ const login = async (req, res) => {
         // Find user
         const [users] = await db.execute(
             "SELECT * FROM users WHERE email = ?",
-            [email]
+            [normalizedEmail]
         );
 
         if (users.length === 0) {

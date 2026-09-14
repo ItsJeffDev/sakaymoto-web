@@ -10,10 +10,13 @@ import TestimonialsSection from './components/sections/TestimonialsSection.vue'
 import CtaBanner from './components/sections/CtaBanner.vue'
 import TrustStrip from './components/sections/TrustStrip.vue'
 import AuthModal from './components/modals/AuthModal.vue'
+import { RouterView, useRoute } from 'vue-router'
+
+const route = useRoute()
 </script>
 
 <template>
-  <div class="app">
+  <div v-if="route.path === '/'" class="app">
     <AppHeader />
     <main>
       <HeroSection />
@@ -28,6 +31,7 @@ import AuthModal from './components/modals/AuthModal.vue'
     <AppFooter />
     <AuthModal />
   </div>
+  <RouterView v-else />
 </template>
 
 <style scoped></style>
