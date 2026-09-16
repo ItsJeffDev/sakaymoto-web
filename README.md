@@ -44,13 +44,3 @@ Start the Vite frontend in another terminal:
 cd frontend
 npm run dev
 ```
-
-The frontend uses `http://localhost:3000/api` by default. To use another backend URL, create `frontend/.env.local` with:
-
-```env
-VITE_API_URL=http://localhost:3000/api
-```
-
-## What Git does not include
-
-`node_modules`, build output, log files, and environment files are ignored. Git also does not preserve empty directories. These items must be recreated locally with the setup steps above.
