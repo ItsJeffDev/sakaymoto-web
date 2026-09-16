@@ -2,21 +2,15 @@
 import { ref, computed, onMounted } from 'vue'
 import { motorcycles as fallbackMotorcycles, catalogFilters } from '../../data/motorcycles'
 import { useModalStore } from '../../stores/modal'
-import { useAuthStore } from '../../stores/auth'
 import { api } from '../../services/api'
 import MotoIcon from '../icons/MotoIcon.vue'
 
 const modal = useModalStore()
-const auth = useAuthStore()
 const activeFilter = ref('all')
 const motorcycles = ref([])
 const isLoading = ref(true)
 const loadError = ref('')
-const selectedBike = ref(null)
-const bookingForm = ref({ start_date: '', end_date: '' })
-const bookingError = ref('')
-const bookingSuccess = ref('')
-const isBooking = ref(false)
+const previewBike = ref(null)
 const apiBaseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:3000/api').replace(
   /\/api$/,
   '',
@@ -66,45 +60,12 @@ const filteredBikes = computed(() => {
 
 onMounted(loadMotorcycles)
 
-function openBooking(bike) {
-  if ((bike.status || 'available') !== 'available') {
-    return
-  }
-
-  if (!auth.isAuthenticated) {
-    modal.open('login')
-    return
-  }
-
-  selectedBike.value = bike
-  bookingForm.value = { start_date: '', end_date: '' }
-  bookingError.value = ''
-  bookingSuccess.value = ''
+function openPreview(bike) {
+  previewBike.value = bike
 }
 
-async function submitBooking() {
-  bookingError.value = ''
-  bookingSuccess.value = ''
-  if (
-    !bookingForm.value.start_date ||
-    !bookingForm.value.end_date ||
-    bookingForm.value.end_date < bookingForm.value.start_date
-  ) {
-    bookingError.value = 'Choose a valid start and end date.'
-    return
-  }
-  isBooking.value = true
-  try {
-    const response = await api.booking({
-      motorcycle_id: selectedBike.value.id,
-      ...bookingForm.value,
-    })
-    bookingSuccess.value = `${response.message}. Total: PHP ${Number(response.total_price).toLocaleString()}`
-  } catch (error) {
-    bookingError.value = error.message
-  } finally {
-    isBooking.value = false
-  }
+function closePreview() {
+  previewBike.value = null
 }
 
 const accentBg = {
@@ -152,7 +113,16 @@ const accentColor = {
       </p>
       <div v-else class="bike-grid">
         <div class="bike-card" v-reveal v-for="bike in filteredBikes" :key="bike.id">
-          <div class="bike-thumb" :style="{ background: accentBg[bike.accent] }">
+          <div
+            class="bike-thumb"
+            :style="{ background: accentBg[bike.accent] }"
+            @click="openPreview(bike)"
+            @keydown.enter.prevent="openPreview(bike)"
+            @keydown.space.prevent="openPreview(bike)"
+            role="button"
+            tabindex="0"
+            :aria-label="`Preview motorcycle ${bike.brand} ${bike.model}`"
+          >
             <span class="avail" :class="{ maintenance: bike.status === 'maintenance' }">
               {{ bike.status === 'maintenance' ? 'Maintenance' : 'Available' }}
             </span>
@@ -163,6 +133,9 @@ const accentColor = {
               :alt="`${bike.brand} ${bike.model}`"
             />
             <MotoIcon v-else :wheel-color="accentColor[bike.accent]" frame-color="#0B2545" />
+            <button class="preview-pill" type="button" @click.stop="openPreview(bike)">
+              Preview
+            </button>
           </div>
           <div class="bike-body">
             <span class="cat">{{ bike.categoryLabel }}</span>
@@ -179,7 +152,7 @@ const accentColor = {
                 class="btn btn-navy btn-sm"
                 type="button"
                 :disabled="(bike.status || 'available') !== 'available'"
-                @click="openBooking(bike)"
+                @click="modal.open('login')"
               >
                 {{ (bike.status || 'available') === 'available' ? 'Book Now' : 'Unavailable' }}
               </button>
@@ -187,36 +160,38 @@ const accentColor = {
           </div>
         </div>
       </div>
-      <div v-if="selectedBike" class="booking-overlay" @click.self="selectedBike = null">
-        <form class="booking-dialog" @submit.prevent="submitBooking">
-          <button
-            class="dialog-close"
-            type="button"
-            aria-label="Close booking form"
-            @click="selectedBike = null"
-          >
-            ×</button
-          ><span class="eyebrow">Booking request</span>
-          <h3>{{ selectedBike.brand }} {{ selectedBike.model }}</h3>
-          <p>Select your rental dates. The request will be reviewed by SakayMoto.</p>
-          <label>Start date<input v-model="bookingForm.start_date" type="date" required /></label
-          ><label>End date<input v-model="bookingForm.end_date" type="date" required /></label>
-          <p v-if="bookingError" class="booking-message error">{{ bookingError }}</p>
-          <p v-if="bookingSuccess" class="booking-message success">{{ bookingSuccess }}</p>
-          <button
-            class="btn btn-primary btn-block"
-            type="submit"
-            :disabled="isBooking || !!bookingSuccess"
-          >
-            {{
-              isBooking
-                ? 'Submitting...'
-                : bookingSuccess
-                  ? 'Request submitted'
-                  : 'Submit booking request'
-            }}
+      <div v-if="previewBike" class="preview-overlay" @click.self="closePreview()">
+        <div class="preview-dialog" role="dialog" aria-modal="true" aria-labelledby="bike-preview-title">
+          <button class="dialog-close" type="button" aria-label="Close preview" @click="closePreview()">
+            ×
           </button>
-        </form>
+          <div class="preview-visual">
+            <img
+              v-if="getBikeImageUrl(previewBike)"
+              :src="getBikeImageUrl(previewBike)"
+              :alt="`${previewBike.brand} ${previewBike.model}`"
+            />
+            <MotoIcon v-else :wheel-color="accentColor[previewBike.accent]" frame-color="#0B2545" />
+          </div>
+          <div class="preview-content">
+            <span class="eyebrow">Motorcycle preview</span>
+            <h3 id="bike-preview-title">{{ previewBike.brand }} {{ previewBike.model }}</h3>
+            <p>{{ previewBike.categoryLabel }}</p>
+            <div class="bike-specs preview-specs">
+              <span v-for="spec in previewBike.specs" :key="spec">{{ spec }}</span>
+            </div>
+            <div class="preview-actions">
+              <button
+                class="btn btn-primary"
+                type="button"
+                @click="closePreview(); modal.open('login')"
+              >
+                Login to reserve
+              </button>
+              <button class="btn btn-secondary" type="button" @click="closePreview()">Close</button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -234,46 +209,6 @@ const accentColor = {
 .catalog-state.error {
   color: #a96c11;
 }
-.booking-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 1500;
-  display: grid;
-  place-items: center;
-  padding: 20px;
-  background: rgba(8, 27, 54, 0.58);
-}
-.booking-dialog {
-  width: min(100%, 440px);
-  display: grid;
-  gap: 14px;
-  padding: 30px;
-  position: relative;
-  border-radius: 18px;
-  background: #fff;
-  box-shadow: 0 25px 70px -25px rgba(8, 27, 54, 0.5);
-}
-.booking-dialog h3 {
-  font-size: 1.35rem;
-  margin-top: -6px;
-}
-.booking-dialog > p {
-  color: var(--ink-soft);
-  font-size: 0.82rem;
-  margin-top: -7px;
-}
-.booking-dialog label {
-  display: grid;
-  gap: 6px;
-  color: var(--navy);
-  font: 600 0.77rem var(--ff-display);
-}
-.booking-dialog input {
-  padding: 11px 12px;
-  border: 1px solid var(--line);
-  border-radius: 9px;
-  font: 400 0.85rem var(--ff-body);
-}
 .dialog-close {
   position: absolute;
   top: 14px;
@@ -281,22 +216,70 @@ const accentColor = {
   color: var(--ink-soft);
   font-size: 1.4rem;
 }
-.booking-message {
-  padding: 9px 11px;
-  border-radius: 8px;
-  font-size: 0.76rem;
+.preview-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1600;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(8, 27, 54, 0.66);
 }
-.booking-message.error {
-  color: #a33b32;
-  background: #fff0ed;
+.preview-dialog {
+  width: min(100%, 760px);
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+  gap: 0;
+  position: relative;
+  overflow: hidden;
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 0 25px 70px -25px rgba(8, 27, 54, 0.5);
 }
-.booking-message.success {
-  color: #18734d;
-  background: #e7f7ef;
+.preview-visual {
+  min-height: 340px;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(160deg, #edf4ff, #dfeaff);
 }
-.booking-dialog .btn:disabled {
-  opacity: 0.65;
-  cursor: wait;
+.preview-visual img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.preview-visual :deep(svg) {
+  width: 64%;
+}
+.preview-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 16px;
+  padding: 28px 26px 24px;
+}
+.preview-content h3 {
+  font-size: 1.7rem;
+  line-height: 1.15;
+  margin-top: -6px;
+}
+.preview-content p {
+  color: var(--ink-soft);
+  margin-top: -6px;
+}
+.preview-specs {
+  margin: 0;
+}
+.preview-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+.btn-secondary {
+  background: #f3f6fb;
+  color: var(--navy);
+  border: 1px solid var(--line);
 }
 .filter-row {
   display: flex;
@@ -346,6 +329,7 @@ const accentColor = {
   justify-content: center;
   position: relative;
   overflow: hidden;
+  cursor: pointer;
 }
 .bike-thumb :deep(svg) {
   width: 68%;
@@ -355,6 +339,18 @@ const accentColor = {
   height: 100%;
   object-fit: cover;
   display: block;
+}
+.preview-pill {
+  position: absolute;
+  right: 14px;
+  bottom: 14px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(11, 37, 69, 0.9);
+  color: #fff;
+  font: 600 0.7rem var(--ff-display);
+  padding: 7px 12px;
+  box-shadow: 0 12px 24px rgba(11, 37, 69, 0.2);
 }
 .bike-thumb .avail {
   position: absolute;
@@ -427,10 +423,28 @@ const accentColor = {
   .bike-grid {
     grid-template-columns: repeat(2, 1fr);
   }
+  .preview-dialog {
+    grid-template-columns: 1fr;
+  }
+  .preview-visual {
+    min-height: 260px;
+  }
 }
 @media (max-width: 760px) {
   .bike-grid {
     grid-template-columns: 1fr;
+  }
+  .preview-dialog {
+    width: min(100%, 480px);
+  }
+  .preview-content {
+    padding: 22px 18px 20px;
+  }
+  .preview-actions {
+    flex-direction: column;
+  }
+  .preview-actions .btn {
+    width: 100%;
   }
 }
 </style>
