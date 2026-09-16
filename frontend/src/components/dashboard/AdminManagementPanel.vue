@@ -357,7 +357,7 @@ onMounted(load)
 
         <div class="motorcycle-form-actions">
           <button class="btn btn-navy btn-sm" type="submit">Save motorcycle</button>
-          <button class="text-button" type="button" @click="showAddMotorcycleForm = false,; resetMotorcycleForm()">
+          <button class="text-button" type="button" @click="showAddMotorcycleForm = false, resetMotorcycleForm()">
             Cancel
           </button>
         </div>
