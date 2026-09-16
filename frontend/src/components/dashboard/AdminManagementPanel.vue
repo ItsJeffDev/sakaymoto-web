@@ -14,7 +14,10 @@ const selectedUser = ref(null)
 const selectedDocumentPreview = ref('')
 const showAddMotorcycleForm = ref(false)
 const selectedImage = ref(null)
-const apiBaseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:3000/api').replace(/\/api$/, '')
+const apiBaseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:3000/api').replace(
+  /\/api$/,
+  '',
+)
 const motorcycleForm = ref({
   brand: '',
   model: '',
@@ -25,22 +28,21 @@ const motorcycleForm = ref({
   status: 'available',
   description: '',
 })
-// const customerDocuments = ref({})
-// const selectedUser = ref(null)
-// const selectedDocumentPreview = ref('')
-// const apiBaseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:3000/api').replace(/\/api$/, '')
-
 function getFileUrl(path) {
   if (!path) return ''
   return path.startsWith('http') ? path : `${apiBaseUrl}${path}`
 }
 
 function formatDocumentType(type) {
-  return {
-    drivers_license: "Driver's license",
-    valid_id: 'Valid ID',
-    other: 'Other document',
-  }[type] || type || 'Document'
+  return (
+    {
+      drivers_license: "Driver's license",
+      valid_id: 'Valid ID',
+      other: 'Other document',
+    }[type] ||
+    type ||
+    'Document'
+  )
 }
 
 function getCustomerDocuments(userId) {
@@ -55,7 +57,9 @@ function getCustomerIdentitySummary(userId) {
   }
 
   const hasVerifiedIdentity = documents.some(
-    (document) => ['drivers_license', 'valid_id'].includes(document.document_type) && document.status === 'verified',
+    (document) =>
+      ['drivers_license', 'valid_id'].includes(document.document_type) &&
+      document.status === 'verified',
   )
 
   const hasPendingDocuments = documents.some((document) => document.status === 'pending')
@@ -120,7 +124,8 @@ async function submitMotorcycle() {
   formError.value = ''
   successMessage.value = ''
 
-  const { brand, model, year, plate_number, color, price_per_day, status, description } = motorcycleForm.value
+  const { brand, model, year, plate_number, color, price_per_day, status, description } =
+    motorcycleForm.value
 
   if (!brand || !model || !year || !plate_number || !color || !price_per_day) {
     formError.value = 'Please fill in all required motorcycle fields.'
@@ -130,7 +135,11 @@ async function submitMotorcycle() {
   const yearValue = Number(year)
   const priceValue = Number(price_per_day)
 
-  if (!Number.isInteger(yearValue) || yearValue < 2000 || yearValue > new Date().getFullYear() + 1) {
+  if (
+    !Number.isInteger(yearValue) ||
+    yearValue < 2000 ||
+    yearValue > new Date().getFullYear() + 1
+  ) {
     formError.value = 'Please enter a valid year between 2000 and the next year.'
     return
   }
@@ -227,20 +236,25 @@ onMounted(load)
         <h2>{{ section }}</h2>
       </div>
       <div class="panel-actions">
-        <button v-if="section === 'Motorcycles'" class="btn btn-navy btn-sm" type="button"
-          @click="showAddMotorcycleForm = !showAddMotorcycleForm">
+        <button
+          v-if="section === 'Motorcycles'"
+          class="btn btn-navy btn-sm"
+          type="button"
+          @click="showAddMotorcycleForm = !showAddMotorcycleForm"
+        >
           {{ showAddMotorcycleForm ? 'Close form' : 'Add motorcycle' }}
         </button>
-        <button class="text-button" type="button" @click="load">Refresh</button>
       </div>
-      <button class="text-button" type="button" @click="load">Refresh</button>
     </div>
     <div v-if="isLoading" class="management-state">Loading {{ section.toLowerCase() }}...</div>
     <div v-else-if="error" class="management-state error">
       <p>{{ error }}</p>
       <button class="btn btn-navy btn-sm" type="button" @click="load">Try again</button>
     </div>
-    <div v-else-if="section === 'Motorcycles' && showAddMotorcycleForm" class="motorcycle-form-panel">
+    <div
+      v-else-if="section === 'Motorcycles' && showAddMotorcycleForm"
+      class="motorcycle-form-panel"
+    >
       <div class="motorcycle-form-header">
         <div>
           <span class="panel-label">New inventory</span>
@@ -255,28 +269,60 @@ onMounted(load)
         <div class="form-grid">
           <div class="form-field">
             <label for="motorcycle-brand">Brand</label>
-            <input id="motorcycle-brand" v-model="motorcycleForm.brand" type="text" placeholder="Honda" />
+            <input
+              id="motorcycle-brand"
+              v-model="motorcycleForm.brand"
+              type="text"
+              placeholder="Honda"
+            />
           </div>
           <div class="form-field">
             <label for="motorcycle-model">Model</label>
-            <input id="motorcycle-model" v-model="motorcycleForm.model" type="text" placeholder="Click 125" />
+            <input
+              id="motorcycle-model"
+              v-model="motorcycleForm.model"
+              type="text"
+              placeholder="Click 125"
+            />
           </div>
           <div class="form-field">
             <label for="motorcycle-year">Year</label>
-            <input id="motorcycle-year" v-model="motorcycleForm.year" type="number" min="2000" placeholder="2026" />
+            <input
+              id="motorcycle-year"
+              v-model="motorcycleForm.year"
+              type="number"
+              min="2000"
+              placeholder="2026"
+            />
           </div>
           <div class="form-field">
             <label for="motorcycle-plate">Plate number</label>
-            <input id="motorcycle-plate" v-model="motorcycleForm.plate_number" type="text" placeholder="ABC 1234" />
+            <input
+              id="motorcycle-plate"
+              v-model="motorcycleForm.plate_number"
+              type="text"
+              placeholder="ABC 1234"
+            />
           </div>
           <div class="form-field">
             <label for="motorcycle-color">Color</label>
-            <input id="motorcycle-color" v-model="motorcycleForm.color" type="text" placeholder="Black" />
+            <input
+              id="motorcycle-color"
+              v-model="motorcycleForm.color"
+              type="text"
+              placeholder="Black"
+            />
           </div>
           <div class="form-field">
             <label for="motorcycle-price">Price per day</label>
-            <input id="motorcycle-price" v-model="motorcycleForm.price_per_day" type="number" min="1" step="0.01"
-              placeholder="850" />
+            <input
+              id="motorcycle-price"
+              v-model="motorcycleForm.price_per_day"
+              type="number"
+              min="1"
+              step="0.01"
+              placeholder="850"
+            />
           </div>
           <div class="form-field">
             <label for="motorcycle-status">Status</label>
@@ -294,8 +340,12 @@ onMounted(load)
 
         <div class="form-field full-width">
           <label for="motorcycle-description">Description</label>
-          <textarea id="motorcycle-description" v-model="motorcycleForm.description" rows="4"
-            placeholder="Optional notes about the bike, condition, or features" />
+          <textarea
+            id="motorcycle-description"
+            v-model="motorcycleForm.description"
+            rows="4"
+            placeholder="Optional notes about the bike, condition, or features"
+          />
         </div>
 
         <div class="motorcycle-form-actions">
@@ -313,17 +363,20 @@ onMounted(load)
 
     <div v-else-if="section === 'Reports & analytics'" class="report-grid">
       <div>
-        <strong>{{ report?.customers || 0 }}</strong><span>Customers</span>
+        <strong>{{ report?.customers || 0 }}</strong
+        ><span>Customers</span>
       </div>
       <div>
-        <strong>{{ report?.active_bookings || 0 }}</strong><span>Active bookings</span>
+        <strong>{{ report?.active_bookings || 0 }}</strong
+        ><span>Active bookings</span>
       </div>
       <div>
-        <strong>PHP {{ Number(report?.verified_revenue || 0).toLocaleString() }}</strong><span>Verified revenue</span>
+        <strong>PHP {{ Number(report?.verified_revenue || 0).toLocaleString() }}</strong
+        ><span>Verified revenue</span>
       </div>
     </div>
-    <div v-else-if="section === 'Customers'" class="table-scroll">
-      <table>
+    <div v-else-if="section === 'Customers'" class="table-scroll customer-table-scroll">
+      <table class="customer-table">
         <thead>
           <tr>
             <th>Name</th>
@@ -336,15 +389,15 @@ onMounted(load)
         </thead>
         <tbody>
           <tr v-for="user in rows" :key="user.id">
-            <td class="amount">{{ user.name }}</td>
-            <td>{{ user.email }}</td>
-            <td>{{ user.phone || 'Not provided' }}</td>
-            <td>
+            <td class="amount" data-label="Name">{{ user.name }}</td>
+            <td data-label="Email">{{ user.email }}</td>
+            <td data-label="Phone">{{ user.phone || 'Not provided' }}</td>
+            <td data-label="Identity">
               <span class="table-status" :class="getCustomerIdentitySummary(user.id).tone">
                 {{ getCustomerIdentitySummary(user.id).label }}
               </span>
             </td>
-            <td>
+            <td data-label="Documents">
               <div class="customer-docs-cell">
                 <span>{{ getCustomerDocuments(user.id).length }} uploaded</span>
                 <button class="table-action" type="button" @click="inspectUser(user)">
@@ -352,7 +405,7 @@ onMounted(load)
                 </button>
               </div>
             </td>
-            <td>{{ user.created_at?.slice(0, 10) }}</td>
+            <td data-label="Joined">{{ user.created_at?.slice(0, 10) }}</td>
           </tr>
         </tbody>
       </table>
@@ -361,14 +414,22 @@ onMounted(load)
 
     <div v-if="selectedUser" class="customer-inspect-overlay" @click.self="closeInspection">
       <div class="customer-inspect-panel">
-        <button class="dialog-close" type="button" aria-label="Close inspection" @click="closeInspection">
+        <button
+          class="dialog-close"
+          type="button"
+          aria-label="Close inspection"
+          @click="closeInspection"
+        >
           ×
         </button>
 
         <div class="customer-inspect-header">
           <div class="customer-inspect-avatar">
-            <img v-if="selectedUser.profile_image" :src="getFileUrl(selectedUser.profile_image)"
-              :alt="`${selectedUser.name} profile`" />
+            <img
+              v-if="selectedUser.profile_image"
+              :src="getFileUrl(selectedUser.profile_image)"
+              :alt="`${selectedUser.name} profile`"
+            />
             <span v-else>{{ selectedUser.name?.slice(0, 2).toUpperCase() || 'US' }}</span>
           </div>
           <div>
@@ -390,19 +451,31 @@ onMounted(load)
               <strong>{{ getCustomerIdentitySummary(selectedUser.id).label }}</strong>
             </p>
             <p>
-              {{ getCustomerDocuments(selectedUser.id).length
-                ? `${getCustomerDocuments(selectedUser.id).length} uploaded file(s)`
-                : 'No uploaded files yet' }}
+              {{
+                getCustomerDocuments(selectedUser.id).length
+                  ? `${getCustomerDocuments(selectedUser.id).length} uploaded file(s)`
+                  : 'No uploaded files yet'
+              }}
             </p>
           </div>
         </div>
 
         <div v-if="getCustomerDocuments(selectedUser.id).length" class="document-grid">
-          <article v-for="document in getCustomerDocuments(selectedUser.id)" :key="document.id" class="document-card">
-            <button class="document-preview" type="button"
-              @click="selectedDocumentPreview = getFileUrl(document.file_url)">
-              <img v-if="document.file_url" :src="getFileUrl(document.file_url)"
-                :alt="`${formatDocumentType(document.document_type)} preview`" />
+          <article
+            v-for="document in getCustomerDocuments(selectedUser.id)"
+            :key="document.id"
+            class="document-card"
+          >
+            <button
+              class="document-preview"
+              type="button"
+              @click="selectedDocumentPreview = getFileUrl(document.file_url)"
+            >
+              <img
+                v-if="document.file_url"
+                :src="getFileUrl(document.file_url)"
+                :alt="`${formatDocumentType(document.document_type)} preview`"
+              />
               <span v-else>No preview</span>
             </button>
             <div class="document-details">
@@ -410,11 +483,18 @@ onMounted(load)
               <strong>{{ document.status }}</strong>
               <small>Uploaded {{ document.uploaded_at?.slice(0, 10) }}</small>
               <div v-if="document.status === 'pending'" class="document-actions">
-                <button class="table-action" type="button" @click="updateDocumentStatus(document.id, 'verified')">
+                <button
+                  class="table-action"
+                  type="button"
+                  @click="updateDocumentStatus(document.id, 'verified')"
+                >
                   Confirm
                 </button>
-                <button class="table-action danger" type="button"
-                  @click="updateDocumentStatus(document.id, 'rejected')">
+                <button
+                  class="table-action danger"
+                  type="button"
+                  @click="updateDocumentStatus(document.id, 'rejected')"
+                >
                   Remove
                 </button>
               </div>
@@ -428,16 +508,25 @@ onMounted(load)
       </div>
     </div>
 
-    <div v-if="selectedDocumentPreview" class="image-preview-overlay" @click.self="selectedDocumentPreview = ''">
+    <div
+      v-if="selectedDocumentPreview"
+      class="image-preview-overlay"
+      @click.self="selectedDocumentPreview = ''"
+    >
       <div class="image-preview-panel">
-        <button class="dialog-close" type="button" aria-label="Close preview" @click="selectedDocumentPreview = ''">
+        <button
+          class="dialog-close"
+          type="button"
+          aria-label="Close preview"
+          @click="selectedDocumentPreview = ''"
+        >
           ×
         </button>
         <img :src="selectedDocumentPreview" alt="Document preview" />
       </div>
     </div>
-    <div v-else-if="section === 'Bookings'" class="table-scroll">
-      <table>
+    <div v-else-if="section === 'Bookings'" class="table-scroll booking-table-scroll">
+      <table class="booking-table">
         <thead>
           <tr>
             <th>Customer</th>
@@ -449,10 +538,12 @@ onMounted(load)
         </thead>
         <tbody>
           <tr v-for="booking in rows" :key="booking.id">
-            <td class="amount">{{ booking.customer_name }}</td>
-            <td>{{ booking.brand }} {{ booking.model }}</td>
-            <td>{{ booking.start_date }} - {{ booking.end_date }}</td>
-            <td>
+            <td class="amount" data-label="Customer">{{ booking.customer_name }}</td>
+            <td data-label="Motorcycle">{{ booking.brand }} {{ booking.model }}</td>
+            <td data-label="Dates">
+              <span class="booking-dates">{{ booking.start_date }} - {{ booking.end_date }}</span>
+            </td>
+            <td data-label="Status">
               <span class="table-status" :class="booking.status">{{ booking.status }}</span>
             </td>
             <td data-label="Actions">
@@ -468,8 +559,8 @@ onMounted(load)
       </table>
       <p v-if="!rows.length" class="management-state">No bookings found.</p>
     </div>
-    <div v-else class="table-scroll">
-      <table>
+    <div v-else class="table-scroll motorcycle-table-scroll">
+      <table class="motorcycle-table">
         <thead>
           <tr>
             <th>Motorcycle</th>
@@ -638,6 +729,11 @@ onMounted(load)
 
 .customer-docs-cell span {
   color: var(--ink-soft);
+}
+
+.booking-dates {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .customer-inspect-overlay,
@@ -908,8 +1004,7 @@ onMounted(load)
 }
 
 @media (max-width: 700px) {
-  .report-grid,
-  .form-grid {
+  .report-grid {
     grid-template-columns: 1fr;
   }
 
@@ -922,66 +1017,154 @@ onMounted(load)
     justify-content: flex-end;
   }
 
-  .management-panel table {
-    width: 100%;
-    border-collapse: collapse;
-    white-space: nowrap;
+  .customer-table-scroll {
+    overflow: visible;
   }
 
-  .management-panel th {
-    color: #919baa;
-    font-size: 0.65rem;
-    text-transform: uppercase;
-    letter-spacing: 0.07em;
-    font-weight: 700;
-    text-align: left;
-    padding: 12px 10px;
+  .customer-table {
+    display: block;
+    white-space: normal;
+  }
+
+  .customer-table thead {
+    display: none;
+  }
+
+  .customer-table tbody,
+  .customer-table tr {
+    display: block;
+  }
+
+  .customer-table tr {
+    padding: 14px 0;
     border-bottom: 1px solid var(--line);
   }
 
-  .management-panel td {
-    color: var(--ink-soft);
-    font-size: 0.76rem;
-    padding: 14px 10px;
-    border-bottom: 1px solid var(--line);
-  }
-
-  .management-panel tr:last-child td {
+  .customer-table tr:last-child {
     border-bottom: 0;
   }
 
-  .management-panel .amount {
-    color: var(--navy);
+  .customer-table td {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    width: 100%;
+    padding: 5px 0;
+    border: 0;
+    text-align: right;
+    overflow-wrap: anywhere;
+  }
+
+  .customer-table td::before {
+    content: attr(data-label);
+    flex: 0 0 78px;
+    color: #919baa;
+    font-size: 0.6rem;
     font-weight: 700;
+    letter-spacing: 0.07em;
+    text-align: left;
+    text-transform: uppercase;
   }
 
-  .table-status {
-    display: inline-block;
-    padding: 5px 8px;
-    border-radius: 5px;
-    font-size: 0.64rem;
+  .customer-table .customer-docs-cell {
+    justify-content: flex-end;
+    flex-wrap: wrap;
+  }
+
+  .customer-table .customer-docs-cell::before {
+    margin-right: auto;
+  }
+
+  .customer-table .table-status {
+    margin-left: auto;
+  }
+
+  .booking-table-scroll,
+  .motorcycle-table-scroll {
+    overflow: visible;
+  }
+
+  .booking-table,
+  .motorcycle-table {
+    display: block;
+    white-space: normal;
+  }
+
+  .booking-table thead,
+  .motorcycle-table thead {
+    display: none;
+  }
+
+  .booking-table tbody,
+  .booking-table tr,
+  .motorcycle-table tbody,
+  .motorcycle-table tr {
+    display: block;
+  }
+
+  .booking-table tr,
+  .motorcycle-table tr {
+    padding: 14px 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .booking-table tr:last-child,
+  .motorcycle-table tr:last-child {
+    border-bottom: 0;
+  }
+
+  .booking-table td,
+  .motorcycle-table td {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    width: 100%;
+    padding: 5px 0;
+    border: 0;
+    text-align: right;
+    overflow-wrap: anywhere;
+  }
+
+  .booking-table td::before,
+  .motorcycle-table td::before {
+    content: attr(data-label);
+    flex: 0 0 88px;
+    color: #919baa;
+    font-size: 0.6rem;
     font-weight: 700;
-    text-transform: capitalize;
+    letter-spacing: 0.07em;
+    text-align: left;
+    text-transform: uppercase;
   }
 
-  .table-status.confirmed {
-    background: #e7f7ef;
-    color: #18734d;
+  .booking-table .table-status,
+  .motorcycle-table .table-status {
+    margin-left: auto;
   }
 
-  .table-status.pending {
-    background: #fff4dc;
-    color: #a96c11;
+  .booking-table .booking-dates {
+    flex: 1 1 auto;
+    max-width: 100%;
+    text-align: right;
+    white-space: normal;
   }
 
-  .table-status.completed {
-    background: #f0f2f5;
-    color: #667085;
+  .booking-table td:last-child {
+    flex-wrap: wrap;
   }
 
-  .table-status.cancelled {
-    background: #fff0ed;
-    color: #a33b32;
+  .booking-table td:last-child::before {
+    margin-right: auto;
+  }
+
+  .report-grid div {
+    padding: 16px;
+  }
+
+  .report-grid strong {
+    overflow-wrap: anywhere;
   }
 
   .management-panel .table-action {
