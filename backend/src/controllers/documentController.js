@@ -30,12 +30,10 @@ const uploadDocument = async (req, res) => {
       expiration_date || null,
     ],
   );
-  return res
-    .status(201)
-    .json({
-      id: result.insertId,
-      message: "Document uploaded for verification",
-    });
+  return res.status(201).json({
+    id: result.insertId,
+    message: "Document uploaded for verification",
+  });
 };
 
 const updateDocumentStatus = async (req, res) => {

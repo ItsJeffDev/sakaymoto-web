@@ -38,12 +38,10 @@ const createMotorcycle = async (req, res) => {
     description,
   } = req.body;
   if (!brand || !model || !year || !plate_number || !color || !price_per_day)
-    return res
-      .status(400)
-      .json({
-        message:
-          "Brand, model, year, plate number, color, and price are required",
-      });
+    return res.status(400).json({
+      message:
+        "Brand, model, year, plate number, color, and price are required",
+    });
   if (
     !["available", "maintenance", "inactive"].includes(status) ||
     Number(price_per_day) <= 0
@@ -115,11 +113,9 @@ const deleteMotorcycle = async (req, res) => {
     return res.json({ message: "Motorcycle deleted" });
   } catch (error) {
     if (error.code === "ER_ROW_IS_REFERENCED_2")
-      return res
-        .status(409)
-        .json({
-          message: "Motorcycle has existing records and cannot be deleted",
-        });
+      return res.status(409).json({
+        message: "Motorcycle has existing records and cannot be deleted",
+      });
     throw error;
   }
 };
@@ -134,12 +130,10 @@ const addMotorcycleImage = async (req, res) => {
       req.body.is_primary === "true" ? 1 : 0,
     ],
   );
-  return res
-    .status(201)
-    .json({
-      id: result.insertId,
-      image_url: `/uploads/motorcycles/${req.file.filename}`,
-    });
+  return res.status(201).json({
+    id: result.insertId,
+    image_url: `/uploads/motorcycles/${req.file.filename}`,
+  });
 };
 
 module.exports = {
