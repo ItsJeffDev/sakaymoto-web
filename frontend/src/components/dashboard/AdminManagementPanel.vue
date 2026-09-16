@@ -25,11 +25,6 @@ const motorcycleForm = ref({
   status: 'available',
   description: '',
 })
-const customerDocuments = ref({})
-const selectedUser = ref(null)
-const selectedDocumentPreview = ref('')
-const apiBaseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:3000/api').replace(/\/api$/, '')
-
 function getFileUrl(path) {
   if (!path) return ''
   return path.startsWith('http') ? path : `${apiBaseUrl}${path}`
@@ -231,9 +226,7 @@ onMounted(load)
           @click="showAddMotorcycleForm = !showAddMotorcycleForm">
           {{ showAddMotorcycleForm ? 'Close form' : 'Add motorcycle' }}
         </button>
-        <button class="text-button" type="button" @click="load">Refresh</button>
       </div>
-      <button class="text-button" type="button" @click="load">Refresh</button>
     </div>
     <div v-if="isLoading" class="management-state">Loading {{ section.toLowerCase() }}...</div>
     <div v-else-if="error" class="management-state error">
@@ -318,8 +311,8 @@ onMounted(load)
         <strong>PHP {{ Number(report?.verified_revenue || 0).toLocaleString() }}</strong><span>Verified revenue</span>
       </div>
     </div>
-    <div v-else-if="section === 'Customers'" class="table-scroll">
-      <table>
+    <div v-else-if="section === 'Customers'" class="table-scroll customer-table-scroll">
+      <table class="customer-table">
         <thead>
           <tr>
             <th>Name</th>
@@ -332,15 +325,15 @@ onMounted(load)
         </thead>
         <tbody>
           <tr v-for="user in rows" :key="user.id">
-            <td class="amount">{{ user.name }}</td>
-            <td>{{ user.email }}</td>
-            <td>{{ user.phone || 'Not provided' }}</td>
-            <td>
+            <td class="amount" data-label="Name">{{ user.name }}</td>
+            <td data-label="Email">{{ user.email }}</td>
+            <td data-label="Phone">{{ user.phone || 'Not provided' }}</td>
+            <td data-label="Identity">
               <span class="table-status" :class="getCustomerIdentitySummary(user.id).tone">
                 {{ getCustomerIdentitySummary(user.id).label }}
               </span>
             </td>
-            <td>
+            <td data-label="Documents">
               <div class="customer-docs-cell">
                 <span>{{ getCustomerDocuments(user.id).length }} uploaded</span>
                 <button class="table-action" type="button" @click="inspectUser(user)">
@@ -348,7 +341,7 @@ onMounted(load)
                 </button>
               </div>
             </td>
-            <td>{{ user.created_at?.slice(0, 10) }}</td>
+            <td data-label="Joined">{{ user.created_at?.slice(0, 10) }}</td>
           </tr>
         </tbody>
       </table>
@@ -432,8 +425,8 @@ onMounted(load)
         <img :src="selectedDocumentPreview" alt="Document preview" />
       </div>
     </div>
-    <div v-else-if="section === 'Bookings'" class="table-scroll">
-      <table>
+    <div v-else-if="section === 'Bookings'" class="table-scroll booking-table-scroll">
+      <table class="booking-table">
         <thead>
           <tr>
             <th>Customer</th>
@@ -445,13 +438,15 @@ onMounted(load)
         </thead>
         <tbody>
           <tr v-for="booking in rows" :key="booking.id">
-            <td class="amount">{{ booking.customer_name }}</td>
-            <td>{{ booking.brand }} {{ booking.model }}</td>
-            <td>{{ booking.start_date }} - {{ booking.end_date }}</td>
-            <td>
+            <td class="amount" data-label="Customer">{{ booking.customer_name }}</td>
+            <td data-label="Motorcycle">{{ booking.brand }} {{ booking.model }}</td>
+            <td data-label="Dates">
+              <span class="booking-dates">{{ booking.start_date }} - {{ booking.end_date }}</span>
+            </td>
+            <td data-label="Status">
               <span class="table-status" :class="booking.status">{{ booking.status }}</span>
             </td>
-            <td>
+            <td data-label="Actions">
               <button v-if="booking.status === 'pending'" class="table-action" type="button"
                 @click="updateBooking(booking.id, 'confirmed')">
                 Approve</button><button v-if="booking.status === 'pending'" class="table-action danger" type="button"
@@ -464,8 +459,8 @@ onMounted(load)
       </table>
       <p v-if="!rows.length" class="management-state">No bookings found.</p>
     </div>
-    <div v-else class="table-scroll">
-      <table>
+    <div v-else class="table-scroll motorcycle-table-scroll">
+      <table class="motorcycle-table">
         <thead>
           <tr>
             <th>Motorcycle</th>
@@ -476,10 +471,10 @@ onMounted(load)
         </thead>
         <tbody>
           <tr v-for="bike in rows" :key="bike.id">
-            <td class="amount">{{ bike.brand || 'Unknown' }} {{ bike.model || '' }}</td>
-            <td>{{ bike.plate_number || 'Not provided' }}</td>
-            <td>{{ formatMotorcyclePrice(bike.price_per_day) }}</td>
-            <td>
+            <td class="amount" data-label="Motorcycle">{{ bike.brand || 'Unknown' }} {{ bike.model || '' }}</td>
+            <td data-label="Plate number">{{ bike.plate_number || 'Not provided' }}</td>
+            <td data-label="Price/day">{{ formatMotorcyclePrice(bike.price_per_day) }}</td>
+            <td data-label="Status">
               <span class="table-status" :class="bike.status || 'pending'">{{ bike.status || 'Unknown' }}</span>
             </td>
           </tr>
@@ -634,6 +629,11 @@ onMounted(load)
 
 .customer-docs-cell span {
   color: var(--ink-soft);
+}
+
+.booking-dates {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .customer-inspect-overlay,
@@ -904,9 +904,6 @@ onMounted(load)
 }
 
 @media (max-width: 700px) {
-  .report-grid,
-  .form-grid {
-@media (max-width: 700px) {
   .report-grid {
     grid-template-columns: 1fr;
   }
@@ -920,66 +917,154 @@ onMounted(load)
     justify-content: flex-end;
   }
 
-  .management-panel table {
-    width: 100%;
-    border-collapse: collapse;
-    white-space: nowrap;
+  .customer-table-scroll {
+    overflow: visible;
   }
 
-  .management-panel th {
-    color: #919baa;
-    font-size: 0.65rem;
-    text-transform: uppercase;
-    letter-spacing: 0.07em;
-    font-weight: 700;
-    text-align: left;
-    padding: 12px 10px;
+  .customer-table {
+    display: block;
+    white-space: normal;
+  }
+
+  .customer-table thead {
+    display: none;
+  }
+
+  .customer-table tbody,
+  .customer-table tr {
+    display: block;
+  }
+
+  .customer-table tr {
+    padding: 14px 0;
     border-bottom: 1px solid var(--line);
   }
 
-  .management-panel td {
-    color: var(--ink-soft);
-    font-size: 0.76rem;
-    padding: 14px 10px;
-    border-bottom: 1px solid var(--line);
-  }
-
-  .management-panel tr:last-child td {
+  .customer-table tr:last-child {
     border-bottom: 0;
   }
 
-  .management-panel .amount {
-    color: var(--navy);
+  .customer-table td {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    width: 100%;
+    padding: 5px 0;
+    border: 0;
+    text-align: right;
+    overflow-wrap: anywhere;
+  }
+
+  .customer-table td::before {
+    content: attr(data-label);
+    flex: 0 0 78px;
+    color: #919baa;
+    font-size: 0.6rem;
     font-weight: 700;
+    letter-spacing: 0.07em;
+    text-align: left;
+    text-transform: uppercase;
   }
 
-  .table-status {
-    display: inline-block;
-    padding: 5px 8px;
-    border-radius: 5px;
-    font-size: 0.64rem;
+  .customer-table .customer-docs-cell {
+    justify-content: flex-end;
+    flex-wrap: wrap;
+  }
+
+  .customer-table .customer-docs-cell::before {
+    margin-right: auto;
+  }
+
+  .customer-table .table-status {
+    margin-left: auto;
+  }
+
+  .booking-table-scroll,
+  .motorcycle-table-scroll {
+    overflow: visible;
+  }
+
+  .booking-table,
+  .motorcycle-table {
+    display: block;
+    white-space: normal;
+  }
+
+  .booking-table thead,
+  .motorcycle-table thead {
+    display: none;
+  }
+
+  .booking-table tbody,
+  .booking-table tr,
+  .motorcycle-table tbody,
+  .motorcycle-table tr {
+    display: block;
+  }
+
+  .booking-table tr,
+  .motorcycle-table tr {
+    padding: 14px 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .booking-table tr:last-child,
+  .motorcycle-table tr:last-child {
+    border-bottom: 0;
+  }
+
+  .booking-table td,
+  .motorcycle-table td {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    width: 100%;
+    padding: 5px 0;
+    border: 0;
+    text-align: right;
+    overflow-wrap: anywhere;
+  }
+
+  .booking-table td::before,
+  .motorcycle-table td::before {
+    content: attr(data-label);
+    flex: 0 0 88px;
+    color: #919baa;
+    font-size: 0.6rem;
     font-weight: 700;
-    text-transform: capitalize;
+    letter-spacing: 0.07em;
+    text-align: left;
+    text-transform: uppercase;
   }
 
-  .table-status.confirmed {
-    background: #e7f7ef;
-    color: #18734d;
+  .booking-table .table-status,
+  .motorcycle-table .table-status {
+    margin-left: auto;
   }
 
-  .table-status.pending {
-    background: #fff4dc;
-    color: #a96c11;
+  .booking-table .booking-dates {
+    flex: 1 1 auto;
+    max-width: 100%;
+    text-align: right;
+    white-space: normal;
   }
 
-  .table-status.completed {
-    background: #f0f2f5;
-    color: #667085;
+  .booking-table td:last-child {
+    flex-wrap: wrap;
   }
 
-  .table-status.cancelled {
-    background: #fff0ed;
-    color: #a33b32;
+  .booking-table td:last-child::before {
+    margin-right: auto;
+  }
+
+  .report-grid div {
+    padding: 16px;
+  }
+
+  .report-grid strong {
+    overflow-wrap: anywhere;
   }
 
   .management-panel .table-action {
@@ -991,4 +1076,4 @@ onMounted(load)
     outline-offset: 3px;
   }
 }
-  </style>
+</style>
