@@ -22,7 +22,10 @@ import { useAuthStore } from '../stores/auth'
 
 const auth = useAuthStore()
 const router = useRouter()
-const apiBaseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:3000/api').replace(/\/api$/, '')
+const apiBaseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:3000/api').replace(
+  /\/api$/,
+  '',
+)
 const isMenuOpen = ref(false)
 const activeSection = ref('Dashboard')
 const isLoading = ref(true)
@@ -41,17 +44,21 @@ const sections = [
 const adminDisplayName = computed(() => auth.user?.name || 'SakayMoto Admin')
 const adminInitials = computed(() => {
   const source = auth.user?.name || adminDisplayName.value
-  return source
-    .split(' ')
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((name) => name[0])
-    .join('')
-    .toUpperCase() || 'SA'
+  return (
+    source
+      .split(' ')
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((name) => name[0])
+      .join('')
+      .toUpperCase() || 'SA'
+  )
 })
 const profileImageSrc = computed(() => {
   if (!auth.user?.profile_image) return ''
-  const imagePath = auth.user.profile_image.startsWith('/') ? auth.user.profile_image : `/${auth.user.profile_image}`
+  const imagePath = auth.user.profile_image.startsWith('/')
+    ? auth.user.profile_image
+    : `/${auth.user.profile_image}`
   return `${apiBaseUrl}${imagePath}`
 })
 
@@ -101,7 +108,10 @@ onMounted(async () => {
           <img :src="profileImageSrc" alt="Admin profile photo" />
         </div>
         <div v-else class="avatar avatar-blue">{{ adminInitials }}</div>
-        <div><strong>{{ adminDisplayName }}</strong><span>Operations team</span></div>
+        <div>
+          <strong>{{ adminDisplayName }}</strong
+          ><span>Operations team</span>
+        </div>
         <ShieldCheck :size="16" />
       </div>
       <nav class="dashboard-nav" aria-label="Admin navigation">
