@@ -83,13 +83,11 @@ const createBooking = async (req, res) => {
       ],
     );
     await connection.commit();
-    return res
-      .status(201)
-      .json({
-        id: result.insertId,
-        total_price: total,
-        message: "Booking request submitted",
-      });
+    return res.status(201).json({
+      id: result.insertId,
+      total_price: total,
+      message: "Booking request submitted",
+    });
   } catch (error) {
     await connection.rollback();
     throw error;
