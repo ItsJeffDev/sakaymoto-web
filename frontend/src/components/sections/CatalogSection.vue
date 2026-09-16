@@ -17,7 +17,10 @@ const bookingForm = ref({ start_date: '', end_date: '' })
 const bookingError = ref('')
 const bookingSuccess = ref('')
 const isBooking = ref(false)
-const apiBaseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:3000/api').replace(/\/api$/, '')
+const apiBaseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:3000/api').replace(
+  /\/api$/,
+  '',
+)
 
 function getBikeImageUrl(bike) {
   const images = Array.isArray(bike.images) ? bike.images : []
@@ -39,7 +42,11 @@ async function loadMotorcycles() {
         pricePerDay: Number(bike.price_per_day),
         category: 'all',
         categoryLabel: `${bike.brand} · ${bike.color}`,
-        specs: [`${bike.year}`, bike.color, bike.status === 'maintenance' ? 'Under maintenance' : 'Available to book'],
+        specs: [
+          `${bike.year}`,
+          bike.color,
+          bike.status === 'maintenance' ? 'Under maintenance' : 'Available to book',
+        ],
         accent: 'blue',
       }))
   } catch (error) {
@@ -155,11 +162,7 @@ const accentColor = {
               :src="getBikeImageUrl(bike)"
               :alt="`${bike.brand} ${bike.model}`"
             />
-            <MotoIcon
-              v-else
-              :wheel-color="accentColor[bike.accent]"
-              frame-color="#0B2545"
-            />
+            <MotoIcon v-else :wheel-color="accentColor[bike.accent]" frame-color="#0B2545" />
           </div>
           <div class="bike-body">
             <span class="cat">{{ bike.categoryLabel }}</span>
