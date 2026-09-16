@@ -1,4 +1,7 @@
 {
+  "name": "backend",
+  "version": "1.5.0",
+  "private": true,
   "dependencies": {
     "bcrypt": "^6.0.0",
     "cors": "^2.8.6",
