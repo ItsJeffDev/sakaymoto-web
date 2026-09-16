@@ -13,7 +13,6 @@ const reportRoutes = require("./routes/reportRoutes");
 const app = express();
 const userRoutes = require("./routes/userRoutes");
 
-
 // ============================
 // MIDDLEWARE
 // ============================
@@ -23,19 +22,17 @@ app.use(cors());
 app.use(express.json());
 app.use("/uploads", express.static("uploads"));
 
-
-app.use(express.urlencoded({
-    extended: true
-}));
+app.use(
+  express.urlencoded({
+    extended: true,
+  }),
+);
 
 // ============================
 // ROUTES
 // ============================
 
-app.use(
-    "/api/auth",
-    authRoutes
-);
+app.use("/api/auth", authRoutes);
 
 app.use("/api/motorcycles", motorcycleRoutes);
 app.use("/api/bookings", bookingRoutes);
@@ -54,7 +51,6 @@ app.get("/", (req, res) => {
     message: "SakayMoto API is running",
   });
 });
-
 
 app.use("/api/users", userRoutes);
 

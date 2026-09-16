@@ -8,30 +8,21 @@ const PORT = process.env.PORT || 3000;
 
 // Test database connection
 const startServer = async () => {
-    try {
+  try {
+    const connection = await db.getConnection();
 
-        const connection = await db.getConnection();
+    console.log("MySQL connected");
 
-        console.log("MySQL connected");
+    connection.release();
 
-        connection.release();
+    app.listen(PORT, () => {
+      console.log(`Server running on http://localhost:${PORT}`);
+    });
+  } catch (error) {
+    console.error("Database connection failed:", error.message);
 
-        app.listen(PORT, () => {
-            console.log(
-                `Server running on http://localhost:${PORT}`
-            );
-        });
-
-    } catch (error) {
-
-        console.error(
-            "Database connection failed:",
-            error.message
-        );
-
-        process.exit(1);
-    }
+    process.exit(1);
+  }
 };
-
 
 startServer();
