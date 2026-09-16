@@ -1,5 +1,18 @@
 <script setup>
-import { Bell, Bike, CalendarDays, ChevronRight, CircleHelp, ClipboardList, LayoutDashboard, LogOut, Menu, Settings, UserRound, X } from 'lucide-vue-next'
+import {
+  Bell,
+  Bike,
+  CalendarDays,
+  ChevronRight,
+  CircleHelp,
+  ClipboardList,
+  LayoutDashboard,
+  LogOut,
+  Menu,
+  Settings,
+  UserRound,
+  X,
+} from 'lucide-vue-next'
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { motorcycles as fallbackMotorcycles, catalogFilters } from '../data/motorcycles'
@@ -12,16 +25,50 @@ const isLoading = ref(true)
 const loadError = ref('')
 const auth = useAuthStore()
 const router = useRouter()
-const apiBaseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:3000/api').replace(/\/api$/, '')
+const apiBaseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:3000/api').replace(
+  /\/api$/,
+  '',
+)
 const sectionContent = {
-  'My bookings': { eyebrow: 'Ride history', title: 'Your bookings', description: 'Keep track of upcoming rides and revisit your rental history.', action: 'Find another ride', items: ['Honda Click 160 - Confirmed', 'Yamaha NMAX - Completed'] },
-  'Profile & account': { eyebrow: 'Personal details', title: 'Profile & account', description: 'Manage the information used for bookings and rider verification.', action: 'Edit profile', items: ['Juan Dela Cruz', 'juan.delacruz@email.com', 'Verified rider'] },
-  Notifications: { eyebrow: 'Stay in the loop', title: 'Your notifications', description: 'Updates about your bookings, payments, and new rides near you.', action: 'Mark all as read', items: ['Your Honda Click 160 booking is confirmed', 'Three new rides were added in Makati', 'Leave a review for your last booking'] },
-  Settings: { eyebrow: 'Preferences', title: 'Account settings', description: 'Control your alerts, privacy, and account preferences.', action: 'Save changes', items: ['Booking reminders', 'Promotional updates', 'Two-factor authentication'] },
+  'My bookings': {
+    eyebrow: 'Ride history',
+    title: 'Your bookings',
+    description: 'Keep track of upcoming rides and revisit your rental history.',
+    action: 'Find another ride',
+    items: ['Honda Click 160 - Confirmed', 'Yamaha NMAX - Completed'],
+  },
+  'Profile & account': {
+    eyebrow: 'Personal details',
+    title: 'Profile & account',
+    description: 'Manage the information used for bookings and rider verification.',
+    action: 'Edit profile',
+    items: ['Juan Dela Cruz', 'juan.delacruz@email.com', 'Verified rider'],
+  },
+  Notifications: {
+    eyebrow: 'Stay in the loop',
+    title: 'Your notifications',
+    description: 'Updates about your bookings, payments, and new rides near you.',
+    action: 'Mark all as read',
+    items: [
+      'Your Honda Click 160 booking is confirmed',
+      'Three new rides were added in Makati',
+      'Leave a review for your last booking',
+    ],
+  },
+  Settings: {
+    eyebrow: 'Preferences',
+    title: 'Account settings',
+    description: 'Control your alerts, privacy, and account preferences.',
+    action: 'Save changes',
+    items: ['Booking reminders', 'Promotional updates', 'Two-factor authentication'],
+  },
 }
 const bookings = ref([])
 const bookingCount = computed(() => bookings.value.length)
-const upcomingCount = computed(() => bookings.value.filter((booking) => ['pending', 'confirmed'].includes(booking.status)).length)
+const upcomingCount = computed(
+  () =>
+    bookings.value.filter((booking) => ['pending', 'confirmed'].includes(booking.status)).length,
+)
 const profile = reactive({ name: '', email: '', phone: '', address: '', profile_image: '' })
 const profileImageFile = ref(null)
 const documents = ref([])
@@ -83,13 +130,27 @@ const isBooking = ref(false)
 const previewImageIndexes = reactive({})
 const activeImagePreview = ref(null)
 const displayName = computed(() => auth.user?.name || profile.name || 'Rider')
-const initials = computed(() => displayName.value.split(' ').filter(Boolean).slice(0, 2).map((name) => name[0]).join('').toUpperCase() || 'R')
+const initials = computed(
+  () =>
+    displayName.value
+      .split(' ')
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((name) => name[0])
+      .join('')
+      .toUpperCase() || 'R',
+)
 const profileImageSrc = computed(() => {
   if (!profile.profile_image) return ''
-  const imagePath = profile.profile_image.startsWith('/') ? profile.profile_image : `/${profile.profile_image}`
+  const imagePath = profile.profile_image.startsWith('/')
+    ? profile.profile_image
+    : `/${profile.profile_image}`
   return `${apiBaseUrl}${imagePath}`
 })
-const browseAvailableCount = computed(() => browseMotorcycles.value.filter((bike) => (bike.status || 'available') === 'available').length)
+const browseAvailableCount = computed(
+  () =>
+    browseMotorcycles.value.filter((bike) => (bike.status || 'available') === 'available').length,
+)
 const filteredBrowseMotorcycles = computed(() => {
   if (activeBikeFilter.value === 'all') return browseMotorcycles.value
   return browseMotorcycles.value.filter((bike) => bike.category === activeBikeFilter.value)
@@ -100,7 +161,12 @@ const notifications = computed(() => {
   bookings.value.forEach((booking) => {
     items.push({
       id: `booking-${booking.id}`,
-      tone: booking.status === 'cancelled' ? 'error' : booking.status === 'confirmed' ? 'success' : 'pending',
+      tone:
+        booking.status === 'cancelled'
+          ? 'error'
+          : booking.status === 'confirmed'
+            ? 'success'
+            : 'pending',
       title: `${booking.brand || 'Motorcycle'} ${booking.model || ''} is ${booking.status}`,
       description:
         booking.status === 'confirmed'
@@ -115,7 +181,12 @@ const notifications = computed(() => {
   documents.value.forEach((document) => {
     items.push({
       id: `document-${document.id}`,
-      tone: document.status === 'verified' ? 'success' : document.status === 'rejected' ? 'error' : 'pending',
+      tone:
+        document.status === 'verified'
+          ? 'success'
+          : document.status === 'rejected'
+            ? 'error'
+            : 'pending',
       title: `${formatDocumentType(document.document_type)} ${document.status}`,
       description:
         document.status === 'verified'
@@ -179,11 +250,15 @@ const navItems = computed(() => [
 ])
 
 function formatDocumentType(type) {
-  return {
-    drivers_license: "Driver's license",
-    valid_id: 'Valid ID',
-    other: 'Other document',
-  }[type] || type || 'Document'
+  return (
+    {
+      drivers_license: "Driver's license",
+      valid_id: 'Valid ID',
+      other: 'Other document',
+    }[type] ||
+    type ||
+    'Document'
+  )
 }
 
 function formatNotificationDate(value) {
@@ -241,13 +316,19 @@ function closeImagePreview() {
 
 function normalizeBrowseMotorcycle(bike) {
   const fallbackMatch = fallbackMotorcycles.find(
-    (entry) => entry.brand.toLowerCase() === String(bike.brand || '').toLowerCase() && entry.model.toLowerCase() === String(bike.model || '').toLowerCase(),
+    (entry) =>
+      entry.brand.toLowerCase() === String(bike.brand || '').toLowerCase() &&
+      entry.model.toLowerCase() === String(bike.model || '').toLowerCase(),
   )
 
   const base = fallbackMatch || {
     category: 'scooter',
     categoryLabel: `${bike.brand || 'Motorcycle'} · ${bike.color || 'Standard'}`,
-    specs: [String(bike.year || '2024'), bike.color || 'Standard', (bike.status || 'available') === 'maintenance' ? 'Under maintenance' : 'Available to book'],
+    specs: [
+      String(bike.year || '2024'),
+      bike.color || 'Standard',
+      (bike.status || 'available') === 'maintenance' ? 'Under maintenance' : 'Available to book',
+    ],
     accent: 'blue',
     pricePerDay: Number(bike.price_per_day || 0),
   }
@@ -412,7 +493,8 @@ function cancelDocumentEdit() {
 function handleDocumentSelection(event) {
   const file = event.target.files?.[0] || null
   selectedDocument.value = file
-  selectedDocumentPreview.value = file && file.type.startsWith('image/') ? URL.createObjectURL(file) : ''
+  selectedDocumentPreview.value =
+    file && file.type.startsWith('image/') ? URL.createObjectURL(file) : ''
   actionError.value = ''
 }
 
@@ -445,7 +527,11 @@ async function submitPayment(booking) {
   isSaving.value = true
   actionError.value = ''
   try {
-    await api.payment({ booking_id: booking.id, payment_method: 'cash', amount: booking.total_price })
+    await api.payment({
+      booking_id: booking.id,
+      payment_method: 'cash',
+      amount: booking.total_price,
+    })
     actionMessage.value = 'Payment submitted for verification.'
     await loadDashboard()
   } catch (error) {
@@ -466,7 +552,6 @@ onMounted(async () => {
   await loadProfile()
   await loadDocuments()
 })
-
 </script>
 
 <template>
@@ -478,34 +563,64 @@ onMounted(async () => {
           <img :src="profileImageSrc" alt="Profile photo" />
         </div>
         <div v-else class="avatar avatar-coral">{{ initials }}</div>
-        <div><strong>{{ displayName }}</strong><span>Rider account</span></div>
+        <div>
+          <strong>{{ displayName }}</strong
+          ><span>Rider account</span>
+        </div>
       </div>
       <nav class="dashboard-nav" aria-label="Customer navigation">
-        <button v-for="item in navItems" :key="item.label" type="button"
-          :class="{ active: activeSection === item.label }" @click="selectSection(item.label)">
-          <component :is="item.icon" :size="18" /><span>{{ item.label }}</span><b v-if="item.count">{{ item.count }}</b>
+        <button
+          v-for="item in navItems"
+          :key="item.label"
+          type="button"
+          :class="{ active: activeSection === item.label }"
+          @click="selectSection(item.label)"
+        >
+          <component :is="item.icon" :size="18" /><span>{{ item.label }}</span
+          ><b v-if="item.count">{{ item.count }}</b>
         </button>
       </nav>
-      <div class="sidebar-bottom"><a href="#">
-          <CircleHelp :size="18" />Help center
-        </a><a href="/" @click.prevent="logout">
-          <LogOut :size="18" />Log out
-        </a></div>
-      <button class="sidebar-close" type="button" aria-label="Close navigation" @click="isMenuOpen = false">
+      <div class="sidebar-bottom">
+        <a href="#"> <CircleHelp :size="18" />Help center </a
+        ><a href="/" @click.prevent="logout"> <LogOut :size="18" />Log out </a>
+      </div>
+      <button
+        class="sidebar-close"
+        type="button"
+        aria-label="Close navigation"
+        @click="isMenuOpen = false"
+      >
         <X :size="20" />
       </button>
     </aside>
     <main class="dashboard-main">
-      <header class="dashboard-topbar"><button class="mobile-menu" type="button" aria-label="Open navigation"
-          @click="isMenuOpen = true">
+      <header class="dashboard-topbar">
+        <button
+          class="mobile-menu"
+          type="button"
+          aria-label="Open navigation"
+          @click="isMenuOpen = true"
+        >
           <Menu :size="21" />
         </button>
         <div>
           <p class="dashboard-kicker">Monday, September 7, 2026</p>
-          <h1>{{ activeSection === 'Dashboard' ? `Good morning, ${displayName.split(' ')[0]}` : activeSection }}</h1>
+          <h1>
+            {{
+              activeSection === 'Dashboard'
+                ? `Good morning, ${displayName.split(' ')[0]}`
+                : activeSection
+            }}
+          </h1>
         </div>
-        <div class="topbar-actions"><button class="icon-button" :class="{ 'has-dot': notificationCount > 0 }" type="button" aria-label="Notifications"
-            @click="selectSection('Notifications')">
+        <div class="topbar-actions">
+          <button
+            class="icon-button"
+            :class="{ 'has-dot': notificationCount > 0 }"
+            type="button"
+            aria-label="Notifications"
+            @click="selectSection('Notifications')"
+          >
             <Bell :size="20" />
           </button>
           <div v-if="profileImageSrc" class="avatar avatar-image">
@@ -514,22 +629,33 @@ onMounted(async () => {
           <div v-else class="avatar avatar-coral">{{ initials }}</div>
         </div>
       </header>
-      <div v-if="activeSection === 'Dashboard' && isLoading" class="dashboard-content dashboard-state">
+      <div
+        v-if="activeSection === 'Dashboard' && isLoading"
+        class="dashboard-content dashboard-state"
+      >
         <div class="state-spinner"></div>
         <p>Loading your rental activity...</p>
       </div>
-      <div v-else-if="activeSection === 'Dashboard' && loadError" class="dashboard-content dashboard-state">
+      <div
+        v-else-if="activeSection === 'Dashboard' && loadError"
+        class="dashboard-content dashboard-state"
+      >
         <div class="state-icon error">!</div>
         <h2>We couldn't load your dashboard</h2>
-        <p>{{ loadError }}</p><button class="btn btn-navy btn-sm" type="button" @click="loadDashboard">Try
-          again</button>
+        <p>{{ loadError }}</p>
+        <button class="btn btn-navy btn-sm" type="button" @click="loadDashboard">Try again</button>
       </div>
       <div v-else-if="activeSection === 'Dashboard'" class="dashboard-content">
         <section class="welcome-panel">
-          <div><span class="eyebrow">Your next adventure</span>
+          <div>
+            <span class="eyebrow">Your next adventure</span>
             <h2>Ready for the open road?</h2>
             <p>Find a ride that fits your plans and book it in a few taps.</p>
-            <button class="btn btn-primary btn-sm" type="button" @click="selectSection('Browse motorcycles')">
+            <button
+              class="btn btn-primary btn-sm"
+              type="button"
+              @click="selectSection('Browse motorcycles')"
+            >
               Browse motorcycles
               <ChevronRight :size="16" />
             </button>
@@ -539,29 +665,43 @@ onMounted(async () => {
           </div>
         </section>
         <div class="stat-grid">
-          <article class="stat-card"><span class="stat-icon blue">
+          <article class="stat-card">
+            <span class="stat-icon blue">
               <ClipboardList :size="19" />
             </span>
-            <div><strong>{{ bookingCount }}</strong><span>Total bookings</span></div><small>Your rental history</small>
+            <div>
+              <strong>{{ bookingCount }}</strong
+              ><span>Total bookings</span>
+            </div>
+            <small>Your rental history</small>
           </article>
-          <article class="stat-card"><span class="stat-icon orange">
+          <article class="stat-card">
+            <span class="stat-icon orange">
               <CalendarDays :size="19" />
             </span>
-            <div><strong>{{ upcomingCount }}</strong><span>Upcoming rides</span></div><small>Pending or
-              confirmed</small>
+            <div>
+              <strong>{{ upcomingCount }}</strong
+              ><span>Upcoming rides</span>
+            </div>
+            <small>Pending or confirmed</small>
           </article>
-          <article class="stat-card"><span class="stat-icon green">
+          <article class="stat-card">
+            <span class="stat-icon green">
               <UserRound :size="19" />
             </span>
-            <div><strong>--</strong><span>Rider rating</span></div><small>Complete a ride to review</small>
+            <div><strong>--</strong><span>Rider rating</span></div>
+            <small>Complete a ride to review</small>
           </article>
         </div>
         <div class="dashboard-columns">
           <section class="dashboard-panel">
             <div class="panel-heading">
-              <div><span class="panel-label">Activity</span>
+              <div>
+                <span class="panel-label">Activity</span>
                 <h2>Recent bookings</h2>
-              </div> <button class="text-button" type="button" @click="selectSection('My bookings')"> View all
+              </div>
+              <button class="text-button" type="button" @click="selectSection('My bookings')">
+                View all
               </button>
             </div>
             <div v-if="!bookings.length" class="panel-empty">
@@ -571,19 +711,27 @@ onMounted(async () => {
             <div v-else class="booking-list">
               <div v-for="booking in bookings.slice(0, 3)" :key="booking.id" class="booking-row">
                 <div class="bike-thumb"><span>SM</span></div>
-                <div class="booking-info"><strong>{{ booking.brand }} {{ booking.model }}</strong><span>{{
-                    booking.start_date }} - {{ booking.end_date }}</span></div>
-                <div class="booking-status" :class="booking.status">{{ booking.status }}</div><strong
-                  class="booking-amount">PHP {{ Number(booking.total_price).toLocaleString() }}</strong>
+                <div class="booking-info">
+                  <strong>{{ booking.brand }} {{ booking.model }}</strong
+                  ><span>{{ booking.start_date }} - {{ booking.end_date }}</span>
+                </div>
+                <div class="booking-status" :class="booking.status">{{ booking.status }}</div>
+                <strong class="booking-amount"
+                  >PHP {{ Number(booking.total_price).toLocaleString() }}</strong
+                >
                 <ChevronRight class="row-arrow" :size="17" />
               </div>
             </div>
           </section>
           <section class="dashboard-panel notifications-panel">
             <div class="panel-heading">
-              <div><span class="panel-label">Stay in the loop</span>
+              <div>
+                <span class="panel-label">Stay in the loop</span>
                 <h2>Booking updates</h2>
-              </div><button class="text-button" type="button" @click="selectSection('Notifications')">View all</button>
+              </div>
+              <button class="text-button" type="button" @click="selectSection('Notifications')">
+                View all
+              </button>
             </div>
             <div v-if="!notifications.length" class="panel-empty">
               <Bell :size="24" />
@@ -600,17 +748,24 @@ onMounted(async () => {
           </section>
         </div>
       </div>
-      <div v-else-if="activeSection === 'Browse motorcycles'" class="dashboard-content customer-subpage">
+      <div
+        v-else-if="activeSection === 'Browse motorcycles'"
+        class="dashboard-content customer-subpage"
+      >
         <section class="dashboard-panel browse-panel">
           <div class="panel-heading">
             <div>
               <span class="panel-label">Explore rentals</span>
               <h2>Choose your next ride</h2>
             </div>
-            <button class="text-button" type="button" @click="selectSection('Dashboard')">Back to dashboard</button>
+            <button class="text-button" type="button" @click="selectSection('Dashboard')">
+              Back to dashboard
+            </button>
           </div>
 
-          <p class="subpage-description">Filter by type, compare daily rates, and book the motorcycle that fits your plans.</p>
+          <p class="subpage-description">
+            Filter by type, compare daily rates, and book the motorcycle that fits your plans.
+          </p>
 
           <div class="browse-toolbar">
             <div class="filter-row browse-filter-row">
@@ -683,7 +838,10 @@ onMounted(async () => {
                   :class="{ active: getPreviewImageIndex(bike.id) === index }"
                   @click.stop="setPreviewImageIndex(bike.id, index)"
                 >
-                  <img :src="getBikeImageUrl(bike, index)" :alt="`${bike.brand} ${bike.model} image ${index + 1}`" />
+                  <img
+                    :src="getBikeImageUrl(bike, index)"
+                    :alt="`${bike.brand} ${bike.model} image ${index + 1}`"
+                  />
                 </button>
               </div>
 
@@ -715,9 +873,18 @@ onMounted(async () => {
           </div>
         </section>
 
-        <div v-if="activeImagePreview" class="image-preview-overlay" @click.self="closeImagePreview()">
+        <div
+          v-if="activeImagePreview"
+          class="image-preview-overlay"
+          @click.self="closeImagePreview()"
+        >
           <div class="image-preview-dialog">
-            <button class="dialog-close" type="button" aria-label="Close image preview" @click="closeImagePreview()">
+            <button
+              class="dialog-close"
+              type="button"
+              aria-label="Close image preview"
+              @click="closeImagePreview()"
+            >
               ×
             </button>
 
@@ -737,7 +904,10 @@ onMounted(async () => {
                 :class="{ active: activeImagePreview.index === index }"
                 @click="activeImagePreview.index = index"
               >
-                <img :src="getBikeImageUrl(activeImagePreview.bike, index)" :alt="`${activeImagePreview.bike.brand} ${activeImagePreview.bike.model} preview ${index + 1}`" />
+                <img
+                  :src="getBikeImageUrl(activeImagePreview.bike, index)"
+                  :alt="`${activeImagePreview.bike.brand} ${activeImagePreview.bike.model} preview ${index + 1}`"
+                />
               </button>
             </div>
           </div>
@@ -771,8 +941,18 @@ onMounted(async () => {
             <p v-if="bookingError" class="booking-message error">{{ bookingError }}</p>
             <p v-if="bookingSuccess" class="booking-message success">{{ bookingSuccess }}</p>
 
-            <button class="btn btn-primary btn-block" type="submit" :disabled="isBooking || !!bookingSuccess">
-              {{ isBooking ? 'Submitting...' : bookingSuccess ? 'Request submitted' : 'Submit booking request' }}
+            <button
+              class="btn btn-primary btn-block"
+              type="submit"
+              :disabled="isBooking || !!bookingSuccess"
+            >
+              {{
+                isBooking
+                  ? 'Submitting...'
+                  : bookingSuccess
+                    ? 'Request submitted'
+                    : 'Submit booking request'
+              }}
             </button>
           </form>
         </div>
@@ -781,30 +961,46 @@ onMounted(async () => {
       <div v-else class="dashboard-content customer-subpage">
         <section class="dashboard-panel subpage-panel">
           <div class="panel-heading">
-            <div><span class="panel-label">{{ sectionContent[activeSection].eyebrow }}</span>
+            <div>
+              <span class="panel-label">{{ sectionContent[activeSection].eyebrow }}</span>
               <h2>{{ sectionContent[activeSection].title }}</h2>
             </div>
           </div>
           <p v-if="actionMessage" class="form-message success">{{ actionMessage }}</p>
           <p v-if="actionError" class="form-message error">{{ actionError }}</p>
           <template v-if="activeSection === 'My bookings'">
-            <p class="subpage-description">Keep track of upcoming rides, payments, and your rental history.</p>
+            <p class="subpage-description">
+              Keep track of upcoming rides, payments, and your rental history.
+            </p>
             <div v-if="!bookings.length" class="panel-empty">
               <ClipboardList :size="24" />
               <p>No bookings yet. Browse available motorcycles to get started.</p>
             </div>
             <div v-else class="subpage-bookings">
               <div v-for="booking in bookings" :key="booking.id" class="subpage-booking">
-                <div><strong>{{ booking.brand }} {{ booking.model }}</strong><span>{{ booking.start_date }} to {{
-                    booking.end_date }} · {{ booking.status }}</span></div><b>PHP {{
-                      Number(booking.total_price).toLocaleString() }}</b><button
-                  v-if="booking.status === 'confirmed' && !booking.payment_id" class="btn btn-navy btn-sm" type="button"
-                  :disabled="isSaving" @click="submitPayment(booking)">Pay now</button>
+                <div>
+                  <strong>{{ booking.brand }} {{ booking.model }}</strong
+                  ><span
+                    >{{ booking.start_date }} to {{ booking.end_date }} · {{ booking.status }}</span
+                  >
+                </div>
+                <b>PHP {{ Number(booking.total_price).toLocaleString() }}</b
+                ><button
+                  v-if="booking.status === 'confirmed' && !booking.payment_id"
+                  class="btn btn-navy btn-sm"
+                  type="button"
+                  :disabled="isSaving"
+                  @click="submitPayment(booking)"
+                >
+                  Pay now
+                </button>
               </div>
             </div>
           </template>
           <template v-else-if="activeSection === 'Profile & account'">
-            <p class="subpage-description">Keep your contact information current for booking and verification.</p>
+            <p class="subpage-description">
+              Keep your contact information current for booking and verification.
+            </p>
             <form class="profile-form" @submit.prevent="saveProfile">
               <div class="profile-photo-preview">
                 <div v-if="profileImageSrc" class="avatar avatar-image avatar-large">
@@ -814,30 +1010,50 @@ onMounted(async () => {
                 <div class="profile-upload-wrap">
                   <label class="btn btn-secondary btn-sm profile-upload">
                     Change photo
-                    <input type="file" accept="image/*" @change="profileImageFile = $event.target.files[0]" />
+                    <input
+                      type="file"
+                      accept="image/*"
+                      @change="profileImageFile = $event.target.files[0]"
+                    />
                   </label>
                   <small v-if="profileImageFile">Selected: {{ profileImageFile.name }}</small>
                 </div>
               </div>
               <label>Full name<input v-model="profile.name" required /></label>
               <label>Email address<input :value="profile.email" type="email" disabled /></label>
-              <label>Phone<input v-model="profile.phone" type="tel" placeholder="09XX XXX XXXX" /></label>
+              <label
+                >Phone<input v-model="profile.phone" type="tel" placeholder="09XX XXX XXXX"
+              /></label>
               <label>Address<input v-model="profile.address" placeholder="Your address" /></label>
-              <button class="btn btn-primary btn-sm" type="submit" :disabled="isSaving">{{ isSaving ? 'Saving...' : 'Save profile' }}</button>
+              <button class="btn btn-primary btn-sm" type="submit" :disabled="isSaving">
+                {{ isSaving ? 'Saving...' : 'Save profile' }}
+              </button>
             </form>
 
             <div class="document-upload">
               <div v-if="editingDocumentId" class="document-edit-banner">
                 Editing document #{{ editingDocumentId }}
-                <button class="text-button doc-edit-button" type="button" @click="cancelDocumentEdit">Cancel</button>
+                <button
+                  class="text-button doc-edit-button"
+                  type="button"
+                  @click="cancelDocumentEdit"
+                >
+                  Cancel
+                </button>
               </div>
-              <label>Document type<select v-model="documentType">
+              <label
+                >Document type<select v-model="documentType">
                   <option value="drivers_license">Driver's license</option>
                   <option value="valid_id">Valid ID</option>
                   <option value="other">Other</option>
-                </select></label>
-              <label class="file-input">Upload requirement<input type="file" accept="image/*,.pdf"
-                  @change="handleDocumentSelection" /></label>
+                </select></label
+              >
+              <label class="file-input"
+                >Upload requirement<input
+                  type="file"
+                  accept="image/*,.pdf"
+                  @change="handleDocumentSelection"
+              /></label>
 
               <div v-if="selectedDocumentPreview" class="document-preview-box">
                 <img :src="selectedDocumentPreview" alt="Selected document preview" />
@@ -846,22 +1062,48 @@ onMounted(async () => {
                 <span>{{ selectedDocument.name }}</span>
               </div>
 
-              <button class="btn btn-primary btn-sm"
-                type="button" :disabled="!selectedDocument || isSaving" @click="uploadDocument">{{ isSaving ?
-                  'Uploading...' : editingDocumentId ? 'Update document' : 'Upload document' }}</button>
+              <button
+                class="btn btn-primary btn-sm"
+                type="button"
+                :disabled="!selectedDocument || isSaving"
+                @click="uploadDocument"
+              >
+                {{
+                  isSaving
+                    ? 'Uploading...'
+                    : editingDocumentId
+                      ? 'Update document'
+                      : 'Upload document'
+                }}
+              </button>
             </div>
 
             <div class="customer-detail-list">
-              <div class="customer-detail-row"><span class="detail-number">01</span><strong>Account
-                  verification</strong><span class="setting-state" :class="verificationState.tone">{{ verificationState.label }}</span></div>
-              <div class="customer-detail-row"><span class="detail-number">02</span><strong>Uploaded documents</strong><span class="setting-state">{{ documents.length }}</span></div>
+              <div class="customer-detail-row">
+                <span class="detail-number">01</span><strong>Account verification</strong
+                ><span class="setting-state" :class="verificationState.tone">{{
+                  verificationState.label
+                }}</span>
+              </div>
+              <div class="customer-detail-row">
+                <span class="detail-number">02</span><strong>Uploaded documents</strong
+                ><span class="setting-state">{{ documents.length }}</span>
+              </div>
             </div>
 
             <div class="customer-detail-list">
-              <div v-for="document in documents" :key="document.id" class="customer-detail-row"><span
-                  class="detail-number">{{ document.document_type }}</span><strong>{{ document.status
-                  }}</strong><span>{{ document.uploaded_at?.slice(0, 10) }}</span><button
-                  class="text-button doc-edit-button" type="button" @click="editDocument(document)">Edit</button></div>
+              <div v-for="document in documents" :key="document.id" class="customer-detail-row">
+                <span class="detail-number">{{ document.document_type }}</span
+                ><strong>{{ document.status }}</strong
+                ><span>{{ document.uploaded_at?.slice(0, 10) }}</span
+                ><button
+                  class="text-button doc-edit-button"
+                  type="button"
+                  @click="editDocument(document)"
+                >
+                  Edit
+                </button>
+              </div>
               <div v-if="!documents.length" class="panel-empty">
                 <Bell :size="24" />
                 <p>No documents submitted yet.</p>
@@ -886,24 +1128,40 @@ onMounted(async () => {
             </div>
           </template>
           <template v-else>
-            <p class="subpage-description">Review the account preferences supported by your SakayMoto profile.</p>
+            <p class="subpage-description">
+              Review the account preferences supported by your SakayMoto profile.
+            </p>
             <div class="settings-grid">
               <div v-for="item in settingsList" :key="item.key" class="setting-card">
                 <div class="setting-copy">
                   <strong>{{ item.label }}</strong>
                   <span>{{ item.description }}</span>
                 </div>
-                <button class="toggle-button" :class="{ active: item.enabled }" type="button" @click="toggleSetting(item.key)">
+                <button
+                  class="toggle-button"
+                  :class="{ active: item.enabled }"
+                  type="button"
+                  @click="toggleSetting(item.key)"
+                >
                   <span>{{ item.enabled ? 'On' : 'Off' }}</span>
                 </button>
               </div>
             </div>
             <div class="customer-detail-list">
-              <div class="customer-detail-row"><span class="detail-number">01</span><strong>Booking
-                  reminders</strong><span class="setting-state">{{ settings.bookingReminders ? 'On' : 'Off' }}</span></div>
-              <div class="customer-detail-row"><span class="detail-number">02</span><strong>Account
-                  verification</strong><span class="setting-state" :class="verificationState.tone">{{ verificationState.label }}</span></div>
-              <div class="customer-detail-row"><span class="detail-number">03</span><strong>Uploaded documents</strong><span class="setting-state">{{ documents.length }}</span></div>
+              <div class="customer-detail-row">
+                <span class="detail-number">01</span><strong>Booking reminders</strong
+                ><span class="setting-state">{{ settings.bookingReminders ? 'On' : 'Off' }}</span>
+              </div>
+              <div class="customer-detail-row">
+                <span class="detail-number">02</span><strong>Account verification</strong
+                ><span class="setting-state" :class="verificationState.tone">{{
+                  verificationState.label
+                }}</span>
+              </div>
+              <div class="customer-detail-row">
+                <span class="detail-number">03</span><strong>Uploaded documents</strong
+                ><span class="setting-state">{{ documents.length }}</span>
+              </div>
             </div>
           </template>
         </section>
@@ -930,7 +1188,7 @@ onMounted(async () => {
 .subpage-description {
   max-width: 560px;
   color: var(--ink-soft);
-  font-size: .9rem;
+  font-size: 0.9rem;
   margin: 8px 0 26px;
 }
 
@@ -986,7 +1244,7 @@ onMounted(async () => {
   gap: 12px;
   flex-wrap: wrap;
   color: var(--ink-soft);
-  font-size: .78rem;
+  font-size: 0.78rem;
 }
 
 .browse-summary span {
@@ -1036,7 +1294,7 @@ onMounted(async () => {
   place-items: center;
   font: 700 2rem var(--ff-display);
   color: var(--navy);
-  background: linear-gradient(160deg,#eaf1ff,#d6e4ff);
+  background: linear-gradient(160deg, #eaf1ff, #d6e4ff);
 }
 
 .browse-badge {
@@ -1046,9 +1304,9 @@ onMounted(async () => {
   z-index: 1;
   padding: 6px 10px;
   border-radius: 999px;
-  background: rgba(255,255,255,0.92);
+  background: rgba(255, 255, 255, 0.92);
   color: #178a4c;
-  font: 700 .68rem var(--ff-display);
+  font: 700 0.68rem var(--ff-display);
 }
 
 .browse-badge.maintenance {
@@ -1163,7 +1421,7 @@ onMounted(async () => {
 
 .browse-category {
   color: var(--ink-soft);
-  font: 600 .68rem var(--ff-display);
+  font: 600 0.68rem var(--ff-display);
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
@@ -1184,7 +1442,7 @@ onMounted(async () => {
   padding: 5px 9px;
   background: var(--bg);
   color: var(--ink-soft);
-  font-size: .69rem;
+  font-size: 0.69rem;
 }
 
 .browse-foot {
@@ -1208,7 +1466,7 @@ onMounted(async () => {
 
 .browse-price span {
   color: var(--ink-soft);
-  font-size: .76rem;
+  font-size: 0.76rem;
 }
 
 .booking-overlay {
@@ -1306,7 +1564,7 @@ onMounted(async () => {
 
 .customer-detail-row strong {
   flex: 1;
-  font-size: .86rem;
+  font-size: 0.86rem;
 }
 
 .customer-detail-row svg {
@@ -1315,7 +1573,7 @@ onMounted(async () => {
 
 .detail-number {
   color: var(--orange);
-  font: 700 .7rem var(--ff-display);
+  font: 700 0.7rem var(--ff-display);
 }
 
 .dashboard-state {
@@ -1335,7 +1593,7 @@ onMounted(async () => {
 
 .dashboard-state p {
   max-width: 360px;
-  font-size: .84rem;
+  font-size: 0.84rem;
 }
 
 .state-spinner {
@@ -1344,7 +1602,7 @@ onMounted(async () => {
   border: 3px solid var(--blue-soft);
   border-top-color: var(--blue);
   border-radius: 50%;
-  animation: dashboard-spin .8s linear infinite;
+  animation: dashboard-spin 0.8s linear infinite;
 }
 
 .state-icon {
@@ -1373,7 +1631,7 @@ onMounted(async () => {
 
 .panel-empty p {
   max-width: 230px;
-  font-size: .76rem;
+  font-size: 0.76rem;
 }
 
 @keyframes dashboard-spin {
@@ -1403,17 +1661,17 @@ onMounted(async () => {
 
 .subpage-booking strong {
   color: var(--navy);
-  font-size: .86rem;
+  font-size: 0.86rem;
 }
 
 .subpage-booking span {
   color: var(--ink-soft);
-  font-size: .75rem;
+  font-size: 0.75rem;
 }
 
 .subpage-booking b {
   color: var(--navy);
-  font-size: .82rem;
+  font-size: 0.82rem;
 }
 
 .profile-form {
@@ -1428,7 +1686,7 @@ onMounted(async () => {
   display: grid;
   gap: 7px;
   color: var(--navy);
-  font: 600 .76rem var(--ff-display);
+  font: 600 0.76rem var(--ff-display);
 }
 
 .profile-form input,
@@ -1440,7 +1698,7 @@ onMounted(async () => {
   border-radius: 9px;
   color: var(--ink);
   background: #fff;
-  font: 400 .84rem var(--ff-body);
+  font: 400 0.84rem var(--ff-body);
 }
 
 .profile-form input:disabled {
@@ -1522,12 +1780,12 @@ onMounted(async () => {
 
 .profile-upload-wrap small {
   color: var(--ink-soft);
-  font-size: .72rem;
+  font-size: 0.72rem;
 }
 
 .setting-state {
   color: #26976a;
-  font-size: .75rem;
+  font-size: 0.75rem;
 }
 
 .settings-grid {
@@ -1555,12 +1813,12 @@ onMounted(async () => {
 
 .setting-copy strong {
   color: var(--navy);
-  font-size: .86rem;
+  font-size: 0.86rem;
 }
 
 .setting-copy span {
   color: var(--ink-soft);
-  font-size: .75rem;
+  font-size: 0.75rem;
 }
 
 .toggle-button {
@@ -1570,7 +1828,7 @@ onMounted(async () => {
   border-radius: 999px;
   background: #f1f4f8;
   color: var(--ink-soft);
-  font: 700 .72rem var(--ff-display);
+  font: 700 0.72rem var(--ff-display);
   transition: all 0.2s ease;
 }
 
@@ -1660,14 +1918,14 @@ onMounted(async () => {
 }
 
 .welcome-panel p {
-  color: rgba(255, 255, 255, .7);
-  font-size: .91rem;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.91rem;
   margin-bottom: 20px;
 }
 
 .welcome-panel .eyebrow {
   color: #ffc0ad;
-  background: rgba(255, 255, 255, .1);
+  background: rgba(255, 255, 255, 0.1);
   margin-bottom: 10px;
 }
 
@@ -1675,7 +1933,7 @@ onMounted(async () => {
   display: grid;
   place-items: center;
   width: 150px;
-  color: rgba(255, 255, 255, .17);
+  color: rgba(255, 255, 255, 0.17);
   transform: rotate(-12deg);
 }
 
@@ -1684,7 +1942,7 @@ onMounted(async () => {
   position: absolute;
   width: 230px;
   height: 230px;
-  border: 1px solid rgba(255, 255, 255, .1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 50%;
   right: 18px;
   top: -100px;
@@ -1716,7 +1974,7 @@ onMounted(async () => {
   display: grid;
   place-items: center;
   color: var(--blue);
-  font: 700 .72rem var(--ff-display);
+  font: 700 0.72rem var(--ff-display);
 }
 
 .booking-info {
@@ -1727,21 +1985,21 @@ onMounted(async () => {
 .booking-info strong,
 .booking-amount {
   color: var(--navy);
-  font-size: .87rem;
+  font-size: 0.87rem;
 }
 
 .booking-info span,
 .notice p,
 .notice small {
   color: var(--ink-soft);
-  font-size: .76rem;
+  font-size: 0.76rem;
 }
 
 .booking-status {
   justify-self: start;
   padding: 5px 9px;
   border-radius: 6px;
-  font-size: .68rem;
+  font-size: 0.68rem;
   font-weight: 700;
 }
 
@@ -1776,7 +2034,7 @@ onMounted(async () => {
 
 .notifications-panel .text-button {
   color: var(--blue);
-  font-size: .74rem;
+  font-size: 0.74rem;
 }
 
 .notice {
@@ -1790,18 +2048,18 @@ onMounted(async () => {
   border-bottom: 0;
 }
 
-.notice>div {
+.notice > div {
   display: grid;
   gap: 3px;
 }
 
 .notice strong {
-  font-size: .82rem;
+  font-size: 0.82rem;
   color: var(--navy);
 }
 
 .notice small {
-  font-size: .68rem;
+  font-size: 0.68rem;
   color: #99a3b2;
   margin-top: 3px;
 }
@@ -1834,7 +2092,7 @@ onMounted(async () => {
   .welcome-mark {
     position: absolute;
     right: -15px;
-    opacity: .65;
+    opacity: 0.65;
   }
 
   .browse-toolbar {
@@ -1901,6 +2159,6 @@ onMounted(async () => {
   .document-upload {
     grid-template-columns: 1fr;
     align-items: stretch;
-    }
+  }
 }
 </style>
