@@ -1104,7 +1104,9 @@ onMounted(async () => {
 }
 
 .image-preview-dialog {
-  width: min(100%, 760px);
+  width: min(100%, 960px);
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
   padding: 26px;
   border-radius: 20px;
   background: #fff;
@@ -1114,6 +1116,7 @@ onMounted(async () => {
 
 .image-preview-stage {
   width: 100%;
+  max-height: calc(100vh - 150px);
   aspect-ratio: 16 / 10;
   border-radius: 16px;
   overflow: hidden;
@@ -1123,7 +1126,7 @@ onMounted(async () => {
 .image-preview-stage img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   display: block;
 }
 
