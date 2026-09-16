@@ -16,11 +16,9 @@ const createPayment = async (req, res) => {
     !["cash", "gcash", "bank_transfer"].includes(payment_method) ||
     Number(amount) <= 0
   )
-    return res
-      .status(400)
-      .json({
-        message: "Valid booking, payment method, and amount are required",
-      });
+    return res.status(400).json({
+      message: "Valid booking, payment method, and amount are required",
+    });
   const [bookings] = await db.execute(
     "SELECT id, user_id, total_price FROM bookings WHERE id = ?",
     [booking_id],
@@ -37,12 +35,10 @@ const createPayment = async (req, res) => {
     "INSERT INTO payments (booking_id, payment_method, amount, reference_number) VALUES (?, ?, ?, ?)",
     [booking_id, payment_method, amount, reference_number || null],
   );
-  return res
-    .status(201)
-    .json({
-      id: result.insertId,
-      message: "Payment submitted for verification",
-    });
+  return res.status(201).json({
+    id: result.insertId,
+    message: "Payment submitted for verification",
+  });
 };
 
 const updatePaymentStatus = async (req, res) => {

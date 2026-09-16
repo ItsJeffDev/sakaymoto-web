@@ -17,12 +17,10 @@ const createReview = async (req, res) => {
     Number(rating) < 1 ||
     Number(rating) > 5
   )
-    return res
-      .status(400)
-      .json({
-        message:
-          "Motorcycle, completed booking, and rating from 1 to 5 are required",
-      });
+    return res.status(400).json({
+      message:
+        "Motorcycle, completed booking, and rating from 1 to 5 are required",
+    });
   const [bookings] = await db.execute(
     "SELECT id FROM bookings WHERE id = ? AND user_id = ? AND motorcycle_id = ? AND status = 'completed'",
     [booking_id, req.user.id, motorcycle_id],
