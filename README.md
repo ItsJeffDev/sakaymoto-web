@@ -35,7 +35,7 @@ Start the backend in one terminal:
 
 ```sh
 cd backend
-npm run dev
+npm start
 ```
 
 Start the Vite frontend in another terminal:
