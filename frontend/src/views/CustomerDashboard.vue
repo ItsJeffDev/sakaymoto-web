@@ -1581,6 +1581,7 @@ onMounted(async () => {
 }
 
 .customer-frame.theme-dark .dashboard-sidebar,
+.customer-frame.theme-dark .dashboard-topbar,
 .customer-frame.theme-dark .dashboard-panel,
 .customer-frame.theme-dark .stat-card,
 .customer-frame.theme-dark .browse-card,
@@ -1596,6 +1597,10 @@ onMounted(async () => {
 .customer-frame.theme-dark .welcome-panel {
   background: #111827;
   border-color: var(--line);
+}
+
+.customer-frame.theme-dark .mobile-menu {
+  color: var(--ink);
 }
 
 .customer-frame.theme-dark .dashboard-main,
