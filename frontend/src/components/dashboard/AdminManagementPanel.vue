@@ -14,7 +14,10 @@ const selectedUser = ref(null)
 const selectedDocumentPreview = ref('')
 const showAddMotorcycleForm = ref(false)
 const selectedImage = ref(null)
-const apiBaseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:3000/api').replace(/\/api$/, '')
+const apiBaseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:3000/api').replace(
+  /\/api$/,
+  '',
+)
 const motorcycleForm = ref({
   brand: '',
   model: '',
@@ -31,11 +34,15 @@ function getFileUrl(path) {
 }
 
 function formatDocumentType(type) {
-  return {
-    drivers_license: "Driver's license",
-    valid_id: 'Valid ID',
-    other: 'Other document',
-  }[type] || type || 'Document'
+  return (
+    {
+      drivers_license: "Driver's license",
+      valid_id: 'Valid ID',
+      other: 'Other document',
+    }[type] ||
+    type ||
+    'Document'
+  )
 }
 
 function getCustomerDocuments(userId) {
@@ -50,7 +57,9 @@ function getCustomerIdentitySummary(userId) {
   }
 
   const hasVerifiedIdentity = documents.some(
-    (document) => ['drivers_license', 'valid_id'].includes(document.document_type) && document.status === 'verified',
+    (document) =>
+      ['drivers_license', 'valid_id'].includes(document.document_type) &&
+      document.status === 'verified',
   )
 
   const hasPendingDocuments = documents.some((document) => document.status === 'pending')
@@ -115,7 +124,8 @@ async function submitMotorcycle() {
   formError.value = ''
   successMessage.value = ''
 
-  const { brand, model, year, plate_number, color, price_per_day, status, description } = motorcycleForm.value
+  const { brand, model, year, plate_number, color, price_per_day, status, description } =
+    motorcycleForm.value
 
   if (!brand || !model || !year || !plate_number || !color || !price_per_day) {
     formError.value = 'Please fill in all required motorcycle fields.'
@@ -125,7 +135,11 @@ async function submitMotorcycle() {
   const yearValue = Number(year)
   const priceValue = Number(price_per_day)
 
-  if (!Number.isInteger(yearValue) || yearValue < 2000 || yearValue > new Date().getFullYear() + 1) {
+  if (
+    !Number.isInteger(yearValue) ||
+    yearValue < 2000 ||
+    yearValue > new Date().getFullYear() + 1
+  ) {
     formError.value = 'Please enter a valid year between 2000 and the next year.'
     return
   }
@@ -222,8 +236,12 @@ onMounted(load)
         <h2>{{ section }}</h2>
       </div>
       <div class="panel-actions">
-        <button v-if="section === 'Motorcycles'" class="btn btn-navy btn-sm" type="button"
-          @click="showAddMotorcycleForm = !showAddMotorcycleForm">
+        <button
+          v-if="section === 'Motorcycles'"
+          class="btn btn-navy btn-sm"
+          type="button"
+          @click="showAddMotorcycleForm = !showAddMotorcycleForm"
+        >
           {{ showAddMotorcycleForm ? 'Close form' : 'Add motorcycle' }}
         </button>
       </div>
@@ -233,7 +251,10 @@ onMounted(load)
       <p>{{ error }}</p>
       <button class="btn btn-navy btn-sm" type="button" @click="load">Try again</button>
     </div>
-    <div v-else-if="section === 'Motorcycles' && showAddMotorcycleForm" class="motorcycle-form-panel">
+    <div
+      v-else-if="section === 'Motorcycles' && showAddMotorcycleForm"
+      class="motorcycle-form-panel"
+    >
       <div class="motorcycle-form-header">
         <div>
           <span class="panel-label">New inventory</span>
@@ -248,28 +269,60 @@ onMounted(load)
         <div class="form-grid">
           <div class="form-field">
             <label for="motorcycle-brand">Brand</label>
-            <input id="motorcycle-brand" v-model="motorcycleForm.brand" type="text" placeholder="Honda" />
+            <input
+              id="motorcycle-brand"
+              v-model="motorcycleForm.brand"
+              type="text"
+              placeholder="Honda"
+            />
           </div>
           <div class="form-field">
             <label for="motorcycle-model">Model</label>
-            <input id="motorcycle-model" v-model="motorcycleForm.model" type="text" placeholder="Click 125" />
+            <input
+              id="motorcycle-model"
+              v-model="motorcycleForm.model"
+              type="text"
+              placeholder="Click 125"
+            />
           </div>
           <div class="form-field">
             <label for="motorcycle-year">Year</label>
-            <input id="motorcycle-year" v-model="motorcycleForm.year" type="number" min="2000" placeholder="2026" />
+            <input
+              id="motorcycle-year"
+              v-model="motorcycleForm.year"
+              type="number"
+              min="2000"
+              placeholder="2026"
+            />
           </div>
           <div class="form-field">
             <label for="motorcycle-plate">Plate number</label>
-            <input id="motorcycle-plate" v-model="motorcycleForm.plate_number" type="text" placeholder="ABC 1234" />
+            <input
+              id="motorcycle-plate"
+              v-model="motorcycleForm.plate_number"
+              type="text"
+              placeholder="ABC 1234"
+            />
           </div>
           <div class="form-field">
             <label for="motorcycle-color">Color</label>
-            <input id="motorcycle-color" v-model="motorcycleForm.color" type="text" placeholder="Black" />
+            <input
+              id="motorcycle-color"
+              v-model="motorcycleForm.color"
+              type="text"
+              placeholder="Black"
+            />
           </div>
           <div class="form-field">
             <label for="motorcycle-price">Price per day</label>
-            <input id="motorcycle-price" v-model="motorcycleForm.price_per_day" type="number" min="1" step="0.01"
-              placeholder="850" />
+            <input
+              id="motorcycle-price"
+              v-model="motorcycleForm.price_per_day"
+              type="number"
+              min="1"
+              step="0.01"
+              placeholder="850"
+            />
           </div>
           <div class="form-field">
             <label for="motorcycle-status">Status</label>
@@ -287,13 +340,17 @@ onMounted(load)
 
         <div class="form-field full-width">
           <label for="motorcycle-description">Description</label>
-          <textarea id="motorcycle-description" v-model="motorcycleForm.description" rows="4"
-            placeholder="Optional notes about the bike, condition, or features" />
+          <textarea
+            id="motorcycle-description"
+            v-model="motorcycleForm.description"
+            rows="4"
+            placeholder="Optional notes about the bike, condition, or features"
+          />
         </div>
 
         <div class="motorcycle-form-actions">
           <button class="btn btn-navy btn-sm" type="submit">Save motorcycle</button>
-          <button class="text-button" type="button" @click="showAddMotorcycleForm = false; resetMotorcycleForm()">
+          <button class="text-button" type="button" @click="showAddMotorcycleForm = false, resetMotorcycleForm()">
             Cancel
           </button>
         </div>
@@ -302,13 +359,16 @@ onMounted(load)
 
     <div v-else-if="section === 'Reports & analytics'" class="report-grid">
       <div>
-        <strong>{{ report?.customers || 0 }}</strong><span>Customers</span>
+        <strong>{{ report?.customers || 0 }}</strong
+        ><span>Customers</span>
       </div>
       <div>
-        <strong>{{ report?.active_bookings || 0 }}</strong><span>Active bookings</span>
+        <strong>{{ report?.active_bookings || 0 }}</strong
+        ><span>Active bookings</span>
       </div>
       <div>
-        <strong>PHP {{ Number(report?.verified_revenue || 0).toLocaleString() }}</strong><span>Verified revenue</span>
+        <strong>PHP {{ Number(report?.verified_revenue || 0).toLocaleString() }}</strong
+        ><span>Verified revenue</span>
       </div>
     </div>
     <div v-else-if="section === 'Customers'" class="table-scroll customer-table-scroll">
@@ -350,14 +410,22 @@ onMounted(load)
 
     <div v-if="selectedUser" class="customer-inspect-overlay" @click.self="closeInspection">
       <div class="customer-inspect-panel">
-        <button class="dialog-close" type="button" aria-label="Close inspection" @click="closeInspection">
+        <button
+          class="dialog-close"
+          type="button"
+          aria-label="Close inspection"
+          @click="closeInspection"
+        >
           ×
         </button>
 
         <div class="customer-inspect-header">
           <div class="customer-inspect-avatar">
-            <img v-if="selectedUser.profile_image" :src="getFileUrl(selectedUser.profile_image)"
-              :alt="`${selectedUser.name} profile`" />
+            <img
+              v-if="selectedUser.profile_image"
+              :src="getFileUrl(selectedUser.profile_image)"
+              :alt="`${selectedUser.name} profile`"
+            />
             <span v-else>{{ selectedUser.name?.slice(0, 2).toUpperCase() || 'US' }}</span>
           </div>
           <div>
@@ -379,19 +447,31 @@ onMounted(load)
               <strong>{{ getCustomerIdentitySummary(selectedUser.id).label }}</strong>
             </p>
             <p>
-              {{ getCustomerDocuments(selectedUser.id).length
-                ? `${getCustomerDocuments(selectedUser.id).length} uploaded file(s)`
-                : 'No uploaded files yet' }}
+              {{
+                getCustomerDocuments(selectedUser.id).length
+                  ? `${getCustomerDocuments(selectedUser.id).length} uploaded file(s)`
+                  : 'No uploaded files yet'
+              }}
             </p>
           </div>
         </div>
 
         <div v-if="getCustomerDocuments(selectedUser.id).length" class="document-grid">
-          <article v-for="document in getCustomerDocuments(selectedUser.id)" :key="document.id" class="document-card">
-            <button class="document-preview" type="button"
-              @click="selectedDocumentPreview = getFileUrl(document.file_url)">
-              <img v-if="document.file_url" :src="getFileUrl(document.file_url)"
-                :alt="`${formatDocumentType(document.document_type)} preview`" />
+          <article
+            v-for="document in getCustomerDocuments(selectedUser.id)"
+            :key="document.id"
+            class="document-card"
+          >
+            <button
+              class="document-preview"
+              type="button"
+              @click="selectedDocumentPreview = getFileUrl(document.file_url)"
+            >
+              <img
+                v-if="document.file_url"
+                :src="getFileUrl(document.file_url)"
+                :alt="`${formatDocumentType(document.document_type)} preview`"
+              />
               <span v-else>No preview</span>
             </button>
             <div class="document-details">
@@ -399,11 +479,18 @@ onMounted(load)
               <strong>{{ document.status }}</strong>
               <small>Uploaded {{ document.uploaded_at?.slice(0, 10) }}</small>
               <div v-if="document.status === 'pending'" class="document-actions">
-                <button class="table-action" type="button" @click="updateDocumentStatus(document.id, 'verified')">
+                <button
+                  class="table-action"
+                  type="button"
+                  @click="updateDocumentStatus(document.id, 'verified')"
+                >
                   Confirm
                 </button>
-                <button class="table-action danger" type="button"
-                  @click="updateDocumentStatus(document.id, 'rejected')">
+                <button
+                  class="table-action danger"
+                  type="button"
+                  @click="updateDocumentStatus(document.id, 'rejected')"
+                >
                   Remove
                 </button>
               </div>
@@ -417,9 +504,18 @@ onMounted(load)
       </div>
     </div>
 
-    <div v-if="selectedDocumentPreview" class="image-preview-overlay" @click.self="selectedDocumentPreview = ''">
+    <div
+      v-if="selectedDocumentPreview"
+      class="image-preview-overlay"
+      @click.self="selectedDocumentPreview = ''"
+    >
       <div class="image-preview-panel">
-        <button class="dialog-close" type="button" aria-label="Close preview" @click="selectedDocumentPreview = ''">
+        <button
+          class="dialog-close"
+          type="button"
+          aria-label="Close preview"
+          @click="selectedDocumentPreview = ''"
+        >
           ×
         </button>
         <img :src="selectedDocumentPreview" alt="Document preview" />
