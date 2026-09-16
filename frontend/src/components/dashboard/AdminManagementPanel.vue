@@ -300,7 +300,11 @@ onMounted(load)
 
         <div class="motorcycle-form-actions">
           <button class="btn btn-navy btn-sm" type="submit">Save motorcycle</button>
-          <button class="text-button" type="button" @click="showAddMotorcycleForm = false; resetMotorcycleForm()">
+          <button
+            class="text-button"
+            type="button"
+            @click="((showAddMotorcycleForm = false), resetMotorcycleForm())"
+          >
             Cancel
           </button>
         </div>
@@ -451,7 +455,7 @@ onMounted(load)
             <td>
               <span class="table-status" :class="booking.status">{{ booking.status }}</span>
             </td>
-            <td>
+            <td data-label="Actions">
               <button v-if="booking.status === 'pending'" class="table-action" type="button"
                 @click="updateBooking(booking.id, 'confirmed')">
                 Approve</button><button v-if="booking.status === 'pending'" class="table-action danger" type="button"
@@ -476,10 +480,10 @@ onMounted(load)
         </thead>
         <tbody>
           <tr v-for="bike in rows" :key="bike.id">
-            <td class="amount">{{ bike.brand || 'Unknown' }} {{ bike.model || '' }}</td>
-            <td>{{ bike.plate_number || 'Not provided' }}</td>
-            <td>{{ formatMotorcyclePrice(bike.price_per_day) }}</td>
-            <td>
+            <td class="amount" data-label="Motorcycle">{{ bike.brand || 'Unknown' }} {{ bike.model || '' }}</td>
+            <td data-label="Plate number">{{ bike.plate_number || 'Not provided' }}</td>
+            <td data-label="Price/day">{{ formatMotorcyclePrice(bike.price_per_day) }}</td>
+            <td data-label="Status">
               <span class="table-status" :class="bike.status || 'pending'">{{ bike.status || 'Unknown' }}</span>
             </td>
           </tr>
