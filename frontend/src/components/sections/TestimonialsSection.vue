@@ -13,7 +13,7 @@ const avatarBg = {
     <div class="container">
       <div class="section-head center" v-reveal>
         <span class="eyebrow">Our Riders</span>
-        <h2>What our riders say</h2>
+        <h2 style="color: var(--navy);" >What our riders say</h2>
       </div>
 
       <div class="test-grid">
