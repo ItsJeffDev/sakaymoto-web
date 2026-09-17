@@ -28,7 +28,7 @@ const steps = [
     <div class="container">
       <div class="section-head center" v-reveal>
         <span class="eyebrow">The Journey</span>
-        <h2>From browsing to riding, in four stops</h2>
+        <h2 style="color: var(--navy);" >From browsing to riding, in four stops</h2>
         <p>
           The same road, every time — no back-and-forth messages needed to find out where you are in
           the process.
