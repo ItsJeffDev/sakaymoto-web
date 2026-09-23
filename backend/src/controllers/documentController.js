@@ -1,13 +1,17 @@
 const db = require("../config/db");
 
 const getDocuments = async (req, res) => {
-  const userId =
-    req.user.role === "admin" && req.query.user_id
-      ? req.query.user_id
-      : req.user.id;
+  const requestedUserId = Number(req.query.user_id ?? req.user.id);
+
+  if (req.user.role !== "admin" && Number(req.user.id) !== requestedUserId) {
+    return res.status(403).json({
+      message: "You are not authorized to access this user's documents",
+    });
+  }
+
   const [rows] = await db.execute(
     "SELECT * FROM user_documents WHERE user_id = ? ORDER BY uploaded_at DESC",
-    [userId],
+    [requestedUserId],
   );
   return res.json({ data: rows });
 };

@@ -14,7 +14,7 @@ import {
   X,
 } from 'lucide-vue-next'
 import { computed, onMounted, reactive, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { motorcycles as fallbackMotorcycles, catalogFilters } from '../data/motorcycles'
 import { api } from '../services/api'
 import { useAuthStore } from '../stores/auth'
@@ -25,6 +25,7 @@ const isLoading = ref(true)
 const loadError = ref('')
 const auth = useAuthStore()
 const router = useRouter()
+const route = useRoute()
 const apiBaseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:3000/api').replace(
   /\/api$/,
   '',
@@ -142,10 +143,12 @@ const initials = computed(
 )
 const profileImageSrc = computed(() => {
   if (!profile.profile_image) return ''
-  const imagePath = profile.profile_image.startsWith('/')
+  const imagePath = profile.profile_image.startsWith('http')
     ? profile.profile_image
-    : `/${profile.profile_image}`
-  return `${apiBaseUrl}${imagePath}`
+    : profile.profile_image.startsWith('/')
+      ? profile.profile_image
+      : `/${profile.profile_image}`
+  return imagePath.startsWith('http') ? imagePath : `${apiBaseUrl}${imagePath}`
 })
 const browseAvailableCount = computed(
   () =>
@@ -347,7 +350,7 @@ async function loadDashboard() {
   isLoading.value = true
   loadError.value = ''
   try {
-    const response = await api.bookings()
+    const response = await api.bookings(route.params.userId)
     bookings.value = response.data || []
   } catch (error) {
     loadError.value = error.message
@@ -387,10 +390,11 @@ function selectSection(label) {
 
 async function loadProfile() {
   try {
-    const response = await api.profile()
-    Object.assign(profile, response.data)
-    auth.user = response.data
-    localStorage.setItem('sakaymoto_user', JSON.stringify(response.data))
+    const response = await api.profile(route.params.userId)
+    const nextProfile = response.data || {}
+    Object.assign(profile, nextProfile)
+    auth.user = { ...(auth.user || {}), ...nextProfile }
+    localStorage.setItem('sakaymoto_user', JSON.stringify(auth.user))
   } catch (error) {
     actionError.value = error.message
   }
@@ -398,7 +402,7 @@ async function loadProfile() {
 
 async function loadDocuments() {
   try {
-    const response = await api.documents()
+    const response = await api.documents(route.params.userId)
     documents.value = response.data || []
   } catch (error) {
     actionError.value = error.message
@@ -458,7 +462,10 @@ async function saveProfile() {
     }
 
     const response = await api.updateProfile(formData)
-    Object.assign(profile, response.data)
+    const updatedProfile = response.data || {}
+    Object.assign(profile, updatedProfile)
+    auth.user = { ...(auth.user || {}), ...updatedProfile }
+    localStorage.setItem('sakaymoto_user', JSON.stringify(auth.user))
     profileImageFile.value = null
     actionMessage.value = 'Profile updated successfully.'
   } catch (error) {
@@ -548,6 +555,20 @@ function logout() {
 
 onMounted(async () => {
   await auth.hydrate()
+
+  if (!auth.isAuthenticated) {
+    router.push('/')
+    return
+  }
+
+  const requestedUserId = Number(route.params.userId)
+  const authenticatedUserId = Number(auth.user?.id)
+
+  if (!requestedUserId || authenticatedUserId !== requestedUserId) {
+    await router.replace(`/dashboard/${authenticatedUserId}`)
+    return
+  }
+
   await loadDashboard()
   await loadProfile()
   await loadDocuments()
