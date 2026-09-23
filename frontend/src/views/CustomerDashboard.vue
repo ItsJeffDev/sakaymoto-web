@@ -13,7 +13,7 @@ import {
   UserRound,
   X,
 } from 'lucide-vue-next'
-import { computed, onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, onUnmounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { motorcycles as fallbackMotorcycles, catalogFilters } from '../data/motorcycles'
 import { api } from '../services/api'
@@ -23,6 +23,7 @@ const isMenuOpen = ref(false)
 const activeSection = ref('Dashboard')
 const isLoading = ref(true)
 const loadError = ref('')
+const currentDateTime = ref(new Date())
 const auth = useAuthStore()
 const router = useRouter()
 const apiBaseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:3000/api').replace(
@@ -130,6 +131,25 @@ const isBooking = ref(false)
 const previewImageIndexes = reactive({})
 const activeImagePreview = ref(null)
 const displayName = computed(() => auth.user?.name || profile.name || 'Rider')
+const liveDateLabel = computed(() =>
+  currentDateTime.value.toLocaleString('en-PH', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: true,
+  }),
+)
+const timeGreeting = computed(() => {
+  const hour = currentDateTime.value.getHours()
+
+  if (hour < 12) return 'Good morning'
+  if (hour < 18) return 'Good afternoon'
+  return 'Good evening'
+})
 const initials = computed(
   () =>
     displayName.value
@@ -546,11 +566,23 @@ function logout() {
   router.push('/')
 }
 
+let clockInterval = null
+
 onMounted(async () => {
+  clockInterval = window.setInterval(() => {
+    currentDateTime.value = new Date()
+  }, 1000)
+
   await auth.hydrate()
   await loadDashboard()
   await loadProfile()
   await loadDocuments()
+})
+
+onUnmounted(() => {
+  if (clockInterval) {
+    window.clearInterval(clockInterval)
+  }
 })
 </script>
 
@@ -604,11 +636,11 @@ onMounted(async () => {
           <Menu :size="21" />
         </button>
         <div>
-          <p class="dashboard-kicker">Monday, September 7, 2026</p>
+          <p class="dashboard-kicker">{{ liveDateLabel }}</p>
           <h1>
             {{
               activeSection === 'Dashboard'
-                ? `Good morning, ${displayName.split(' ')[0]}`
+                ? `${timeGreeting}, ${displayName.split(' ')[0]}`
                 : activeSection
             }}
           </h1>

@@ -14,7 +14,7 @@ import {
   Users,
   X,
 } from 'lucide-vue-next'
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import AdminManagementPanel from '../components/dashboard/AdminManagementPanel.vue'
 import { api } from '../services/api'
@@ -30,6 +30,19 @@ const isMenuOpen = ref(false)
 const activeSection = ref('Dashboard')
 const isLoading = ref(true)
 const error = ref('')
+const currentDateTime = ref(new Date())
+const liveDateLabel = computed(() =>
+  currentDateTime.value.toLocaleString('en-PH', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: true,
+  }),
+)
 const metrics = ref({ customers: 0, motorcycles: 0, active_bookings: 0, verified_revenue: 0 })
 const bookingRows = ref([])
 const sections = [
@@ -93,9 +106,21 @@ async function loadDashboard() {
   }
 }
 
+let clockInterval = null
+
 onMounted(async () => {
+  clockInterval = window.setInterval(() => {
+    currentDateTime.value = new Date()
+  }, 1000)
+
   await auth.hydrate()
   loadDashboard()
+})
+
+onUnmounted(() => {
+  if (clockInterval) {
+    window.clearInterval(clockInterval)
+  }
 })
 </script>
 
@@ -152,7 +177,7 @@ onMounted(async () => {
         </button>
         <div>
           <p class="dashboard-kicker">
-            Monday, September 7, 2026 <span class="live-chip"><i></i>All systems operational</span>
+            {{ liveDateLabel }} <span class="live-chip"><i></i>All systems operational</span>
           </p>
           <h1>{{ activeSection === 'Dashboard' ? 'Overview' : activeSection }}</h1>
         </div>
