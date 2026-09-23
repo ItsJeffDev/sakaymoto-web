@@ -62,6 +62,15 @@ const profileImageSrc = computed(() => {
   return `${apiBaseUrl}${imagePath}`
 })
 
+const currentDate = computed(() =>
+  new Intl.DateTimeFormat('en-US', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+  }).format(new Date()),
+)
+
 function selectSection(label) {
   activeSection.value = label
   isMenuOpen.value = false
@@ -152,7 +161,7 @@ onMounted(async () => {
         </button>
         <div>
           <p class="dashboard-kicker">
-            Monday, September 7, 2026 <span class="live-chip"><i></i>All systems operational</span>
+            {{ currentDate }} <span class="live-chip"><i></i>All systems operational</span>
           </p>
           <h1>{{ activeSection === 'Dashboard' ? 'Overview' : activeSection }}</h1>
         </div>
