@@ -22,7 +22,7 @@ async function handleLogin() {
   try {
     const user = await auth.login(loginForm)
     modal.close()
-    await router.push(user.role === 'admin' ? '/dashboard/admin' : '/dashboard/customer')
+    await router.push(`/dashboard/${user.id}`)
   } catch (error) {
     formError.value = error.message
   } finally {
