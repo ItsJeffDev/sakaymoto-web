@@ -10,6 +10,12 @@ const router = createRouter({
       meta: { role: 'customer' },
     },
     {
+      path: '/dashboard/userid=:userId',
+      component: () => import('../views/CustomerDashboard.vue'),
+      meta: { role: 'customer' },
+      props: true,
+    },
+    {
       path: '/dashboard/admin',
       component: () => import('../views/AdminDashboard.vue'),
       meta: { role: 'admin' },
@@ -19,9 +25,27 @@ const router = createRouter({
 
 router.beforeEach(async (to) => {
   const auth = useAuthStore()
-  if (to.meta.role && !auth.isAuthenticated) return '/'
-  if (to.meta.role && auth.user?.role !== to.meta.role)
-    return auth.user?.role === 'admin' ? '/dashboard/admin' : '/dashboard/customer'
+
+  if (to.meta.role) {
+    await auth.hydrate()
+
+    if (!auth.isAuthenticated) return '/'
+
+    const userIdFromRoute = Number(to.params.userId)
+    const userIdMatches = Number.isFinite(userIdFromRoute)
+      ? Number(auth.user?.id) === userIdFromRoute
+      : true
+
+    if (!userIdMatches) {
+      return auth.user?.role === 'admin'
+        ? '/dashboard/admin'
+        : `/dashboard/userid=${auth.user?.id ?? ''}`
+    }
+
+    if (auth.user?.role !== to.meta.role) {
+      return auth.user?.role === 'admin' ? '/dashboard/admin' : `/dashboard/userid=${auth.user?.id ?? ''}`
+    }
+  }
 })
 
 export default router
