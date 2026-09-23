@@ -11,7 +11,10 @@ const bookingSelect = `
 
 const getBookings = async (req, res) => {
   const isAdmin = req.user.role === "admin";
-  const requestedUserId = Number(req.query.user_id ?? req.user.id);
+  const userIdProvided = req.query.user_id !== undefined && req.query.user_id !== "";
+  const requestedUserId = userIdProvided
+    ? Number(req.query.user_id)
+    : Number(req.user.id);
 
   if (!isAdmin && Number(req.user.id) !== requestedUserId) {
     return res.status(403).json({
@@ -20,13 +23,13 @@ const getBookings = async (req, res) => {
   }
 
   const query = isAdmin
-    ? requestedUserId
+    ? userIdProvided
       ? `${bookingSelect} WHERE b.user_id = ? ORDER BY b.created_at DESC`
       : `${bookingSelect} ORDER BY b.created_at DESC`
     : `${bookingSelect} WHERE b.user_id = ? ORDER BY b.created_at DESC`;
 
   const params = isAdmin
-    ? requestedUserId
+    ? userIdProvided
       ? [requestedUserId]
       : []
     : [req.user.id];
