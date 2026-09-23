@@ -11,10 +11,27 @@ const bookingSelect = `
 
 const getBookings = async (req, res) => {
   const isAdmin = req.user.role === "admin";
-  const [rows] = await db.execute(
-    `${bookingSelect} ${isAdmin ? "" : "WHERE b.user_id = ?"} ORDER BY b.created_at DESC`,
-    isAdmin ? [] : [req.user.id],
-  );
+  const requestedUserId = Number(req.query.user_id ?? req.user.id);
+
+  if (!isAdmin && Number(req.user.id) !== requestedUserId) {
+    return res.status(403).json({
+      message: "You are not authorized to access this user's bookings",
+    });
+  }
+
+  const query = isAdmin
+    ? requestedUserId
+      ? `${bookingSelect} WHERE b.user_id = ? ORDER BY b.created_at DESC`
+      : `${bookingSelect} ORDER BY b.created_at DESC`
+    : `${bookingSelect} WHERE b.user_id = ? ORDER BY b.created_at DESC`;
+
+  const params = isAdmin
+    ? requestedUserId
+      ? [requestedUserId]
+      : []
+    : [req.user.id];
+
+  const [rows] = await db.execute(query, params);
   return res.json({ data: rows });
 };
 

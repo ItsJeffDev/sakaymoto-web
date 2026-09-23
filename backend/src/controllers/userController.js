@@ -17,16 +17,25 @@ const getUsers = async (req, res) => {
   }
 };
 
-const getProfile = async (req, res) => {
+const getUserProfileById = async (userId, res) => {
   const [rows] = await db.execute(
     "SELECT id, name, email, role, phone, address, profile_image, created_at, updated_at FROM users WHERE id = ?",
-    [req.user.id],
+    [userId],
   );
   if (!rows.length) return res.status(404).json({ message: "User not found" });
   return res.json({ data: rows[0] });
 };
 
+const getProfile = async (req, res) => {
+  return getUserProfileById(req.user.id, res);
+};
+
+const getUserById = async (req, res) => {
+  return getUserProfileById(Number(req.params.id), res);
+};
+
 const updateProfile = async (req, res) => {
+  const requestedUserId = Number(req.params.id ?? req.user.id);
   const normalizedName = String(req.body.name || "").trim();
 
   if (!normalizedName) {
@@ -50,14 +59,14 @@ const updateProfile = async (req, res) => {
     values.push(`/uploads/users/profile/${req.file.filename}`);
   }
 
-  values.push(req.user.id);
+  values.push(requestedUserId);
 
   await db.execute(
     `UPDATE users SET ${updates.join(", ")} WHERE id = ?`,
     values,
   );
 
-  return getProfile(req, res);
+  return getUserProfileById(requestedUserId, res);
 };
 
 const updateUserStatus = async (req, res) => {
@@ -76,6 +85,7 @@ const updateUserStatus = async (req, res) => {
 module.exports = {
   getUsers,
   getProfile,
+  getUserById,
   updateProfile,
   updateUserStatus,
 };
