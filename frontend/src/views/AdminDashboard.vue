@@ -22,6 +22,7 @@ import { useAuthStore } from '../stores/auth'
 
 const auth = useAuthStore()
 const router = useRouter()
+const route = useRoute()
 const apiBaseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:3000/api').replace(
   /\/api$/,
   '',
@@ -69,10 +70,12 @@ const adminInitials = computed(() => {
 })
 const profileImageSrc = computed(() => {
   if (!auth.user?.profile_image) return ''
-  const imagePath = auth.user.profile_image.startsWith('/')
+  const imagePath = auth.user.profile_image.startsWith('http')
     ? auth.user.profile_image
-    : `/${auth.user.profile_image}`
-  return `${apiBaseUrl}${imagePath}`
+    : auth.user.profile_image.startsWith('/')
+      ? auth.user.profile_image
+      : `/${auth.user.profile_image}`
+  return imagePath.startsWith('http') ? imagePath : `${apiBaseUrl}${imagePath}`
 })
 
 function selectSection(label) {
@@ -114,6 +117,20 @@ onMounted(async () => {
   }, 1000)
 
   await auth.hydrate()
+
+  if (!auth.isAuthenticated) {
+    router.push('/')
+    return
+  }
+
+  const requestedUserId = Number(route.params.userId)
+  const authenticatedUserId = Number(auth.user?.id)
+
+  if (!requestedUserId || authenticatedUserId !== requestedUserId) {
+    await router.replace(`/dashboard/${authenticatedUserId}`)
+    return
+  }
+
   loadDashboard()
 })
 

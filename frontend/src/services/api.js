@@ -17,12 +17,15 @@ export async function apiRequest(path, options = {}) {
 export const api = {
   login: (body) => apiRequest('/auth/login', { method: 'POST', body: JSON.stringify(body) }),
   register: (body) => apiRequest('/auth/register', { method: 'POST', body: JSON.stringify(body) }),
-  profile: () => apiRequest('/users/me'),
+  profile: (userId = null) =>
+    apiRequest(userId ? `/users/${encodeURIComponent(userId)}` : '/users/me'),
+  user: (userId) => apiRequest(`/users/${encodeURIComponent(userId)}`),
   updateProfile: (body) => apiRequest('/users/me', { method: 'PATCH', body }),
   motorcycles: (status = 'available') =>
     apiRequest(`/motorcycles?status=${encodeURIComponent(status)}`),
   motorcycle: (id) => apiRequest(`/motorcycles/${id}`),
-  bookings: () => apiRequest('/bookings'),
+  bookings: (userId = null) =>
+    apiRequest(userId ? `/bookings?user_id=${encodeURIComponent(userId)}` : '/bookings'),
   booking: (body) => apiRequest('/bookings', { method: 'POST', body: JSON.stringify(body) }),
   updateBookingStatus: (id, status) =>
     apiRequest(`/bookings/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) }),
