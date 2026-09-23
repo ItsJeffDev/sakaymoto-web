@@ -2,23 +2,62 @@ import { computed, ref } from 'vue'
 import { defineStore } from 'pinia'
 import { api } from '../services/api'
 
+function normalizeUser(rawUser) {
+  if (!rawUser || typeof rawUser !== 'object') return null
+
+  return {
+    id: rawUser.id ?? null,
+    name: rawUser.name ?? '',
+    email: rawUser.email ?? '',
+    role: rawUser.role ?? 'customer',
+    phone: rawUser.phone ?? null,
+    address: rawUser.address ?? null,
+    profile_image: rawUser.profile_image ?? null,
+  }
+}
+
 export const useAuthStore = defineStore('auth', () => {
   const token = ref(localStorage.getItem('sakaymoto_token'))
-  const user = ref(JSON.parse(localStorage.getItem('sakaymoto_user') || 'null'))
+  const user = ref(normalizeUser(JSON.parse(localStorage.getItem('sakaymoto_user') || 'null')))
   const isAuthenticated = computed(() => Boolean(token.value && user.value))
   const isAdmin = computed(() => user.value?.role === 'admin')
 
+  function setUser(rawUser) {
+    user.value = normalizeUser(rawUser)
+    if (user.value) {
+      localStorage.setItem('sakaymoto_user', JSON.stringify(user.value))
+    } else {
+      localStorage.removeItem('sakaymoto_user')
+    }
+    return user.value
+  }
+
   function setSession(payload) {
-    token.value = payload.token
-    user.value = payload.user
-    localStorage.setItem('sakaymoto_token', payload.token)
-    localStorage.setItem('sakaymoto_user', JSON.stringify(payload.user))
+    const nextToken = payload?.token || token.value || null
+    const nextUser = normalizeUser(payload?.user ?? payload?.data ?? payload)
+
+    token.value = nextToken
+    user.value = nextUser
+
+    if (nextToken) {
+      localStorage.setItem('sakaymoto_token', nextToken)
+    } else {
+      localStorage.removeItem('sakaymoto_token')
+    }
+
+    if (nextUser) {
+      localStorage.setItem('sakaymoto_user', JSON.stringify(nextUser))
+    } else {
+      localStorage.removeItem('sakaymoto_user')
+    }
+
+    return nextUser
   }
 
   async function login(credentials) {
     const payload = await api.login(credentials)
-    setSession(payload)
-    return payload.user
+    const nextUser = setSession(payload)
+    return nextUser
   }
 
   async function register(details) {
@@ -29,9 +68,8 @@ export const useAuthStore = defineStore('auth', () => {
     if (!token.value) return null
     try {
       const payload = await api.profile()
-      user.value = payload.data
-      localStorage.setItem('sakaymoto_user', JSON.stringify(payload.data))
-      return payload.data
+      const nextUser = setUser(payload.user ?? payload.data ?? payload)
+      return nextUser
     } catch {
       logout()
       return null
@@ -45,5 +83,5 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.removeItem('sakaymoto_user')
   }
 
-  return { token, user, isAuthenticated, isAdmin, login, register, hydrate, logout }
+  return { token, user, isAuthenticated, isAdmin, setUser, setSession, login, register, hydrate, logout }
 })

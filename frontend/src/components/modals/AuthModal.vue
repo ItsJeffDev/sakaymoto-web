@@ -22,7 +22,13 @@ async function handleLogin() {
   try {
     const user = await auth.login(loginForm)
     modal.close()
-    await router.push(user.role === 'admin' ? '/dashboard/admin' : '/dashboard/customer')
+
+    if (!user) {
+      throw new Error('Login failed. Please try again.')
+    }
+
+    const dashboardPath = user.role === 'admin' ? '/dashboard/admin' : `/dashboard/userid=${user.id}`
+    await router.push(dashboardPath)
   } catch (error) {
     formError.value = error.message
   } finally {
