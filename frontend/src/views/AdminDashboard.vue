@@ -57,13 +57,20 @@ const adminInitials = computed(() => {
 })
 const profileImageSrc = computed(() => {
   if (!auth.user?.profile_image) return ''
-  const imagePath = auth.user.profile_image.startsWith('http')
+  const imagePath = auth.user.profile_image.startsWith('/')
     ? auth.user.profile_image
-    : auth.user.profile_image.startsWith('/')
-      ? auth.user.profile_image
-      : `/${auth.user.profile_image}`
-  return imagePath.startsWith('http') ? imagePath : `${apiBaseUrl}${imagePath}`
+    : `/${auth.user.profile_image}`
+  return `${apiBaseUrl}${imagePath}`
 })
+
+const currentDate = computed(() =>
+  new Intl.DateTimeFormat('en-US', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+  }).format(new Date()),
+)
 
 function selectSection(label) {
   activeSection.value = label
@@ -169,7 +176,7 @@ onMounted(async () => {
         </button>
         <div>
           <p class="dashboard-kicker">
-            Monday, September 7, 2026 <span class="live-chip"><i></i>All systems operational</span>
+            {{ currentDate }} <span class="live-chip"><i></i>All systems operational</span>
           </p>
           <h1>{{ activeSection === 'Dashboard' ? 'Overview' : activeSection }}</h1>
         </div>

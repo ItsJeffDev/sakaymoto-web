@@ -1,4 +1,4 @@
-# SakayMoto
+<!-- # SakayMoto
 
 SakayMoto has separate frontend and backend Node.js applications.
 
@@ -43,4 +43,4 @@ Start the Vite frontend in another terminal:
 ```sh
 cd frontend
 npm run dev
-```
+``` -->
