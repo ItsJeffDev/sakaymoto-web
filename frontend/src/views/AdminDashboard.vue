@@ -15,13 +15,14 @@ import {
   X,
 } from 'lucide-vue-next'
 import { computed, onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import AdminManagementPanel from '../components/dashboard/AdminManagementPanel.vue'
 import { api } from '../services/api'
 import { useAuthStore } from '../stores/auth'
 
 const auth = useAuthStore()
 const router = useRouter()
+const route = useRoute()
 const apiBaseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:3000/api').replace(
   /\/api$/,
   '',
@@ -104,6 +105,20 @@ async function loadDashboard() {
 
 onMounted(async () => {
   await auth.hydrate()
+
+  if (!auth.isAuthenticated) {
+    router.push('/')
+    return
+  }
+
+  const requestedUserId = Number(route.params.userId)
+  const authenticatedUserId = Number(auth.user?.id)
+
+  if (!requestedUserId || authenticatedUserId !== requestedUserId) {
+    await router.replace(`/dashboard/${authenticatedUserId}`)
+    return
+  }
+
   loadDashboard()
 })
 </script>
