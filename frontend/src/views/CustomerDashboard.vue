@@ -343,6 +343,15 @@ function normalizeBrowseMotorcycle(bike) {
   }
 }
 
+const currentDate = computed(() =>
+  new Date().toLocaleDateString('en-US', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+  }),
+)
+
 async function loadDashboard() {
   isLoading.value = true
   loadError.value = ''
@@ -604,7 +613,7 @@ onMounted(async () => {
           <Menu :size="21" />
         </button>
         <div>
-          <p class="dashboard-kicker">Monday, September 7, 2026</p>
+          <p class="dashboard-kicker">{{ currentDate }}</p>
           <h1>
             {{
               activeSection === 'Dashboard'
