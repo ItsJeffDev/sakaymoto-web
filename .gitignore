@@ -11,7 +11,7 @@ build/
 
 # Sensitive files
 *.pem
-backend/uploads/users/
+backend/uploads/
 
 # Logs
 *.log
