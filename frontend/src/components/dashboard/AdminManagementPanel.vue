@@ -443,6 +443,7 @@ onMounted(load)
             <span class="card-label">Contact</span>
             <p>{{ selectedUser.email }}</p>
             <p>{{ selectedUser.phone || 'No phone number provided' }}</p>
+            <p>{{ selectedUser.address }}</p>
             <p>Joined {{ selectedUser.created_at?.slice(0, 10) }}</p>
           </div>
           <div class="customer-inspect-card">
