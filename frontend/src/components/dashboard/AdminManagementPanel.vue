@@ -428,7 +428,7 @@ onMounted(load)
             <img
               v-if="selectedUser.profile_image"
               :src="getFileUrl(selectedUser.profile_image)"
-              :alt="`${selectedUser.name} profile`"
+              :alt="'User Profile'"
             />
             <span v-else>{{ selectedUser.name?.slice(0, 2).toUpperCase() || 'US' }}</span>
           </div>
@@ -770,9 +770,10 @@ onMounted(load)
   border-radius: 18px;
   background: linear-gradient(160deg, #dfeeff, #cfe0ff);
   display: grid;
+  text-align: center;
   place-items: center;
   color: var(--navy);
-  font: 700 1rem var(--ff-display);
+  font: 600 0.9rem var(--ff-display);
   overflow: hidden;
 }
 
