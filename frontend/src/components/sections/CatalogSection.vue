@@ -1,6 +1,5 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { motorcycles as fallbackMotorcycles, catalogFilters } from '../../data/motorcycles'
 import { useModalStore } from '../../stores/modal'
 import { api } from '../../services/api'
 import MotoIcon from '../icons/MotoIcon.vue'
@@ -24,6 +23,20 @@ function getBikeImageUrl(bike) {
   return image.image_url.startsWith('http') ? image.image_url : `${apiBaseUrl}${image.image_url}`
 }
 
+function normalizeMotorcycleType(type) {
+  return String(type || '')
+    .trim()
+    .toLowerCase()
+    .replace(/[_-]+/g, ' ')
+}
+
+function formatMotorcycleType(type) {
+  return String(type || '')
+    .trim()
+    .replace(/[_-]+/g, ' ')
+    .replace(/\b\w/g, (character) => character.toUpperCase())
+}
+
 async function loadMotorcycles() {
   isLoading.value = true
   loadError.value = ''
@@ -34,8 +47,9 @@ async function loadMotorcycles() {
       .map((bike) => ({
         ...bike,
         pricePerDay: Number(bike.price_per_day),
-        category: 'all',
-        categoryLabel: `${bike.brand} · ${bike.color}`,
+        category: normalizeMotorcycleType(bike.motorcycle_type),
+        categoryLabel:
+          formatMotorcycleType(bike.motorcycle_type) || `${bike.brand} · ${bike.color}`,
         specs: [
           `${bike.year}`,
           bike.color,
@@ -45,17 +59,33 @@ async function loadMotorcycles() {
       }))
   } catch (error) {
     loadError.value = error.message
-    motorcycles.value = fallbackMotorcycles.filter(
-      (bike) => (bike.status || 'available') !== 'inactive',
-    )
+    motorcycles.value = []
   } finally {
     isLoading.value = false
   }
 }
 
+const motorTypeFilters = computed(() => {
+  const types = new Map()
+
+  motorcycles.value.forEach((bike) => {
+    const value = normalizeMotorcycleType(bike.motorcycle_type || bike.category)
+    if (value && !types.has(value)) {
+      types.set(value, formatMotorcycleType(bike.motorcycle_type || bike.category))
+    }
+  })
+
+  return [
+    { value: 'all', label: 'All' },
+    ...Array.from(types, ([value, label]) => ({ value, label })),
+  ]
+})
+
 const filteredBikes = computed(() => {
   if (activeFilter.value === 'all') return motorcycles.value
-  return motorcycles.value.filter((bike) => bike.category === activeFilter.value)
+  return motorcycles.value.filter(
+    (bike) => normalizeMotorcycleType(bike.motorcycle_type || bike.category) === activeFilter.value,
+  )
 })
 
 onMounted(loadMotorcycles)
@@ -66,6 +96,11 @@ function openPreview(bike) {
 
 function closePreview() {
   previewBike.value = null
+}
+
+function loginToReserve() {
+  closePreview()
+  modal.open('login')
 }
 
 const accentBg = {
@@ -94,7 +129,7 @@ const accentColor = {
 
       <div class="filter-row" v-reveal>
         <button
-          v-for="filter in catalogFilters"
+          v-for="filter in motorTypeFilters"
           :key="filter.value"
           class="chip"
           :class="{ active: activeFilter === filter.value }"
@@ -105,9 +140,12 @@ const accentColor = {
       </div>
 
       <p v-if="isLoading" class="catalog-state">Loading available motorcycles...</p>
-      <p v-else-if="loadError" class="catalog-state error">
-        Live catalog unavailable. Showing saved catalog data.
-      </p>
+      <div v-else-if="loadError" class="catalog-state error">
+        <p>Unable to load motorcycles from the API.</p>
+        <button class="btn btn-navy btn-sm" type="button" @click="loadMotorcycles">
+          Try again
+        </button>
+      </div>
       <p v-else-if="!filteredBikes.length" class="catalog-state">
         No motorcycles are available right now.
       </p>
@@ -184,7 +222,7 @@ const accentColor = {
               <button
                 class="btn btn-primary"
                 type="button"
-                @click="closePreview(); modal.open('login')"
+                @click="loginToReserve"
               >
                 Login to reserve
               </button>
