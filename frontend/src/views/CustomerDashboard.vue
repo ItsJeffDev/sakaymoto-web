@@ -15,7 +15,6 @@ import {
 } from 'lucide-vue-next'
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { motorcycles as fallbackMotorcycles, catalogFilters } from '../data/motorcycles'
 import { api } from '../services/api'
 import { useAuthStore } from '../stores/auth'
 
@@ -154,6 +153,21 @@ const browseAvailableCount = computed(
   () =>
     browseMotorcycles.value.filter((bike) => (bike.status || 'available') === 'available').length,
 )
+const catalogFilters = computed(() => {
+  const types = new Map()
+
+  browseMotorcycles.value.forEach((bike) => {
+    const type = bike.category
+    if (type && !types.has(type)) {
+      types.set(type, formatMotorcycleType(type))
+    }
+  })
+
+  return [
+    { value: 'all', label: 'All' },
+    ...Array.from(types, ([value, label]) => ({ value, label })),
+  ]
+})
 const filteredBrowseMotorcycles = computed(() => {
   if (activeBikeFilter.value === 'all') return browseMotorcycles.value
   return browseMotorcycles.value.filter((bike) => bike.category === activeBikeFilter.value)
@@ -281,6 +295,20 @@ function getBikeImages(bike) {
   return Array.isArray(bike.images) ? bike.images.filter(Boolean) : []
 }
 
+function normalizeMotorcycleType(type) {
+  return String(type || '')
+    .trim()
+    .toLowerCase()
+    .replace(/[_-]+/g, ' ')
+}
+
+function formatMotorcycleType(type) {
+  return String(type || '')
+    .trim()
+    .replace(/[_-]+/g, ' ')
+    .replace(/\b\w/g, (character) => character.toUpperCase())
+}
+
 function getBikeImageUrl(bike, imageIndex = null) {
   const images = getBikeImages(bike)
   const selectedImage =
@@ -318,31 +346,21 @@ function closeImagePreview() {
 }
 
 function normalizeBrowseMotorcycle(bike) {
-  const fallbackMatch = fallbackMotorcycles.find(
-    (entry) =>
-      entry.brand.toLowerCase() === String(bike.brand || '').toLowerCase() &&
-      entry.model.toLowerCase() === String(bike.model || '').toLowerCase(),
-  )
+  const category = normalizeMotorcycleType(bike.motorcycle_type || bike.category || bike.type)
 
-  const base = fallbackMatch || {
-    category: 'scooter',
-    categoryLabel: `${bike.brand || 'Motorcycle'} · ${bike.color || 'Standard'}`,
+  return {
+    ...bike,
+    category,
+    categoryLabel:
+      formatMotorcycleType(category) ||
+      `${bike.brand || 'Motorcycle'} · ${bike.color || 'Standard'}`,
     specs: [
-      String(bike.year || '2024'),
+      String(bike.year || 'Year not listed'),
       bike.color || 'Standard',
       (bike.status || 'available') === 'maintenance' ? 'Under maintenance' : 'Available to book',
     ],
     accent: 'blue',
-    pricePerDay: Number(bike.price_per_day || 0),
-  }
-
-  return {
-    ...bike,
-    category: base.category,
-    categoryLabel: base.categoryLabel,
-    specs: base.specs,
-    accent: base.accent,
-    pricePerDay: Number(bike.price_per_day ?? bike.pricePerDay ?? base.pricePerDay ?? 0),
+    pricePerDay: Number(bike.price_per_day ?? bike.pricePerDay ?? 0),
   }
 }
 
@@ -377,11 +395,13 @@ async function loadBrowseMotorcycles() {
     browseMotorcycles.value = response
       .filter((bike) => (bike.status || 'available') !== 'inactive')
       .map(normalizeBrowseMotorcycle)
+    if (!catalogFilters.value.some((filter) => filter.value === activeBikeFilter.value)) {
+      activeBikeFilter.value = 'all'
+    }
   } catch (error) {
     browseLoadError.value = error.message
-    browseMotorcycles.value = fallbackMotorcycles
-      .filter((bike) => (bike.status || 'available') !== 'inactive')
-      .map(normalizeBrowseMotorcycle)
+    browseMotorcycles.value = []
+    activeBikeFilter.value = 'all'
   } finally {
     browseIsLoading.value = false
   }
@@ -818,9 +838,12 @@ onMounted(async () => {
           </div>
 
           <p v-if="browseIsLoading" class="catalog-state">Loading available motorcycles...</p>
-          <p v-else-if="browseLoadError" class="catalog-state error">
-            Live catalog unavailable. Showing saved catalog data.
-          </p>
+          <div v-else-if="browseLoadError" class="catalog-state error">
+            <p>Unable to load motorcycles from the API: {{ browseLoadError }}</p>
+            <button class="text-button" type="button" @click="loadBrowseMotorcycles">
+              Try again
+            </button>
+          </div>
           <p v-else-if="!filteredBrowseMotorcycles.length" class="catalog-state">
             No motorcycles are available under this filter.
           </p>
