@@ -212,7 +212,7 @@ async function load(silent = false) {
   }
 }
 
-const REFRESH_MS = 30000
+const REFRESH_MS = 5000
 let refreshTimer = null
 function refreshQuietly() {
   const busy = showAddMotorcycleForm.value || selectedUser.value || selectedDocumentPreview.value
