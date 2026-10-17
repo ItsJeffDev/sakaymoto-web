@@ -2,9 +2,18 @@ import { computed, ref } from 'vue'
 import { defineStore } from 'pinia'
 import { api } from '../services/api'
 
+function getStoredUser() {
+  try {
+    return JSON.parse(localStorage.getItem('sakaymoto_user') || 'null')
+  } catch {
+    localStorage.removeItem('sakaymoto_user')
+    return null
+  }
+}
+
 export const useAuthStore = defineStore('auth', () => {
   const token = ref(localStorage.getItem('sakaymoto_token'))
-  const user = ref(JSON.parse(localStorage.getItem('sakaymoto_user') || 'null'))
+  const user = ref(getStoredUser())
   const isAuthenticated = computed(() => Boolean(token.value && user.value))
   const isAdmin = computed(() => user.value?.role === 'admin')
 
