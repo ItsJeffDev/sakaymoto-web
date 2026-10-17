@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { api } from '../../services/api'
 
 const props = defineProps({ section: { type: String, required: true } })
@@ -18,7 +18,18 @@ const apiBaseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:3000/api')
   /\/api$/,
   '',
 )
+const actionError = ref('')
+const busyBikeId = ref(null)
+const motorcycleFilter = ref('all')
+const motorcycleFilters = [
+  { key: 'all', label: 'All' },
+  { key: 'available', label: 'Available' },
+  { key: 'rented', label: 'Rented now' },
+  { key: 'maintenance', label: 'Maintenance' },
+  { key: 'inactive', label: 'Inactive' },
+]
 const motorcycleForm = ref({
+  motorcycle_type: '',
   brand: '',
   model: '',
   year: '',
@@ -103,6 +114,7 @@ async function loadCustomerDocuments(users = []) {
 
 function resetMotorcycleForm() {
   motorcycleForm.value = {
+    motorcycle_type: '',
     brand: '',
     model: '',
     year: '',
@@ -159,6 +171,7 @@ async function submitMotorcycle() {
       price_per_day: priceValue,
       status,
       description: description.trim() || null,
+      motorcycle_type: motorcycleForm.value.motorcycle_type.trim() || null,
     })
 
     if (selectedImage.value) {
@@ -188,12 +201,134 @@ async function load() {
     }
     if (props.section === 'Bookings') rows.value = (await api.bookings()).data || []
     if (props.section === 'Motorcycles') rows.value = await api.motorcyclesAdmin()
+    if (props.section === 'Payments') rows.value = (await api.payments()).data || []
     if (props.section === 'Reports & analytics') report.value = (await api.reports()).data
   } catch (loadError) {
     error.value = loadError.message
   } finally {
     isLoading.value = false
   }
+}
+
+const money = (value) => `PHP ${Number(value || 0).toLocaleString()}`
+const methodLabel = (method) =>
+  ({ cash: 'Cash', gcash: 'GCash', bank_transfer: 'Bank transfer' })[method] || method || '—'
+const monthLabel = (ym) => {
+  const [year, month] = String(ym).split('-')
+  return new Date(Number(year), Number(month) - 1, 1).toLocaleString('en-US', {
+    month: 'short',
+    year: '2-digit',
+  })
+}
+const barHeight = (value, max) => (max > 0 ? Math.max(Math.round((Number(value) / max) * 100), 3) : 0)
+const maxMonthly = computed(() =>
+  Math.max(0, ...(report.value?.monthlyRevenue || []).map((m) => Number(m.total))),
+)
+const inServiceCount = computed(() => {
+  const f = report.value?.fleet
+  return f ? f.total - f.inactive : 0
+})
+const fleetRows = computed(() => {
+  const f = report.value?.fleet || {}
+  return [
+    { key: 'available', label: 'Available', count: f.available || 0 },
+    { key: 'rented', label: 'Rented now', count: f.rented || 0 },
+    { key: 'maintenance', label: 'Maintenance', count: f.maintenance || 0 },
+    { key: 'inactive', label: 'Inactive', count: f.inactive || 0 },
+  ]
+})
+
+const paymentTotals = computed(() => {
+  const sum = (statuses) =>
+    rows.value
+      .filter((p) => statuses.includes(p.status))
+      .reduce((total, p) => total + Number(p.amount), 0)
+  return {
+    verified: sum(['verified']),
+    pending: sum(['pending']),
+    other: sum(['rejected', 'refunded']),
+  }
+})
+
+const motorcycleCounts = computed(() => {
+  const counts = { total: 0, available: 0, rented: 0, maintenance: 0, inactive: 0 }
+  if (props.section !== 'Motorcycles') return counts
+  for (const bike of rows.value) {
+    counts.total += 1
+    counts[bike.display_status || bike.status] += 1
+  }
+  return counts
+})
+const filteredMotorcycles = computed(() =>
+  props.section !== 'Motorcycles'
+    ? []
+    : motorcycleFilter.value === 'all'
+      ? rows.value
+      : rows.value.filter((bike) => (bike.display_status || bike.status) === motorcycleFilter.value),
+)
+
+async function changeMotorcycleStatus(bike, status) {
+  if (status === bike.status) return
+  actionError.value = ''
+  busyBikeId.value = bike.id
+  try {
+    await api.updateMotorcycle(bike.id, { status })
+    await load()
+  } catch (updateError) {
+    actionError.value = updateError.message
+  } finally {
+    busyBikeId.value = null
+  }
+}
+
+async function removeMotorcycle(bike) {
+  if (!window.confirm(`Delete ${bike.brand} ${bike.model} (${bike.plate_number})?`)) return
+  actionError.value = ''
+  busyBikeId.value = bike.id
+  try {
+    await api.deleteMotorcycle(bike.id)
+    await load()
+  } catch (deleteError) {
+    actionError.value = `${deleteError.message}. Set it to Inactive instead to hide it.`
+  } finally {
+    busyBikeId.value = null
+  }
+}
+
+async function setPaymentStatus(id, status) {
+  actionError.value = ''
+  try {
+    await api.updatePaymentStatus(id, status)
+    await load()
+  } catch (updateError) {
+    error.value = updateError.message
+  }
+}
+
+function exportReportCsv() {
+  const r = report.value
+  if (!r) return
+  const lines = [
+    ['Metric', 'Value'],
+    ['Verified revenue', r.verified_revenue],
+    ['Pending payments', r.pending_payments],
+    ['Refunded', r.refunded_amount],
+    ['Booked value', r.booked_value],
+    ['Outstanding balance', r.outstanding_balance],
+    ['Customers', r.customers],
+    ['Active bookings', r.active_bookings],
+    ['Total bookings', r.total_bookings],
+    ['Fleet utilization %', r.fleet?.utilization],
+    [],
+    ['Month', 'Verified revenue'],
+    ...(r.monthlyRevenue || []).map((m) => [m.month, m.total]),
+  ]
+  const csv = lines.map((line) => line.join(',')).join('\n')
+  const link = document.createElement('a')
+  link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }))
+  link.download = `sakaymoto-report-${new Date().toISOString().slice(0, 10)}.csv`
+  link.click()
+  URL.revokeObjectURL(link.href)
 }
 
 async function updateBooking(id, status) {
@@ -224,7 +359,11 @@ function closeInspection() {
   selectedDocumentPreview.value = ''
 }
 
-watch(() => props.section, load)
+watch(() => props.section, () => {
+  actionError.value = ''
+  motorcycleFilter.value = 'all'
+  load()
+})
 onMounted(load)
 </script>
 
@@ -333,6 +472,17 @@ onMounted(load)
             </select>
           </div>
           <div class="form-field">
+            <label for="motorcycle-type">Type</label>
+            <select id="motorcycle-type" v-model="motorcycleForm.motorcycle_type">
+              <option value="">Select type</option>
+              <option>Scooter</option>
+              <option>Standard</option>
+              <option>Sport</option>
+              <option>Underbone</option>
+              <option>Adventure</option>
+            </select>
+          </div>
+          <div class="form-field">
             <label for="motorcycle-image">Image</label>
             <input id="motorcycle-image" type="file" accept="image/*" @change="onImageChange" />
           </div>
@@ -361,19 +511,144 @@ onMounted(load)
       </form>
     </div>
 
-    <div v-else-if="section === 'Reports & analytics'" class="report-grid">
-      <div>
-        <strong>{{ report?.customers || 0 }}</strong
-        ><span>Customers</span>
+    <div v-else-if="section === 'Reports & analytics'" class="analytics">
+      <div class="analytics-toolbar">
+        <span class="analytics-note"
+          >Revenue counts <b>verified</b> payments only. Pending payments are shown separately.</span
+        >
+        <button class="btn btn-navy btn-sm" type="button" @click="exportReportCsv">
+          Download CSV
+        </button>
       </div>
-      <div>
-        <strong>{{ report?.active_bookings || 0 }}</strong
-        ><span>Active bookings</span>
+
+      <div class="report-grid report-grid-4">
+        <div>
+          <strong>{{ money(report?.verified_revenue) }}</strong
+          ><span>Verified revenue</span>
+          <small>{{ report?.verified_payment_count || 0 }} verified payment(s)</small>
+        </div>
+        <div>
+          <strong>{{ money(report?.pending_payments) }}</strong
+          ><span>Pending payments</span>
+          <small>{{ report?.pending_payment_count || 0 }} awaiting verification</small>
+        </div>
+        <div>
+          <strong>{{ money(report?.outstanding_balance) }}</strong
+          ><span>Outstanding balance</span>
+          <small>Booked value {{ money(report?.booked_value) }}</small>
+        </div>
+        <div>
+          <strong>{{ money(report?.average_payment) }}</strong
+          ><span>Average payment</span>
+          <small>Refunded {{ money(report?.refunded_amount) }}</small>
+        </div>
+        <div>
+          <strong>{{ report?.customers || 0 }}</strong
+          ><span>Customers</span>
+          <small>Registered accounts</small>
+        </div>
+        <div>
+          <strong>{{ report?.active_bookings || 0 }}</strong
+          ><span>Active bookings</span>
+          <small>{{ report?.total_bookings || 0 }} total bookings</small>
+        </div>
+        <div>
+          <strong>{{ report?.fleet?.utilization || 0 }}%</strong
+          ><span>Fleet utilization</span>
+          <small>{{ report?.fleet?.rented || 0 }} of {{ inServiceCount }} bikes rented now</small>
+        </div>
+        <div>
+          <strong>{{ report?.review_count ? report.average_rating + ' / 5' : '—' }}</strong
+          ><span>Customer rating</span>
+          <small>{{ report?.review_count || 0 }} review(s)</small>
+        </div>
       </div>
-      <div>
-        <strong>PHP {{ Number(report?.verified_revenue || 0).toLocaleString() }}</strong
-        ><span>Verified revenue</span>
+
+      <div class="analytics-columns">
+        <section class="analytics-card wide">
+          <h3>Monthly revenue</h3>
+          <p v-if="!report?.monthlyRevenue?.length" class="analytics-empty">
+            No verified payments yet.
+          </p>
+          <div v-else class="bar-chart">
+            <div v-for="m in report.monthlyRevenue" :key="m.month" class="bar-col">
+              <span class="bar-value">{{ money(m.total) }}</span>
+              <div class="bar-track">
+                <i :style="{ height: barHeight(m.total, maxMonthly) + '%' }"></i>
+              </div>
+              <span class="bar-label">{{ monthLabel(m.month) }}</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="analytics-card">
+          <h3>Fleet status</h3>
+          <div class="mini-list">
+            <div v-for="seg in fleetRows" :key="seg.key" class="mini-row">
+              <span><i class="dot" :class="seg.key"></i>{{ seg.label }}</span>
+              <b>{{ seg.count }}</b>
+            </div>
+          </div>
+        </section>
       </div>
+
+      <div class="analytics-columns three">
+        <section class="analytics-card">
+          <h3>Bookings by status</h3>
+          <p v-if="!report?.bookingBreakdown?.length" class="analytics-empty">No bookings yet.</p>
+          <div v-for="b in report?.bookingBreakdown || []" :key="b.status" class="hbar-row">
+            <span class="table-status" :class="b.status">{{ b.status }}</span>
+            <div class="hbar"><i :style="{ width: barHeight(b.count, report.total_bookings) + '%' }"></i></div>
+            <b>{{ b.count }}</b>
+          </div>
+        </section>
+
+        <section class="analytics-card">
+          <h3>Verified revenue by method</h3>
+          <p v-if="!report?.paymentMethods?.length" class="analytics-empty">No verified payments yet.</p>
+          <div v-for="pm in report?.paymentMethods || []" :key="pm.method" class="hbar-row">
+            <span class="method-name">{{ methodLabel(pm.method) }}</span>
+            <div class="hbar"><i :style="{ width: barHeight(pm.total, report.verified_revenue) + '%' }"></i></div>
+            <b>{{ money(pm.total) }}</b>
+          </div>
+        </section>
+
+        <section class="analytics-card">
+          <h3>Top motorcycles by revenue</h3>
+          <p v-if="!report?.topMotorcycles?.length" class="analytics-empty">No motorcycles yet.</p>
+          <div v-for="bike in report?.topMotorcycles || []" :key="bike.id" class="mini-row">
+            <span>{{ bike.brand }} {{ bike.model }}<small>{{ bike.bookings }} booking(s)</small></span>
+            <b>{{ money(bike.revenue) }}</b>
+          </div>
+        </section>
+      </div>
+
+      <section class="analytics-card">
+        <h3>Recent payments</h3>
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Customer</th>
+                <th>Motorcycle</th>
+                <th>Method</th>
+                <th>Status</th>
+                <th>Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="p in report?.recentPayments || []" :key="p.id">
+                <td class="amount">{{ p.customer_name }}</td>
+                <td>{{ p.brand }} {{ p.model }}</td>
+                <td>{{ methodLabel(p.payment_method) }}</td>
+                <td><span class="table-status" :class="p.status">{{ p.status }}</span></td>
+                <td class="amount">{{ money(p.amount) }}</td>
+              </tr>
+            </tbody>
+          </table>
+          <p v-if="!report?.recentPayments?.length" class="management-state">No payments yet.</p>
+        </div>
+      </section>
     </div>
     <div v-else-if="section === 'Customers'" class="table-scroll customer-table-scroll">
       <table class="customer-table">
@@ -412,6 +687,183 @@ onMounted(load)
       <p v-if="!rows.length" class="management-state">No customers found.</p>
     </div>
 
+    <div v-else-if="section === 'Bookings'" class="table-scroll booking-table-scroll">
+      <table class="booking-table">
+        <thead>
+          <tr>
+            <th>Customer</th>
+            <th>Motorcycle</th>
+            <th>Dates</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="booking in rows" :key="booking.id">
+            <td class="amount" data-label="Customer">{{ booking.customer_name }}</td>
+            <td data-label="Motorcycle">{{ booking.brand }} {{ booking.model }}</td>
+            <td data-label="Dates">
+              <span class="booking-dates">{{ booking.start_date }} - {{ booking.end_date }}</span>
+            </td>
+            <td data-label="Status">
+              <span class="table-status" :class="booking.status">{{ booking.status }}</span>
+            </td>
+            <td data-label="Actions">
+              <button v-if="booking.status === 'pending'" class="table-action" type="button"
+                @click="updateBooking(booking.id, 'confirmed')">
+                Approve</button><button v-if="booking.status === 'pending'" class="table-action danger" type="button"
+                @click="updateBooking(booking.id, 'cancelled')">
+                Reject
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <p v-if="!rows.length" class="management-state">No bookings found.</p>
+    </div>
+    <div v-else-if="section === 'Payments'" class="analytics">
+      <div class="report-grid">
+        <div>
+          <strong>{{ money(paymentTotals.verified) }}</strong><span>Verified revenue</span>
+          <small>Real income — verified payments only</small>
+        </div>
+        <div>
+          <strong>{{ money(paymentTotals.pending) }}</strong><span>Pending</span>
+          <small>Waiting for your verification</small>
+        </div>
+        <div>
+          <strong>{{ money(paymentTotals.other) }}</strong><span>Rejected / refunded</span>
+          <small>Not counted as revenue</small>
+        </div>
+      </div>
+      <div class="table-scroll payment-table-scroll">
+        <table class="payment-table">
+          <thead>
+            <tr>
+              <th>Customer</th>
+              <th>Motorcycle</th>
+              <th>Method</th>
+              <th>Reference</th>
+              <th>Amount</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="p in rows" :key="p.id">
+              <td class="amount" data-label="Customer">{{ p.customer_name }}</td>
+              <td data-label="Motorcycle">{{ p.brand }} {{ p.model }}</td>
+              <td data-label="Method">{{ methodLabel(p.payment_method) }}</td>
+              <td data-label="Reference">{{ p.reference_number || '—' }}</td>
+              <td class="amount" data-label="Amount">{{ money(p.amount) }}</td>
+              <td data-label="Status">
+                <span class="table-status" :class="p.status">{{ p.status }}</span>
+              </td>
+              <td data-label="Actions">
+                <template v-if="p.status === 'pending'">
+                  <button class="table-action" type="button" @click="setPaymentStatus(p.id, 'verified')">Verify</button>
+                  <button class="table-action danger" type="button" @click="setPaymentStatus(p.id, 'rejected')">Reject</button>
+                </template>
+                <button
+                  v-else-if="p.status === 'verified'"
+                  class="table-action danger"
+                  type="button"
+                  @click="setPaymentStatus(p.id, 'refunded')"
+                >
+                  Refund
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <p v-if="!rows.length" class="management-state">No payments found.</p>
+      </div>
+    </div>
+    <div v-else class="motorcycle-manager">
+      <div class="fleet-chips">
+        <div class="fleet-chip">
+          <strong>{{ motorcycleCounts.total }}</strong><span>Total</span>
+        </div>
+        <div class="fleet-chip available">
+          <strong>{{ motorcycleCounts.available }}</strong><span>Available</span>
+        </div>
+        <div class="fleet-chip rented">
+          <strong>{{ motorcycleCounts.rented }}</strong><span>Rented now</span>
+        </div>
+        <div class="fleet-chip maintenance">
+          <strong>{{ motorcycleCounts.maintenance }}</strong><span>Maintenance</span>
+        </div>
+        <div class="fleet-chip inactive">
+          <strong>{{ motorcycleCounts.inactive }}</strong><span>Inactive</span>
+        </div>
+      </div>
+      <div class="status-filters">
+        <button
+          v-for="f in motorcycleFilters"
+          :key="f.key"
+          type="button"
+          :class="{ active: motorcycleFilter === f.key }"
+          @click="motorcycleFilter = f.key"
+        >
+          {{ f.label }}
+        </button>
+      </div>
+      <div v-if="actionError" class="form-message error">{{ actionError }}</div>
+      <div class="table-scroll motorcycle-table-scroll">
+        <table class="motorcycle-table">
+          <thead>
+            <tr>
+              <th>Motorcycle</th>
+              <th>Plate number</th>
+              <th>Type</th>
+              <th>Price/day</th>
+              <th>Current status</th>
+              <th>Change status</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="bike in filteredMotorcycles" :key="bike.id">
+              <td class="amount" data-label="Motorcycle">
+                {{ bike.brand || 'Unknown' }} {{ bike.model || '' }}
+                <small class="bike-year">{{ bike.year }} · {{ bike.color }}</small>
+              </td>
+              <td data-label="Plate number">{{ bike.plate_number || 'Not provided' }}</td>
+              <td data-label="Type">{{ bike.motorcycle_type || '—' }}</td>
+              <td data-label="Price/day">{{ formatMotorcyclePrice(bike.price_per_day) }}</td>
+              <td data-label="Current status">
+                <span class="table-status" :class="bike.display_status || bike.status">{{
+                  bike.display_status || bike.status
+                }}</span>
+              </td>
+              <td data-label="Change status">
+                <select
+                  class="status-select"
+                  :value="bike.status"
+                  :disabled="busyBikeId === bike.id"
+                  @change="changeMotorcycleStatus(bike, $event.target.value)"
+                >
+                  <option value="available">Available</option>
+                  <option value="maintenance">Maintenance</option>
+                  <option value="inactive">Inactive</option>
+                </select>
+              </td>
+              <td data-label="">
+                <button
+                  class="table-action danger"
+                  type="button"
+                  :disabled="busyBikeId === bike.id"
+                  @click="removeMotorcycle(bike)"
+                >
+                  Delete
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <p v-if="!filteredMotorcycles.length" class="management-state">No motorcycles found.</p>
+      </div>
+    </div>
     <div v-if="selectedUser" class="customer-inspect-overlay" @click.self="closeInspection">
       <div class="customer-inspect-panel">
         <button
@@ -525,63 +977,6 @@ onMounted(load)
         </button>
         <img :src="selectedDocumentPreview" alt="Document preview" />
       </div>
-    </div>
-    <div v-else-if="section === 'Bookings'" class="table-scroll booking-table-scroll">
-      <table class="booking-table">
-        <thead>
-          <tr>
-            <th>Customer</th>
-            <th>Motorcycle</th>
-            <th>Dates</th>
-            <th>Status</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="booking in rows" :key="booking.id">
-            <td class="amount" data-label="Customer">{{ booking.customer_name }}</td>
-            <td data-label="Motorcycle">{{ booking.brand }} {{ booking.model }}</td>
-            <td data-label="Dates">
-              <span class="booking-dates">{{ booking.start_date }} - {{ booking.end_date }}</span>
-            </td>
-            <td data-label="Status">
-              <span class="table-status" :class="booking.status">{{ booking.status }}</span>
-            </td>
-            <td data-label="Actions">
-              <button v-if="booking.status === 'pending'" class="table-action" type="button"
-                @click="updateBooking(booking.id, 'confirmed')">
-                Approve</button><button v-if="booking.status === 'pending'" class="table-action danger" type="button"
-                @click="updateBooking(booking.id, 'cancelled')">
-                Reject
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-      <p v-if="!rows.length" class="management-state">No bookings found.</p>
-    </div>
-    <div v-else class="table-scroll motorcycle-table-scroll">
-      <table class="motorcycle-table">
-        <thead>
-          <tr>
-            <th>Motorcycle</th>
-            <th>Plate number</th>
-            <th>Price/day</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="bike in rows" :key="bike.id">
-            <td class="amount" data-label="Motorcycle">{{ bike.brand || 'Unknown' }} {{ bike.model || '' }}</td>
-            <td data-label="Plate number">{{ bike.plate_number || 'Not provided' }}</td>
-            <td data-label="Price/day">{{ formatMotorcyclePrice(bike.price_per_day) }}</td>
-            <td data-label="Status">
-              <span class="table-status" :class="bike.status || 'pending'">{{ bike.status || 'Unknown' }}</span>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-      <p v-if="!rows.length" class="management-state">No motorcycles found.</p>
     </div>
   </section>
 </template>
@@ -1005,6 +1400,244 @@ onMounted(load)
   border: 1px solid rgba(24, 115, 77, 0.2);
 }
 
+.table-status.available,
+.table-status.verified {
+  background: #e7f7ef;
+  color: #18734d;
+}
+.table-status.rented {
+  background: #e4edff;
+  color: #2457c5;
+}
+.table-status.maintenance {
+  background: #fff4dc;
+  color: #a96c11;
+}
+.table-status.inactive,
+.table-status.refunded {
+  background: #f0f2f5;
+  color: #667085;
+}
+.table-action:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.bike-year {
+  display: block;
+  color: var(--ink-soft);
+  font-weight: 500;
+  font-size: 0.66rem;
+  margin-top: 2px;
+}
+.status-select {
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  padding: 6px 8px;
+  font-size: 0.72rem;
+  background: #fff;
+  color: var(--navy);
+}
+.fleet-chips {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.fleet-chip {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 12px 14px;
+  border-left: 4px solid #c8d0dc;
+}
+.fleet-chip strong,
+.fleet-chip span {
+  display: block;
+}
+.fleet-chip strong {
+  font-size: 1.3rem;
+  color: var(--navy);
+}
+.fleet-chip span {
+  font-size: 0.68rem;
+  color: var(--ink-soft);
+}
+.fleet-chip.available { border-left-color: #2f9e6f; }
+.fleet-chip.rented { border-left-color: #2f66d9; }
+.fleet-chip.maintenance { border-left-color: #e0a030; }
+.fleet-chip.inactive { border-left-color: #b5bdc9; }
+.status-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.status-filters button {
+  border: 1px solid var(--line);
+  background: #fff;
+  border-radius: 20px;
+  padding: 5px 12px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+.status-filters button.active {
+  background: var(--navy);
+  border-color: var(--navy);
+  color: #fff;
+}
+.analytics {
+  display: grid;
+  gap: 16px;
+}
+.analytics-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+.analytics-note {
+  color: var(--ink-soft);
+  font-size: 0.74rem;
+}
+.report-grid-4 {
+  grid-template-columns: repeat(4, 1fr);
+}
+.report-grid small {
+  display: block;
+  color: var(--ink-soft);
+  font-size: 0.66rem;
+  margin-top: 6px;
+}
+.analytics-columns {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 14px;
+}
+.analytics-columns.three {
+  grid-template-columns: repeat(3, 1fr);
+}
+.analytics-card {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 18px;
+  min-width: 0;
+}
+.analytics-card h3 {
+  font-size: 0.82rem;
+  color: var(--navy);
+  margin-bottom: 14px;
+}
+.analytics-empty {
+  color: var(--ink-soft);
+  font-size: 0.74rem;
+}
+.bar-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  min-height: 190px;
+  overflow-x: auto;
+}
+.bar-col {
+  flex: 1;
+  min-width: 56px;
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+}
+.bar-track {
+  width: 100%;
+  max-width: 54px;
+  height: 130px;
+  display: flex;
+  align-items: flex-end;
+  background: #f1f4f9;
+  border-radius: 6px;
+  overflow: hidden;
+}
+.bar-track i {
+  width: 100%;
+  background: var(--blue);
+  border-radius: 6px 6px 0 0;
+}
+.bar-value {
+  font-size: 0.64rem;
+  font-weight: 700;
+  color: var(--navy);
+}
+.bar-label {
+  font-size: 0.66rem;
+  color: var(--ink-soft);
+}
+.mini-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 0.76rem;
+  color: var(--ink-soft);
+}
+.mini-row:last-child {
+  border-bottom: 0;
+}
+.mini-row b {
+  color: var(--navy);
+}
+.mini-row small {
+  display: block;
+  font-size: 0.64rem;
+}
+.dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 8px;
+  background: #b5bdc9;
+}
+.dot.available { background: #2f9e6f; }
+.dot.rented { background: #2f66d9; }
+.dot.maintenance { background: #e0a030; }
+.hbar-row {
+  display: grid;
+  grid-template-columns: 90px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 11px;
+  font-size: 0.72rem;
+}
+.hbar-row b {
+  color: var(--navy);
+}
+.method-name {
+  color: var(--ink-soft);
+}
+.hbar {
+  height: 8px;
+  background: #edf1f7;
+  border-radius: 9px;
+  overflow: hidden;
+}
+.hbar i {
+  display: block;
+  height: 100%;
+  background: var(--blue);
+  border-radius: inherit;
+}
+@media (max-width: 900px) {
+  .report-grid-4,
+  .fleet-chips {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .analytics-columns,
+  .analytics-columns.three {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 700px) {
   .report-grid {
     grid-template-columns: 1fr;
@@ -1083,40 +1716,49 @@ onMounted(load)
   }
 
   .booking-table-scroll,
+  .payment-table-scroll,
   .motorcycle-table-scroll {
     overflow: visible;
   }
 
   .booking-table,
+  .payment-table,
   .motorcycle-table {
     display: block;
     white-space: normal;
   }
 
   .booking-table thead,
+  .payment-table thead,
   .motorcycle-table thead {
     display: none;
   }
 
   .booking-table tbody,
   .booking-table tr,
+  .payment-table tbody,
+  .payment-table tr,
+  .payment-table tr,
   .motorcycle-table tbody,
   .motorcycle-table tr {
     display: block;
   }
 
   .booking-table tr,
+  .payment-table tr,
   .motorcycle-table tr {
     padding: 14px 0;
     border-bottom: 1px solid var(--line);
   }
 
   .booking-table tr:last-child,
+  .payment-table tr:last-child,
   .motorcycle-table tr:last-child {
     border-bottom: 0;
   }
 
   .booking-table td,
+  .payment-table td,
   .motorcycle-table td {
     display: flex;
     align-items: baseline;
@@ -1130,6 +1772,7 @@ onMounted(load)
   }
 
   .booking-table td::before,
+  .payment-table td::before,
   .motorcycle-table td::before {
     content: attr(data-label);
     flex: 0 0 88px;
@@ -1142,6 +1785,7 @@ onMounted(load)
   }
 
   .booking-table .table-status,
+  .payment-table .table-status,
   .motorcycle-table .table-status {
     margin-left: auto;
   }

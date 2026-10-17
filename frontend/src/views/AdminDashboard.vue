@@ -8,6 +8,7 @@ import {
   LayoutDashboard,
   LogOut,
   Menu,
+  CreditCard,
   Package,
   Settings,
   ShieldCheck,
@@ -31,13 +32,21 @@ const isMenuOpen = ref(false)
 const activeSection = ref('Dashboard')
 const isLoading = ref(true)
 const error = ref('')
-const metrics = ref({ customers: 0, motorcycles: 0, active_bookings: 0, verified_revenue: 0 })
+const metrics = ref({
+  customers: 0,
+  motorcycles: 0,
+  active_bookings: 0,
+  verified_revenue: 0,
+  pending_payments: 0,
+  fleet: { total: 0, available: 0, rented: 0, maintenance: 0, inactive: 0, utilization: 0 },
+})
 const bookingRows = ref([])
 const sections = [
   { label: 'Dashboard', icon: LayoutDashboard },
   { label: 'Customers', icon: Users },
   { label: 'Bookings', icon: ClipboardList },
   { label: 'Motorcycles', icon: Package },
+  { label: 'Payments', icon: CreditCard },
   { label: 'Reports & analytics', icon: BarChart3 },
   { label: 'Notifications', icon: Bell },
   { label: 'Settings', icon: Settings },
@@ -61,6 +70,29 @@ const profileImageSrc = computed(() => {
     ? auth.user.profile_image
     : `/${auth.user.profile_image}`
   return `${apiBaseUrl}${imagePath}`
+})
+
+const fleet = computed(() => metrics.value.fleet)
+const fleetSegments = computed(() => [
+  { key: 'available', label: 'Available', count: fleet.value.available },
+  { key: 'rented', label: 'Rented now', count: fleet.value.rented },
+  { key: 'maintenance', label: 'Maintenance', count: fleet.value.maintenance },
+  { key: 'inactive', label: 'Inactive', count: fleet.value.inactive },
+])
+const fleetDonutStyle = computed(() => {
+  const total = fleet.value.total
+  if (!total) return { background: 'conic-gradient(#e3e8f0 0 100%)' }
+  const colors = { available: '#2f9e6f', rented: '#2f66d9', maintenance: '#e0a030', inactive: '#b5bdc9' }
+  let start = 0
+  const stops = fleetSegments.value
+    .filter((segment) => segment.count > 0)
+    .map((segment) => {
+      const end = start + (segment.count / total) * 100
+      const stop = `${colors[segment.key]} ${start}% ${end}%`
+      start = end
+      return stop
+    })
+  return { background: `conic-gradient(${stops.join(', ')})` }
 })
 
 const currentDate = computed(() =>
@@ -87,7 +119,7 @@ async function loadDashboard() {
   error.value = ''
   try {
     const [report, bookings] = await Promise.all([api.reports(), api.bookings()])
-    metrics.value = report.data || metrics.value
+    metrics.value = { ...metrics.value, ...(report.data || {}) }
     bookingRows.value = (bookings.data || []).slice(0, 8).map((booking) => ({
       id: booking.id,
       rider: booking.customer_name,
@@ -213,8 +245,8 @@ onMounted(async () => {
               <span class="panel-label">Command center</span>
               <p>Here is what's happening across SakayMoto today.</p>
             </div>
-            <button class="btn btn-navy btn-sm" type="button">
-              <FileBarChart :size="16" /> Export report
+            <button class="btn btn-navy btn-sm" type="button" @click="selectSection('Reports & analytics')">
+              <FileBarChart :size="16" /> View full report
             </button>
           </section>
           <div class="stat-grid admin-stat-grid">
@@ -237,10 +269,10 @@ onMounted(async () => {
             <article class="stat-card">
               <span class="stat-icon green"><Package :size="19" /></span>
               <div>
-                <strong>{{ metrics.motorcycles }}</strong
-                ><span>Motorcycles listed</span>
+                <strong>{{ fleet.available }}</strong
+                ><span>Available now</span>
               </div>
-              <small>Active fleet</small>
+              <small>{{ fleet.rented }} rented · {{ fleet.maintenance }} in maintenance</small>
             </article>
             <article class="stat-card">
               <span class="stat-icon purple"><BarChart3 :size="19" /></span>
@@ -248,7 +280,10 @@ onMounted(async () => {
                 <strong>PHP {{ Number(metrics.verified_revenue).toLocaleString() }}</strong
                 ><span>Verified revenue</span>
               </div>
-              <small>Payment total</small>
+              <small>
+                {{ metrics.pending_payment_count || 0 }} pending
+                (PHP {{ Number(metrics.pending_payments || 0).toLocaleString() }}) not counted
+              </small>
             </article>
           </div>
           <div class="dashboard-columns admin-columns">
@@ -306,22 +341,19 @@ onMounted(async () => {
                 </div>
               </div>
               <div class="fleet-stat">
-                <div class="donut">
-                  <strong>{{ metrics.motorcycles }}</strong
-                  ><span>listed</span>
+                <div class="donut" :style="fleetDonutStyle">
+                  <strong>{{ fleet.total }}</strong
+                  ><span>motorcycles</span>
                 </div>
                 <div class="fleet-legend">
-                  <span
-                    ><i class="available"></i>Active fleet <b>{{ metrics.motorcycles }}</b></span
-                  ><span
-                    ><i class="rented"></i>Active bookings
-                    <b>{{ metrics.active_bookings }}</b></span
+                  <span v-for="segment in fleetSegments" :key="segment.key"
+                    ><i :class="segment.key"></i>{{ segment.label }} <b>{{ segment.count }}</b></span
                   >
                 </div>
               </div>
               <div class="fleet-footer">
-                <span>Current records</span><strong>Live</strong>
-                <div class="progress"><i></i></div>
+                <span>Fleet utilization</span><strong>{{ fleet.utilization }}%</strong>
+                <div class="progress"><i :style="{ width: fleet.utilization + '%' }"></i></div>
               </div>
             </section>
           </div>
@@ -329,7 +361,9 @@ onMounted(async () => {
       </div>
       <div
         v-else-if="
-          ['Customers', 'Bookings', 'Motorcycles', 'Reports & analytics'].includes(activeSection)
+          ['Customers', 'Bookings', 'Motorcycles', 'Payments', 'Reports & analytics'].includes(
+            activeSection,
+          )
         "
         class="dashboard-content management-content"
       >
@@ -529,9 +563,18 @@ tr:last-child td {
   display: grid;
   place-content: center;
   text-align: center;
-  background:
-    radial-gradient(circle at center, #fff 0 57%, transparent 58%),
-    conic-gradient(var(--blue) 0 72%, #dce7fb 72% 100%);
+  position: relative;
+}
+.donut::before {
+  content: '';
+  position: absolute;
+  inset: 16px;
+  border-radius: 50%;
+  background: #fff;
+}
+.donut strong,
+.donut span {
+  position: relative;
 }
 .donut strong {
   color: var(--navy);
@@ -560,16 +603,23 @@ tr:last-child td {
   border-radius: 50%;
 }
 .fleet-legend i.available {
-  background: var(--blue);
+  background: #2f9e6f;
 }
 .fleet-legend i.rented {
-  background: #88a9ec;
+  background: #2f66d9;
+}
+.fleet-legend i.maintenance {
+  background: #e0a030;
+}
+.fleet-legend i.inactive {
+  background: #b5bdc9;
 }
 .fleet-legend b {
   margin-left: auto;
   color: var(--navy);
 }
 .fleet-footer {
+  flex-wrap: wrap;
   border-top: 1px solid var(--line);
   padding-top: 16px;
   display: flex;
@@ -590,7 +640,6 @@ tr:last-child td {
 }
 .progress i {
   display: block;
-  width: 72%;
   height: 100%;
   background: var(--blue);
   border-radius: inherit;
