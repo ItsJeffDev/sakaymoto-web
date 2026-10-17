@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { api } from '../../services/api'
 
 const props = defineProps({ section: { type: String, required: true } })
@@ -184,15 +184,17 @@ async function submitMotorcycle() {
     successMessage.value = 'Motorcycle added successfully.'
     resetMotorcycleForm()
     showAddMotorcycleForm.value = false
-    await load()
+    await load(true)
   } catch (submitError) {
     formError.value = submitError.message
   }
 }
 
-async function load() {
-  isLoading.value = true
-  error.value = ''
+async function load(silent = false) {
+  // silent = background refresh: no spinner so forms/dialogs are not wiped.
+  silent = silent === true
+  if (!silent) isLoading.value = true
+  if (!silent) error.value = ''
   try {
     if (props.section === 'Customers') {
       const response = await api.users()
@@ -204,11 +206,26 @@ async function load() {
     if (props.section === 'Payments') rows.value = (await api.payments()).data || []
     if (props.section === 'Reports & analytics') report.value = (await api.reports()).data
   } catch (loadError) {
-    error.value = loadError.message
+    if (!silent) error.value = loadError.message
   } finally {
     isLoading.value = false
   }
 }
+
+const REFRESH_MS = 30000
+let refreshTimer = null
+function refreshQuietly() {
+  const busy = showAddMotorcycleForm.value || selectedUser.value || selectedDocumentPreview.value
+  if (document.visibilityState === 'visible' && !busy && !isLoading.value) load(true)
+}
+onMounted(() => {
+  refreshTimer = setInterval(refreshQuietly, REFRESH_MS)
+  document.addEventListener('visibilitychange', refreshQuietly)
+})
+onUnmounted(() => {
+  clearInterval(refreshTimer)
+  document.removeEventListener('visibilitychange', refreshQuietly)
+})
 
 const money = (value) => `PHP ${Number(value || 0).toLocaleString()}`
 const methodLabel = (method) =>
@@ -273,7 +290,7 @@ async function changeMotorcycleStatus(bike, status) {
   busyBikeId.value = bike.id
   try {
     await api.updateMotorcycle(bike.id, { status })
-    await load()
+    await load(true)
   } catch (updateError) {
     actionError.value = updateError.message
   } finally {
@@ -287,7 +304,7 @@ async function removeMotorcycle(bike) {
   busyBikeId.value = bike.id
   try {
     await api.deleteMotorcycle(bike.id)
-    await load()
+    await load(true)
   } catch (deleteError) {
     actionError.value = `${deleteError.message}. Set it to Inactive instead to hide it.`
   } finally {
@@ -299,7 +316,7 @@ async function setPaymentStatus(id, status) {
   actionError.value = ''
   try {
     await api.updatePaymentStatus(id, status)
-    await load()
+    await load(true)
   } catch (updateError) {
     error.value = updateError.message
   }
@@ -334,7 +351,7 @@ function exportReportCsv() {
 async function updateBooking(id, status) {
   try {
     await api.updateBookingStatus(id, status)
-    await load()
+    await load(true)
   } catch (updateError) {
     error.value = updateError.message
   }
@@ -343,7 +360,7 @@ async function updateBooking(id, status) {
 async function updateDocumentStatus(documentId, status) {
   try {
     await api.updateDocumentStatus(documentId, status)
-    await load()
+    await load(true)
   } catch (updateError) {
     error.value = updateError.message
   }

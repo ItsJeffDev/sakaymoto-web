@@ -15,7 +15,7 @@ import {
   Users,
   X,
 } from 'lucide-vue-next'
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AdminManagementPanel from '../components/dashboard/AdminManagementPanel.vue'
 import { api } from '../services/api'
@@ -106,6 +106,8 @@ const currentDate = computed(() =>
 
 function selectSection(label) {
   activeSection.value = label
+  // Coming back to the overview: pull fresh numbers instead of showing stale ones.
+  if (label === 'Dashboard' && !isLoading.value) loadDashboard(true)
   isMenuOpen.value = false
 }
 
@@ -114,8 +116,9 @@ function logout() {
   router.push('/')
 }
 
-async function loadDashboard() {
-  isLoading.value = true
+async function loadDashboard(silent = false) {
+  // silent = background refresh: no spinner, keep showing current data on failure.
+  if (!silent) isLoading.value = true
   error.value = ''
   try {
     const [report, bookings] = await Promise.all([api.reports(), api.bookings()])
@@ -129,11 +132,23 @@ async function loadDashboard() {
       amount: `PHP ${Number(booking.total_price).toLocaleString()}`,
     }))
   } catch (loadError) {
-    error.value = loadError.message
+    if (!silent) error.value = loadError.message
   } finally {
     isLoading.value = false
   }
 }
+
+const REFRESH_MS = 5000
+let refreshTimer = null
+const refreshIfVisible = () => {
+  if (document.visibilityState === 'visible' && activeSection.value === 'Dashboard')
+    loadDashboard(true)
+}
+
+onUnmounted(() => {
+  clearInterval(refreshTimer)
+  document.removeEventListener('visibilitychange', refreshIfVisible)
+})
 
 onMounted(async () => {
   await auth.hydrate()
@@ -152,6 +167,8 @@ onMounted(async () => {
   }
 
   loadDashboard()
+  refreshTimer = setInterval(refreshIfVisible, REFRESH_MS)
+  document.addEventListener('visibilitychange', refreshIfVisible)
 })
 </script>
 
