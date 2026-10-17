@@ -14,6 +14,8 @@ const pool = mysql.createPool({
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
   port: Number(process.env.DB_PORT) || 3306,
+  // Return DATE columns as 'YYYY-MM-DD' strings (avoids timezone shifting a day back).
+  dateStrings: ['DATE'],
 
   waitForConnections: true,
   connectionLimit: 10,

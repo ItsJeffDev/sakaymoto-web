@@ -3,7 +3,7 @@ const db = require("../config/db");
 const getPayments = async (req, res) => {
   const isAdmin = req.user.role === "admin";
   const [rows] = await db.execute(
-    `SELECT p.*, b.user_id, b.motorcycle_id, b.start_date, b.end_date, u.name AS customer_name FROM payments p JOIN bookings b ON b.id = p.booking_id JOIN users u ON u.id = b.user_id ${isAdmin ? "" : "WHERE b.user_id = ?"} ORDER BY p.created_at DESC`,
+    `SELECT p.*, b.user_id, b.motorcycle_id, b.start_date, b.end_date, b.total_price, m.brand, m.model, u.name AS customer_name FROM payments p JOIN bookings b ON b.id = p.booking_id JOIN motorcycles m ON m.id = b.motorcycle_id JOIN users u ON u.id = b.user_id ${isAdmin ? "" : "WHERE b.user_id = ?"} ORDER BY p.created_at DESC`,
     isAdmin ? [] : [req.user.id],
   );
   return res.json({ data: rows });

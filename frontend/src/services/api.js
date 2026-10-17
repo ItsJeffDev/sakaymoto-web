@@ -35,6 +35,8 @@ export const api = {
     apiRequest(`/documents/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) }),
   uploadDocument: (formData) => apiRequest('/documents', { method: 'POST', body: formData }),
   payments: () => apiRequest('/payments'),
+  updatePaymentStatus: (id, status) =>
+    apiRequest(`/payments/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) }),
   payment: (body) => apiRequest('/payments', { method: 'POST', body: JSON.stringify(body) }),
   users: () => apiRequest('/users'),
   motorcyclesAdmin: () => apiRequest('/motorcycles?status=all'),
