@@ -1,5 +1,9 @@
 const db = require("../config/db");
-const { getAllMotorcycles } = require("../models/motorcycleModel");
+const {
+  getAllMotorcycles,
+  normalizeImages,
+  SELECT_WITH_IMAGES,
+} = require("../models/motorcycleModel");
 
 const getMotorcycles = async (req, res) => {
   try {
@@ -14,16 +18,13 @@ const getMotorcycles = async (req, res) => {
 };
 
 const getMotorcycle = async (req, res) => {
-  const [rows] = await db.execute(
-    `
-    SELECT m.*, COALESCE(JSON_ARRAYAGG(JSON_OBJECT('id', mi.id, 'image_url', mi.image_url, 'is_primary', mi.is_primary)), JSON_ARRAY()) AS images
-    FROM motorcycles m LEFT JOIN motorcycle_images mi ON mi.motorcycle_id = m.id
-    WHERE m.id = ? GROUP BY m.id`,
+  const [rows] = await db.query(
+    `${SELECT_WITH_IMAGES} WHERE m.id = ? GROUP BY m.id`,
     [req.params.id],
   );
   if (!rows.length)
     return res.status(404).json({ message: "Motorcycle not found" });
-  return res.json(rows[0]);
+  return res.json(normalizeImages(rows[0]));
 };
 
 const createMotorcycle = async (req, res) => {
@@ -36,6 +37,7 @@ const createMotorcycle = async (req, res) => {
     price_per_day,
     status = "available",
     description,
+    motorcycle_type,
   } = req.body;
   if (!brand || !model || !year || !plate_number || !color || !price_per_day)
     return res.status(400).json({
@@ -49,7 +51,7 @@ const createMotorcycle = async (req, res) => {
     return res.status(400).json({ message: "Invalid motorcycle details" });
   try {
     const [result] = await db.execute(
-      "INSERT INTO motorcycles (brand, model, year, plate_number, color, price_per_day, status, description) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+      "INSERT INTO motorcycles (brand, model, year, plate_number, color, price_per_day, status, description, motorcycle_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
       [
         brand.trim(),
         model.trim(),
@@ -59,6 +61,7 @@ const createMotorcycle = async (req, res) => {
         price_per_day,
         status,
         description || null,
+        motorcycle_type || null,
       ],
     );
     return res
@@ -81,6 +84,7 @@ const updateMotorcycle = async (req, res) => {
     "price_per_day",
     "status",
     "description",
+    "motorcycle_type",
   ];
   const updates = Object.entries(req.body).filter(
     ([key, value]) => allowed.includes(key) && value !== undefined,
@@ -94,13 +98,19 @@ const updateMotorcycle = async (req, res) => {
     return res.status(400).json({ message: "Invalid status" });
   const values = updates.map(([, value]) => value);
   values.push(req.params.id);
-  const [result] = await db.execute(
-    `UPDATE motorcycles SET ${updates.map(([key]) => `\`${key}\` = ?`).join(", ")} WHERE id = ?`,
-    values,
-  );
-  if (!result.affectedRows)
-    return res.status(404).json({ message: "Motorcycle not found" });
-  return res.json({ message: "Motorcycle updated" });
+  try {
+    const [result] = await db.execute(
+      `UPDATE motorcycles SET ${updates.map(([key]) => `\`${key}\` = ?`).join(", ")} WHERE id = ?`,
+      values,
+    );
+    if (!result.affectedRows)
+      return res.status(404).json({ message: "Motorcycle not found" });
+    return res.json({ message: "Motorcycle updated" });
+  } catch (error) {
+    if (error.code === "ER_DUP_ENTRY")
+      return res.status(409).json({ message: "Plate number already exists" });
+    throw error;
+  }
 };
 
 const deleteMotorcycle = async (req, res) => {
