@@ -1,4 +1,5 @@
 require("dotenv").config();
+require("./src/middleware/upload");
 
 const app = require("./src/app");
 const db = require("./src/config/db");

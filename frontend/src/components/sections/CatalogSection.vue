@@ -1,16 +1,107 @@
 <script setup>
-import { ref, computed } from 'vue'
-import { motorcycles, catalogFilters } from '../../data/motorcycles'
+import { ref, computed, onMounted } from 'vue'
 import { useModalStore } from '../../stores/modal'
+import { api } from '../../services/api'
 import MotoIcon from '../icons/MotoIcon.vue'
 
 const modal = useModalStore()
 const activeFilter = ref('all')
+const motorcycles = ref([])
+const isLoading = ref(true)
+const loadError = ref('')
+const previewBike = ref(null)
+const apiBaseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:3000/api').replace(
+  /\/api$/,
+  '',
+)
+
+function getBikeImageUrl(bike) {
+  const images = Array.isArray(bike.images) ? bike.images : []
+  const image = images.find((item) => item.is_primary) || images[0]
+
+  if (!image?.image_url) return ''
+  return image.image_url.startsWith('http') ? image.image_url : `${apiBaseUrl}${image.image_url}`
+}
+
+function normalizeMotorcycleType(type) {
+  return String(type || '')
+    .trim()
+    .toLowerCase()
+    .replace(/[_-]+/g, ' ')
+}
+
+function formatMotorcycleType(type) {
+  return String(type || '')
+    .trim()
+    .replace(/[_-]+/g, ' ')
+    .replace(/\b\w/g, (character) => character.toUpperCase())
+}
+
+async function loadMotorcycles() {
+  isLoading.value = true
+  loadError.value = ''
+  try {
+    const response = await api.motorcycles()
+    motorcycles.value = response
+      .filter((bike) => (bike.status || 'available') !== 'inactive')
+      .map((bike) => ({
+        ...bike,
+        pricePerDay: Number(bike.price_per_day),
+        category: normalizeMotorcycleType(bike.motorcycle_type),
+        categoryLabel:
+          formatMotorcycleType(bike.motorcycle_type) || `${bike.brand} · ${bike.color}`,
+        specs: [
+          `${bike.year}`,
+          bike.color,
+          bike.status === 'maintenance' ? 'Under maintenance' : 'Available to book',
+        ],
+        accent: 'blue',
+      }))
+  } catch (error) {
+    loadError.value = error.message
+    motorcycles.value = []
+  } finally {
+    isLoading.value = false
+  }
+}
+
+const motorTypeFilters = computed(() => {
+  const types = new Map()
+
+  motorcycles.value.forEach((bike) => {
+    const value = normalizeMotorcycleType(bike.motorcycle_type || bike.category)
+    if (value && !types.has(value)) {
+      types.set(value, formatMotorcycleType(bike.motorcycle_type || bike.category))
+    }
+  })
+
+  return [
+    { value: 'all', label: 'All' },
+    ...Array.from(types, ([value, label]) => ({ value, label })),
+  ]
+})
 
 const filteredBikes = computed(() => {
-  if (activeFilter.value === 'all') return motorcycles
-  return motorcycles.filter((bike) => bike.category === activeFilter.value)
+  if (activeFilter.value === 'all') return motorcycles.value
+  return motorcycles.value.filter(
+    (bike) => normalizeMotorcycleType(bike.motorcycle_type || bike.category) === activeFilter.value,
+  )
 })
+
+onMounted(loadMotorcycles)
+
+function openPreview(bike) {
+  previewBike.value = bike
+}
+
+function closePreview() {
+  previewBike.value = null
+}
+
+function loginToReserve() {
+  closePreview()
+  modal.open('login')
+}
 
 const accentBg = {
   blue: 'linear-gradient(160deg,#EAF1FF,#D6E4FF)',
@@ -29,7 +120,7 @@ const accentColor = {
     <div class="container">
       <div class="section-head" v-reveal>
         <span class="eyebrow">The Lineup</span>
-        <h2 style=" color: var(--navy); ">Find a motorcycle for the ride you're actually making</h2>
+        <h2 style="color: var(--navy)">Find a motorcycle for the ride you're actually making</h2>
         <p class="eyebrow-desc">
           Scooters for the daily commute, underbones for longer trips, and a few for whenever you
           want something quicker.
@@ -38,7 +129,7 @@ const accentColor = {
 
       <div class="filter-row" v-reveal>
         <button
-          v-for="filter in catalogFilters"
+          v-for="filter in motorTypeFilters"
           :key="filter.value"
           class="chip"
           :class="{ active: activeFilter === filter.value }"
@@ -48,11 +139,41 @@ const accentColor = {
         </button>
       </div>
 
-      <div class="bike-grid">
+      <p v-if="isLoading" class="catalog-state">Loading available motorcycles...</p>
+      <div v-else-if="loadError" class="catalog-state error">
+        <p>Unable to load motorcycles from the API.</p>
+        <button class="btn btn-navy btn-sm" type="button" @click="loadMotorcycles">
+          Try again
+        </button>
+      </div>
+      <p v-else-if="!filteredBikes.length" class="catalog-state">
+        No motorcycles are available right now.
+      </p>
+      <div v-else class="bike-grid">
         <div class="bike-card" v-reveal v-for="bike in filteredBikes" :key="bike.id">
-          <div class="bike-thumb" :style="{ background: accentBg[bike.accent] }">
-            <span class="avail">Available</span>
-            <MotoIcon :wheel-color="accentColor[bike.accent]" frame-color="#0B2545" />
+          <div
+            class="bike-thumb"
+            :style="{ background: accentBg[bike.accent] }"
+            @click="openPreview(bike)"
+            @keydown.enter.prevent="openPreview(bike)"
+            @keydown.space.prevent="openPreview(bike)"
+            role="button"
+            tabindex="0"
+            :aria-label="`Preview motorcycle ${bike.brand} ${bike.model}`"
+          >
+            <span class="avail" :class="{ maintenance: bike.status === 'maintenance' }">
+              {{ bike.status === 'maintenance' ? 'Maintenance' : 'Available' }}
+            </span>
+            <img
+              v-if="getBikeImageUrl(bike)"
+              class="bike-image"
+              :src="getBikeImageUrl(bike)"
+              :alt="`${bike.brand} ${bike.model}`"
+            />
+            <MotoIcon v-else :wheel-color="accentColor[bike.accent]" frame-color="#0B2545" />
+            <button class="preview-pill" type="button" @click.stop="openPreview(bike)">
+              Preview
+            </button>
           </div>
           <div class="bike-body">
             <span class="cat">{{ bike.categoryLabel }}</span>
@@ -65,7 +186,47 @@ const accentColor = {
                 <b>₱{{ bike.pricePerDay }}</b
                 ><span>/ day</span>
               </div>
-              <button class="btn btn-navy btn-sm" @click="modal.open('register')">Book Now</button>
+              <button
+                class="btn btn-navy btn-sm"
+                type="button"
+                :disabled="(bike.status || 'available') !== 'available'"
+                @click="modal.open('login')"
+              >
+                {{ (bike.status || 'available') === 'available' ? 'Book Now' : 'Unavailable' }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div v-if="previewBike" class="preview-overlay" @click.self="closePreview()">
+        <div class="preview-dialog" role="dialog" aria-modal="true" aria-labelledby="bike-preview-title">
+          <button class="dialog-close" type="button" aria-label="Close preview" @click="closePreview()">
+            ×
+          </button>
+          <div class="preview-visual">
+            <img
+              v-if="getBikeImageUrl(previewBike)"
+              :src="getBikeImageUrl(previewBike)"
+              :alt="`${previewBike.brand} ${previewBike.model}`"
+            />
+            <MotoIcon v-else :wheel-color="accentColor[previewBike.accent]" frame-color="#0B2545" />
+          </div>
+          <div class="preview-content">
+            <span class="eyebrow">Motorcycle preview</span>
+            <h3 id="bike-preview-title">{{ previewBike.brand }} {{ previewBike.model }}</h3>
+            <p>{{ previewBike.categoryLabel }}</p>
+            <div class="bike-specs preview-specs">
+              <span v-for="spec in previewBike.specs" :key="spec">{{ spec }}</span>
+            </div>
+            <div class="preview-actions">
+              <button
+                class="btn btn-primary"
+                type="button"
+                @click="loginToReserve"
+              >
+                Login to reserve
+              </button>
+              <button class="btn btn-secondary" type="button" @click="closePreview()">Close</button>
             </div>
           </div>
         </div>
@@ -77,6 +238,86 @@ const accentColor = {
 <style scoped>
 .catalog {
   background: #fff;
+}
+.catalog-state {
+  color: var(--ink-soft);
+  font-size: 0.9rem;
+  padding: 24px 0;
+}
+.catalog-state.error {
+  color: #a96c11;
+}
+.dialog-close {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  color: var(--ink-soft);
+  font-size: 1.4rem;
+}
+.preview-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1600;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(8, 27, 54, 0.66);
+}
+.preview-dialog {
+  width: min(100%, 760px);
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+  gap: 0;
+  position: relative;
+  overflow: hidden;
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 0 25px 70px -25px rgba(8, 27, 54, 0.5);
+}
+.preview-visual {
+  min-height: 340px;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(160deg, #edf4ff, #dfeaff);
+}
+.preview-visual img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.preview-visual :deep(svg) {
+  width: 64%;
+}
+.preview-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 16px;
+  padding: 28px 26px 24px;
+}
+.preview-content h3 {
+  font-size: 1.7rem;
+  line-height: 1.15;
+  margin-top: -6px;
+}
+.preview-content p {
+  color: var(--ink-soft);
+  margin-top: -6px;
+}
+.preview-specs {
+  margin: 0;
+}
+.preview-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+.btn-secondary {
+  background: #f3f6fb;
+  color: var(--navy);
+  border: 1px solid var(--line);
 }
 .filter-row {
   display: flex;
@@ -125,9 +366,29 @@ const accentColor = {
   align-items: center;
   justify-content: center;
   position: relative;
+  overflow: hidden;
+  cursor: pointer;
 }
 .bike-thumb :deep(svg) {
   width: 68%;
+}
+.bike-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.preview-pill {
+  position: absolute;
+  right: 14px;
+  bottom: 14px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(11, 37, 69, 0.9);
+  color: #fff;
+  font: 600 0.7rem var(--ff-display);
+  padding: 7px 12px;
+  box-shadow: 0 12px 24px rgba(11, 37, 69, 0.2);
 }
 .bike-thumb .avail {
   position: absolute;
@@ -200,10 +461,28 @@ const accentColor = {
   .bike-grid {
     grid-template-columns: repeat(2, 1fr);
   }
+  .preview-dialog {
+    grid-template-columns: 1fr;
+  }
+  .preview-visual {
+    min-height: 260px;
+  }
 }
 @media (max-width: 760px) {
   .bike-grid {
     grid-template-columns: 1fr;
+  }
+  .preview-dialog {
+    width: min(100%, 480px);
+  }
+  .preview-content {
+    padding: 22px 18px 20px;
+  }
+  .preview-actions {
+    flex-direction: column;
+  }
+  .preview-actions .btn {
+    width: 100%;
   }
 }
 </style>

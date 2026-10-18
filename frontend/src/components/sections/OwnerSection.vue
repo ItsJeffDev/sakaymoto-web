@@ -29,7 +29,6 @@ const barHeights = [40, 65, 50, 85, 60, 95, 70]
             {{ perk }}
           </li>
         </ul>
-        <button class="btn btn-primary" @click="modal.open('register')">Create an Account</button>
       </div>
 
       <div v-reveal>

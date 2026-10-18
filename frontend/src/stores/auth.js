@@ -2,18 +2,9 @@ import { computed, ref } from 'vue'
 import { defineStore } from 'pinia'
 import { api } from '../services/api'
 
-function getStoredUser() {
-  try {
-    return JSON.parse(localStorage.getItem('sakaymoto_user') || 'null')
-  } catch {
-    localStorage.removeItem('sakaymoto_user')
-    return null
-  }
-}
-
 export const useAuthStore = defineStore('auth', () => {
   const token = ref(localStorage.getItem('sakaymoto_token'))
-  const user = ref(getStoredUser())
+  const user = ref(JSON.parse(localStorage.getItem('sakaymoto_user') || 'null'))
   const isAuthenticated = computed(() => Boolean(token.value && user.value))
   const isAdmin = computed(() => user.value?.role === 'admin')
 
@@ -41,10 +32,8 @@ export const useAuthStore = defineStore('auth', () => {
       user.value = payload.data
       localStorage.setItem('sakaymoto_user', JSON.stringify(payload.data))
       return payload.data
-    } catch (error) {
-      if (error?.status === 401 || error?.status === 403) {
-        logout()
-      }
+    } catch {
+      logout()
       return null
     }
   }
