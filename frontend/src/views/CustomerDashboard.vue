@@ -583,21 +583,6 @@ function logout() {
 }
 
 onMounted(async () => {
-  await auth.hydrate()
-
-  if (!auth.isAuthenticated) {
-    router.push('/')
-    return
-  }
-
-  const requestedUserId = Number(route.params.userId)
-  const authenticatedUserId = Number(auth.user?.id)
-
-  if (!requestedUserId || authenticatedUserId !== requestedUserId) {
-    await router.replace(`/dashboard/${authenticatedUserId}`)
-    return
-  }
-
   await loadDashboard()
   await loadProfile()
   await loadDocuments()
